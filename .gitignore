@@ -1,6 +1,7 @@
 # Compiled javascript
-dist/
-!dist/
+!dist
+dist/*
+
 
 # Logs
 logs
