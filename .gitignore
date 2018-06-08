@@ -1,4 +1,6 @@
 # Compiled javascript
+dist/*
+!/dist/README.md
 
 
 # Logs
