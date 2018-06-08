@@ -42,7 +42,7 @@ export class Tester {
     // Currently: Does basic initiations for the codeGenerator, testReport and generates the JSON Schemas from the TD
     // End Goal: Fetching the thing under test
     // This can be called by using the Initiate action of the test bench
-    public initiate() :boolean{
+    public initiate():boolean {
         console.log("Initiation has started")
         //Generating JSON Schemas for input and output Data of each interaction. Go into the function to find explanations
         try {
@@ -194,18 +194,21 @@ export class Tester {
                 //validating the property value with its Schemas
                 let errorsProp: Array<any> = SchemaValidator.validateResponse(propertyName, data, self.testConfig.SchemaLocation)
                 
-                // console.log('----lalala-----')
-                // console.log(errorsProp)
-                // if (errorsProp.length > 0) { //meaning that there is a validation error
-                //     if (logMode) console.log("Received response is not valid for  " + propertyName, errorsProp);
-                //     self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""), data, 35, "Received response is not valid, " + JSON.stringify(errorsProp));
-                //     resolve(false);
-                // } else if (!isWritable) {
-                //     // if it is not writable, we are done here! 
-                //     if (logMode) console.log("Property test of " + propertyName + " is succesful")
-                //     self.testReport.addMessage(testCycle, testScenario, propertyName, true, JSON.parse("\"nothing\""), data, 200, "");
-                //     resolve(true);
-                // }
+                console.log('----lalala-----');
+                console.log(errorsProp);
+
+
+                console.log(errorsProp)
+                if (errorsProp.length > 0) { //meaning that there is a validation error
+                    if (logMode) console.log("Received response is not valid for  " + propertyName, errorsProp);
+                    self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""), data, 35, "Received response is not valid, " + JSON.stringify(errorsProp));
+                    resolve(false);
+                } else if (!isWritable) {
+                    // if it is not writable, we are done here! 
+                    if (logMode) console.log("Property test of " + propertyName + " is succesful")
+                    self.testReport.addMessage(testCycle, testScenario, propertyName, true, JSON.parse("\"nothing\""), data, 200, "");
+                    resolve(true);
+                }
                 if (isWritable) { //if we can write into the property, it means that we can test whether we can write and get back the same type
                     //the same value will be expected but a spceial error case will be written if it is not the same since maybe the value is changing very fast
                     if (logMode) console.log("Testing the write functionality for ", propertyName);

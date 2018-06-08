@@ -22,3 +22,9 @@ specify node-wot path in tsconfig:
 compile with: `tsc -p .` inside testbench folder.
 start testbench with: `node dist/path-to-v2-test-bench.js-file`
 
+
+## Additional Information:
+
+- testing computer:
+	`tsc --version`: Version 2.8.3
+	`node --version`: v10.0.0

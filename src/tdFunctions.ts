@@ -20,19 +20,21 @@ export function findPort(td : ThingDescription) : number {
 
 export function generateSchemas(td:ThingDescription, schemaLocation:string) : void{
     console.log('in generateschema functoin')
+    console.log('...................................................');
+    console.log('generate schemas from this thing description:', td);
+    console.log('...................................................');
     let padInitial:string = "{\n\t\"$schema\": \"http://json-schema.org/draft-04/schema#\",\n\t\"title\": \"";
     let tdInteractions:any= td.interaction;
-    console.log('we here...')
-    mkdirp(schemaLocation + "Requests")
-    mkdirp(schemaLocation + "Responses")
     let reqSchemaCount : number = 0;
-    let resSchemaCount : number = 0; 
+    let resSchemaCount : number = 0;
+    mkdirp(schemaLocation + "Requests");
+    mkdirp(schemaLocation + "Responses");
 
-    console.log('interaction length:', tdInteractions.length )
+    console.log('interaction length:', tdInteractions.length );
     // extract interactions
     for (var i = 0; i < tdInteractions.length; i++) {
 
-        console.log(tdInteractions[i])
+        console.log(tdInteractions[i]);
 
         let curInter : any  = tdInteractions[i];
         // let type :string = curInter.semanticTypes[0];
@@ -41,46 +43,69 @@ export function generateSchemas(td:ThingDescription, schemaLocation:string) : vo
 
         let inputData :any;
         let outputData :any;
-        //try if you have input data
-        
-        try{
 
-            console.log('we 333here...')
-            inputData = curInter.inputData;
-            let inString:string =  JSON.stringify(inputData);
+        switch (type) {
+            case "Property":
+                // check for writable 
+                if (curInter.writable) {
+                    // request schema
+                    let dummyType = JSON.stringify(curInter.schema);
+                    let schema :string = padInitial+name+"\",\n\t"+dummyType.substring(1,dummyType.length-1)+"}";
+                    let writeLoc :string = schemaLocation+"Requests/"+name+".json";
+                    fs.writeFileSync(writeLoc, schema);
+                    reqSchemaCount ++;
 
-            //substring is to avoid the brackets at the ends
-            let schema :string =padInitial+name+"\",\n\t"+inString.substring(1,inString.length-1)+"}";
-            let writeLoc :string = schemaLocation+"Requests/"+name+".json";
+                    // response schema:
+                    writeLoc = schemaLocation+"Responses/"+name+".json";
+                    fs.writeFileSync(writeLoc, schema);
+                    resSchemaCount++;
+                } else {
+                    // response schema:
+                    let dummyType = JSON.stringify(curInter.schema);
+                    let schema :string = padInitial+name+"\",\n\t"+dummyType.substring(1,dummyType.length-1)+"}";
+                    let writeLoc = schemaLocation+"Responses/"+name+".json";
+                    fs.writeFileSync(writeLoc, schema);
+                    resSchemaCount++;
+                }
+                // if not writable test if really not writable... ??
 
-            console.log('we here...')
-
-            fs.writeFileSync(writeLoc,schema);
-            reqSchemaCount ++;
-        }catch(Error){
-            //not a problem, maybe it doesnt have input
-            console.log('catching first input error....')
+                // todo: check if observable think which request schema for this ? how test observable in general
+                break;
+            case "Action":
+                // check for input and output data , create requests based on this 
+                if ("inputSchema" in curInter) {
+                    let dummyType = JSON.stringify(curInter.inputSchema);
+                    let schema :string = padInitial+name+"\",\n\t"+dummyType.substring(1,dummyType.length-1)+"}";
+                    let writeLoc :string = schemaLocation+"Requests/"+name+".json";
+                    fs.writeFileSync(writeLoc, schema);
+                    reqSchemaCount++;
+                }
+                if ("outputSchema" in curInter) {
+                    let dummyType = JSON.stringify(curInter.outputSchema);
+                    let schema :string = padInitial+name+"\",\n\t"+dummyType.substring(1,dummyType.length-1)+"}";
+                    let writeLoc = schemaLocation+"Responses/"+name+".json";
+                    fs.writeFileSync(writeLoc, schema);
+                    resSchemaCount++;
+                }
+                break;
+            case "Event":
+                // code...
+                let dummyType = '{"type": '+JSON.stringify(curInter.schema)+'}';
+                let schema :string = padInitial+name+"\",\n\t"+dummyType.substring(1,dummyType.length-1)+"}";
+                let writeLoc = schemaLocation+"Responses/"+name+".json";
+                fs.writeFileSync(writeLoc, schema);
+                resSchemaCount++;
+                break;
+            default:
+                // code...
+                break;
         }
-
-        try{
-            outputData = curInter.outputData;
-           let outString:string =  JSON.stringify(outputData);
-
-           //substring is to avoid the brackets at the ends
-            let schema :string =padInitial+name+"\",\n\t"+outString.substring(1,outString.length-1)+"}";
-            let writeLoc :string = schemaLocation+"Responses/"+name+".json";
-            
-            fs.writeFileSync(writeLoc,schema);
-            resSchemaCount++;
-        }catch(Error){
-            //not a problem, maybe it doesnt have output
-            console.log('catching second output error....')
-        }
-        
+        console.log('...................................................');
     }
     console.log(reqSchemaCount +" request schemas and "+ resSchemaCount+" response schemas have been created")
 }
-/*                    {
-                        "$ref": "/home/eko/Code/Thing-Description-Code-Generator/TDs/responseOverhead.json#/responseOverhead"
-                    },
-                    */
+/*                    
+{
+"$ref": "/home/eko/Code/Thing-Description-Code-Generator/TDs/responseOverhead.json#/responseOverhead"
+},
+*/
