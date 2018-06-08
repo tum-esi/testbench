@@ -20,5 +20,5 @@ specify node-wot path in tsconfig:
 ## Starting the testbench:
 
 compile with: `tsc -p .` inside testbench folder.
-start testbench with: `node src/test-bench.js`
+start testbench with: `node dist/path-to-v2testbench.js-file`
 
