@@ -227,14 +227,12 @@ export class Tester {
 
                     //validating request against a schema, same as the action. Since the requests are written by the user there can be errors
                     //Pay attention that validateResponse is called because writing to a property is based on its outputData
-                    
-
-                    // let errors: Array<any> = SchemaValidator.validateResponse(propertyName, toSend, self.testConfig.SchemaLocation);
-                    // if (errors.length > 0) { //meaning that there is a validation error
-                    //     if (logMode) console.log("Created request is not valid for " + propertyName + "\nMessage is " + toSend + "\nError is " + errors);
-                    //     self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend, JSON.parse("\"nothing\""), 41, "Created message has bad format: " + JSON.stringify(errors));
-                    //     resolve(false);
-                    // }
+                    let errors: Array<any> = SchemaValidator.validateResponse(propertyName, toSend, self.testConfig.SchemaLocation);
+                    if (errors.length > 0) { //meaning that there is a validation error
+                        if (logMode) console.log("Created request is not valid for " + propertyName + "\nMessage is " + toSend + "\nError is " + errors);
+                        self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend, JSON.parse("\"nothing\""), 41, "Created message has bad format: " + JSON.stringify(errors));
+                        resolve(false);
+                    }
 
                     //setting the property, aka writing into it
                     if (logMode) console.log("Setting property " + propertyName + " with toSend = ", toSend)
@@ -244,10 +242,8 @@ export class Tester {
                             let data2: JSON = res2;
                             if (logMode) console.log("For the second one, gotten propery data is ", data2);
                             //validating the gotten value (this shouldnt be necessary since the first time was correct but it is here nonetheless)
-                            
 
-                            // let errorsProp2: Array<any> = SchemaValidator.validateResponse(propertyName, data2, self.testConfig.SchemaLocation)
-                            let errorsProp2 = []
+                            let errorsProp2: Array<any> = SchemaValidator.validateResponse(propertyName, data2, self.testConfig.SchemaLocation)
 
                             if (errorsProp2.length > 0) { //meaning that there is a validation error
                                 if (logMode) console.log("Received second response is not valid for  " + propertyName, errorsProp2);
