@@ -1,0 +1,76 @@
+{
+	"@context": ["https://w3c.github.io/wot/w3c-wot-td-context.jsonld"
+	],
+	"name": "mything",
+	"id": "urn:dev:wot:com:example:servient:myThing",
+	"base": "http://localhost:8081/mything",
+	"description": "This will be my Thing under Test",
+	"properties": {
+		"display": {
+			"label": "LEDdisplay",
+			"type": "string",
+			"const" : "morning,sleeping",
+			"observable" : true,
+			"writable" : true,
+			"forms": [{
+				"href" : "http://localhost:8081/mything/properties/display",
+				"mediaType": "application/json"
+			}]
+		},
+		"temp": {
+			"type": "number",
+			"observable" : true,
+			"writable" : false,
+			"forms": [{
+				"href" : "http://localhost:8081/mything/properties/temp",
+				"mediaType": "application/json"
+			}]
+		},
+		"counter": {
+			"observable" : true,
+        	"writable" : false,
+			"type": "number",
+			"const" : 22,
+			"forms": [{
+				"href" : "http://localhost:8081/mything/properties/counter",
+				"mediaType": "application/json"
+			}]
+		}
+	},
+	"actions": {
+		"setcounter": {
+			"label": "sets counter to desired number",
+			"description": "Resets the counter to specific value",
+			"input": {
+			  "type": "number"
+			},
+			"forms": [{
+					"href" : "http://localhost:8081/mything/actions/setcounter",
+					"mediaType": "application/json"
+				}],
+			"output": {"type": "string"}
+		},
+		"setdisplay" : {
+			"input": {
+			  "type": "string"
+			},
+			"forms": [{
+					"href" : "http://localhost:8081/mything/actions/setdisplay",
+					"mediaType": "application/json"
+				}],
+			"output": {"type": "number"}
+		}
+	},
+	"events": {
+		"onchange": {
+			"type": "object",
+			"properties": {
+				"temperature": { "type": "number" }
+			},
+			"forms": [{
+				"href" : "http://localhost:8081/mything/events/onchange",
+				"mediaType": "application/json"
+			}]
+		}
+	}
+}

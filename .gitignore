@@ -1,3 +1,6 @@
+# Compiled javascript
+dist/*
+
 # Logs
 logs
 *.log

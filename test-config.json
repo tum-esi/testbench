@@ -1,0 +1,11 @@
+{
+    "TBname": "test-bench2",
+    "ThingTdLocation" : "/home/jp39/Desktop/thesis/tb_update/",
+    "ThingTdName":"myTuT",
+    "SchemaLocation" : "Resources/SchemasSimpleString/",
+    "TestReportsLocation" : "ReportsSimpleString/",
+    "RequestsLocation" : "Resources/requests-simpleString.json",
+    "Repetitions" : 2
+}
+
+

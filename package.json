@@ -1,0 +1,11 @@
+{
+	"name": "testbench",
+	"version": "1.0.0",
+	"license": "MIT",
+	"dependencies": {
+		"jsonschema": "*",
+		"@types/node": "*",
+		"fs": "*",
+		"mkdirp": "*"
+	}
+}
