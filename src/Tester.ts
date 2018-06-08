@@ -37,11 +37,6 @@ export class Tester {
         this.testConfig = tC;
         this.tutTd = tutTd;
         this.tut = tut;
-        console.log('-----------------------------------------------');
-        console.log(tC);
-        console.log(tutTd);
-        console.log(tut);
-        console.log('***********************************************');
     }
 
     // Currently: Does basic initiations for the codeGenerator, testReport and generates the JSON Schemas from the TD
@@ -192,9 +187,12 @@ export class Tester {
 
                 let data: JSON = res;
                 if (logMode) console.log("Gotten propery data is ", data);
+                console.log('propertyname=', propertyName);
+                console.log('test-config SchemaLocation is ', self.testConfig.SchemaLocation);
+                console.log('response data = ', data)
                 console.log('----lalala-----')
                 //validating the property value with its Schemas
-                // let errorsProp: Array<any> = SchemaValidator.validateResponse(propertyName, data, self.testConfig.SchemaLocation)
+                let errorsProp: Array<any> = SchemaValidator.validateResponse(propertyName, data, self.testConfig.SchemaLocation)
                 
                 // console.log('----lalala-----')
                 // console.log(errorsProp)
@@ -310,8 +308,8 @@ export class Tester {
                     if (logMode) console.log("Error in testing property ", propName, ", check previous messages")
                     reject(curBool);
                 });
-
-            } else if (interaction.semanticType.indexOf("Action") > -1) { //testing an action
+            // } else if (interaction.semanticType.indexOf('Action') > -1) { //testing an action
+            } else if (interaction.pattern == 'Action') {
                 let actName: string = interaction.name;
                 if (logMode) console.log(" Testing Action ", actName);// the i alue is put just to be able to track the order
                 self.testAction(testCycle, actName, testScenario,interactionIndex, logMode).then((curBool) => {
@@ -320,7 +318,8 @@ export class Tester {
                     if (logMode) console.log("Error in testing action ", actName, ", check previous messages")
                     reject(curBool);
                 });
-            } else if (interaction.semanticType.indexOf("Event") > -1) { //testing an event
+            // } else if (interaction.semanticType.indexOf('Event') > -1) { //testing an event
+            } else if (interaction.pattern == 'Event') {    
                 let eveName: string = interaction.name;
                 if (logMode) console.log(" Testing Action ", actName);// the i alue is put just to be able to track the order
                 self.testAction(testCycle, actName, testScenario,interactionIndex, logMode).then((curBool) => {

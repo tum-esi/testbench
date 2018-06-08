@@ -18,7 +18,7 @@ export function findPort(td : ThingDescription) : number {
 	return parseInt(returnString);
 }
 
-export function generateSchemas(td:ThingDescription,schemaLocation:string) : void{
+export function generateSchemas(td:ThingDescription, schemaLocation:string) : void{
     console.log('in generateschema functoin')
     let padInitial:string = "{\n\t\"$schema\": \"http://json-schema.org/draft-04/schema#\",\n\t\"title\": \"";
     let tdInteractions:any= td.interaction;

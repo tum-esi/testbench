@@ -44,11 +44,11 @@ let tutTdString: string = fs.readFileSync(tutTdLocation + tutName + ".jsonld", "
 let convertedTD: string = convertTDtoNodeWotTD040(tutTdString);
 let tutTd: ThingDescription = TDParser.parseTDString(convertedTD);
 // let convTUT: ThingDescription = TDParser.parseTDString(convertedTD);
-console.log('---------------------------------------------------')
-console.log(tutTdString);
-console.log('---------------------------------------------------')
-console.log('---------------------------------------------------')
-console.log(convertedTD);
+// console.log('---------------------------------------------------')
+// console.log(tutTdString);
+// console.log('---------------------------------------------------')
+// console.log('---------------------------------------------------')
+// console.log(convertedTD);
 
 //creating the Test Bench as a servient. It will test the Thing as a client and interact with the tester as a Server
 let srv = new Servient();
@@ -63,9 +63,9 @@ srv.start().then(WoT=>{
     });
     // ask ege about input of this function:
     let TuTT = WoT.consume(convertedTD);
-    console.log('*************************************************');
-    console.log(TuTT);
-    console.log('*************************************************');
+    // console.log('*************************************************');
+    // console.log(TuTT);
+    // console.log('*************************************************');
     // console.log(JSON.stringify(TuTT));
 
     let tester: Tester = new Tester(testConfig, tutTd, TuTT);
