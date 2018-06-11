@@ -1,15 +1,23 @@
-import * as TD from '@node-wot/td-tools/src/thing-description';
-import * as TDParser from '@node-wot/td-tools/src/td-parser';
-import * as TdFunctions from './tdFunctions';
 import ThingDescription, { Interaction } from '@node-wot/td-tools/src/thing-description';
-import {findInteractionByName}  from "@node-wot/td-tools/src/td-helpers";
 import fs = require('fs');
+var jsf = require('json-schema-faker');
+
+/*
+QUESTIONS:
+
+Do we need requests-simpleString.json file with requests 
+or can we parse schema if there is one
+to use json faker and create request inside method. not beforehand
+
+do we need the values testscenario and interactionIndex elsewhere ? or can we discard them too ?
+
+*/
 
 export class CodeGenerator {
     private td: ThingDescription;
     private requests:any;
     
-    constructor(tdesc: ThingDescription, testConf:any) {
+    constructor(tdesc: ThingDescription, testConf: any) {
         this.td = tdesc;
         let requestsLoc:string = testConf.RequestsLocation;
         console.log(requestsLoc);
@@ -17,42 +25,18 @@ export class CodeGenerator {
         console.log('code generator init done')
     }
 
-    public createRequest(requestName:string, testScenario:number,interactionIndex:number):JSON{
-        let inter:Interaction ;
-        return this.requests[testScenario][interactionIndex].interactionValue;
-        /*
-		try {
-			inter = findInteractionByName(this.td, requestName);
-		} catch (error) {
-			logger.error("Interaction "+requestName+  " doesn't exist in this TD")
-			throw error;
-		}
-        
-		let type:string = inter.semanticTypes[0];
-        if(type == "Property"){
-            if (inter.writable){
-				return this.requests[requestName][testScenario];
-            } else {
-                return null;
-            }
-        } else if (type == "Action"){
-            if (inter.inputData){
-				return this.requests[requestName][testScenario];
-            } else {
-                return null;
-            }
-        } else {
-            logger.error("only property and action interaction types are supported for testing")
-            return null;
-        }
-        */
-    }
+    public createRequest(requestName: string, loc: string, pat: string):JSON {
+        let scheme = JSON.parse(fs.readFileSync(loc+"Requests/"+requestName+pat+".json","utf8"));
+        console.log('PRINTING SCHEME:', scheme);
 
-    //check the type of the interaction
-        // if it is property 
-            // not writable do nothing
-            // if it is writable get the values
-        //if it is action
-            // if it has input, get and send the values
-            // if it doesnt have input, do nothing
+        var promise1 = jsf.resolve(scheme).then(function(sample) {
+                console.log('faker schema sample:', sample);
+                return sample;
+            });
+
+            Promise.all([promise1]).then(function(values) {
+              console.log(values);
+              return values;
+            });
+    }
 }

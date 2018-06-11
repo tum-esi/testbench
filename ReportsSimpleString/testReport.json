@@ -3,66 +3,59 @@
         [
             {
                 "name": "display",
-                "result": true,
-                "sent": "ko",
+                "result": false,
+                "sent": "nothing",
+                "received": {},
+                "errorId": 35,
+                "error": "Received response is not valid, [{\"property\":\"instance\",\"message\":\"is not of a type(s) string\",\"schema\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"display\",\"type\":\"string\"},\"instance\":{},\"name\":\"type\",\"argument\":[\"string\"],\"stack\":\"instance is not of a type(s) string\"}]"
+            },
+            {
+                "name": "display",
+                "result": false,
+                "sent": {},
+                "received": "nothing",
+                "errorId": 41,
+                "error": "Created message has bad format: [{\"property\":\"instance\",\"message\":\"is not of a type(s) string\",\"schema\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"display\",\"type\":\"string\"},\"instance\":{},\"name\":\"type\",\"argument\":[\"string\"],\"stack\":\"instance is not of a type(s) string\"}]"
+            },
+            {
+                "name": "display",
+                "result": false,
+                "sent": {},
                 "received": [
-                    "kog",
-                    "ko"
+                    {},
+                    {}
                 ],
-                "errorId": 201,
-                "error": ""
+                "errorId": 45,
+                "error": "Received second response is not valid, [{\"property\":\"instance\",\"message\":\"is not of a type(s) string\",\"schema\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"display\",\"type\":\"string\"},\"instance\":{},\"name\":\"type\",\"argument\":[\"string\"],\"stack\":\"instance is not of a type(s) string\"}]"
             }
         ],
         [
             {
                 "name": "display",
-                "result": true,
-                "sent": "kos",
-                "received": [
-                    "ko",
-                    "kos"
-                ],
-                "errorId": 201,
-                "error": ""
-            }
-        ],
-        [
+                "result": false,
+                "sent": "nothing",
+                "received": {},
+                "errorId": 35,
+                "error": "Received response is not valid, [{\"property\":\"instance\",\"message\":\"is not of a type(s) string\",\"schema\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"display\",\"type\":\"string\"},\"instance\":{},\"name\":\"type\",\"argument\":[\"string\"],\"stack\":\"instance is not of a type(s) string\"}]"
+            },
             {
                 "name": "display",
-                "result": true,
-                "sent": "kod",
-                "received": [
-                    "kos",
-                    "kod"
-                ],
-                "errorId": 201,
-                "error": ""
-            }
-        ],
-        [
+                "result": false,
+                "sent": {},
+                "received": "nothing",
+                "errorId": 41,
+                "error": "Created message has bad format: [{\"property\":\"instance\",\"message\":\"is not of a type(s) string\",\"schema\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"display\",\"type\":\"string\"},\"instance\":{},\"name\":\"type\",\"argument\":[\"string\"],\"stack\":\"instance is not of a type(s) string\"}]"
+            },
             {
                 "name": "display",
-                "result": true,
-                "sent": "kor",
+                "result": false,
+                "sent": {},
                 "received": [
-                    "kod",
-                    "kor"
+                    {},
+                    {}
                 ],
-                "errorId": 201,
-                "error": ""
-            }
-        ],
-        [
-            {
-                "name": "display",
-                "result": true,
-                "sent": "kog",
-                "received": [
-                    "kor",
-                    "kog"
-                ],
-                "errorId": 201,
-                "error": ""
+                "errorId": 45,
+                "error": "Received second response is not valid, [{\"property\":\"instance\",\"message\":\"is not of a type(s) string\",\"schema\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"display\",\"type\":\"string\"},\"instance\":{},\"name\":\"type\",\"argument\":[\"string\"],\"stack\":\"instance is not of a type(s) string\"}]"
             }
         ]
     ],
@@ -70,66 +63,37 @@
         [
             {
                 "name": "display",
-                "result": true,
-                "sent": "ko",
-                "received": [
-                    "kog",
-                    "ko"
-                ],
-                "errorId": 201,
-                "error": ""
+                "result": false,
+                "sent": "nothing",
+                "received": {},
+                "errorId": 35,
+                "error": "Received response is not valid, [{\"property\":\"instance\",\"message\":\"is not of a type(s) string\",\"schema\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"display\",\"type\":\"string\"},\"instance\":{},\"name\":\"type\",\"argument\":[\"string\"],\"stack\":\"instance is not of a type(s) string\"}]"
+            },
+            {
+                "name": "display",
+                "result": false,
+                "sent": {},
+                "received": "nothing",
+                "errorId": 41,
+                "error": "Created message has bad format: [{\"property\":\"instance\",\"message\":\"is not of a type(s) string\",\"schema\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"display\",\"type\":\"string\"},\"instance\":{},\"name\":\"type\",\"argument\":[\"string\"],\"stack\":\"instance is not of a type(s) string\"}]"
             }
         ],
         [
             {
                 "name": "display",
-                "result": true,
-                "sent": "kos",
-                "received": [
-                    "ko",
-                    "kos"
-                ],
-                "errorId": 201,
-                "error": ""
-            }
-        ],
-        [
+                "result": false,
+                "sent": "nothing",
+                "received": {},
+                "errorId": 35,
+                "error": "Received response is not valid, [{\"property\":\"instance\",\"message\":\"is not of a type(s) string\",\"schema\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"display\",\"type\":\"string\"},\"instance\":{},\"name\":\"type\",\"argument\":[\"string\"],\"stack\":\"instance is not of a type(s) string\"}]"
+            },
             {
                 "name": "display",
-                "result": true,
-                "sent": "kod",
-                "received": [
-                    "kos",
-                    "kod"
-                ],
-                "errorId": 201,
-                "error": ""
-            }
-        ],
-        [
-            {
-                "name": "display",
-                "result": true,
-                "sent": "kor",
-                "received": [
-                    "kod",
-                    "kor"
-                ],
-                "errorId": 201,
-                "error": ""
-            }
-        ],
-        [
-            {
-                "name": "display",
-                "result": true,
-                "sent": "kog",
-                "received": [
-                    "kor",
-                    "kog"
-                ],
-                "errorId": 201,
-                "error": ""
+                "result": false,
+                "sent": {},
+                "received": "nothing",
+                "errorId": 41,
+                "error": "Created message has bad format: [{\"property\":\"instance\",\"message\":\"is not of a type(s) string\",\"schema\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"display\",\"type\":\"string\"},\"instance\":{},\"name\":\"type\",\"argument\":[\"string\"],\"stack\":\"instance is not of a type(s) string\"}]"
             }
         ]
     ]

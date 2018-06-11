@@ -51,19 +51,19 @@ export function generateSchemas(td:ThingDescription, schemaLocation:string) : vo
                     // request schema
                     let dummyType = JSON.stringify(curInter.schema);
                     let schema :string = padInitial+name+"\",\n\t"+dummyType.substring(1,dummyType.length-1)+"}";
-                    let writeLoc :string = schemaLocation+"Requests/"+name+".json";
+                    let writeLoc :string = schemaLocation+"Requests/"+name+"Property.json";
                     fs.writeFileSync(writeLoc, schema);
                     reqSchemaCount ++;
 
                     // response schema:
-                    writeLoc = schemaLocation+"Responses/"+name+".json";
+                    writeLoc = schemaLocation+"Responses/"+name+"Property.json";
                     fs.writeFileSync(writeLoc, schema);
                     resSchemaCount++;
                 } else {
                     // response schema:
                     let dummyType = JSON.stringify(curInter.schema);
                     let schema :string = padInitial+name+"\",\n\t"+dummyType.substring(1,dummyType.length-1)+"}";
-                    let writeLoc = schemaLocation+"Responses/"+name+".json";
+                    let writeLoc = schemaLocation+"Responses/"+name+"Property.json";
                     fs.writeFileSync(writeLoc, schema);
                     resSchemaCount++;
                 }
@@ -76,14 +76,14 @@ export function generateSchemas(td:ThingDescription, schemaLocation:string) : vo
                 if ("inputSchema" in curInter) {
                     let dummyType = JSON.stringify(curInter.inputSchema);
                     let schema :string = padInitial+name+"\",\n\t"+dummyType.substring(1,dummyType.length-1)+"}";
-                    let writeLoc :string = schemaLocation+"Requests/"+name+".json";
+                    let writeLoc :string = schemaLocation+"Requests/"+name+"Action.json";
                     fs.writeFileSync(writeLoc, schema);
                     reqSchemaCount++;
                 }
                 if ("outputSchema" in curInter) {
                     let dummyType = JSON.stringify(curInter.outputSchema);
                     let schema :string = padInitial+name+"\",\n\t"+dummyType.substring(1,dummyType.length-1)+"}";
-                    let writeLoc = schemaLocation+"Responses/"+name+".json";
+                    let writeLoc = schemaLocation+"Responses/"+name+"Action.json";
                     fs.writeFileSync(writeLoc, schema);
                     resSchemaCount++;
                 }
@@ -92,7 +92,7 @@ export function generateSchemas(td:ThingDescription, schemaLocation:string) : vo
                 // code...
                 let dummyType = '{"type": '+JSON.stringify(curInter.schema)+'}';
                 let schema :string = padInitial+name+"\",\n\t"+dummyType.substring(1,dummyType.length-1)+"}";
-                let writeLoc = schemaLocation+"Responses/"+name+".json";
+                let writeLoc = schemaLocation+"Responses/"+name+"Event.json";
                 fs.writeFileSync(writeLoc, schema);
                 resSchemaCount++;
                 break;

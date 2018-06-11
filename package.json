@@ -6,6 +6,7 @@
 		"jsonschema": "*",
 		"@types/node": "*",
 		"xmlhttprequest": "*",
+		"json-schema-faker": "0.5.0-rc15",
 		"mkdirp": "*"
 	}
 }

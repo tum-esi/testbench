@@ -11,13 +11,13 @@ After the test a test report can be generated and analyzed to get more meaning o
 
 import fs = require('fs');
 // import _ from 'wot-typescript-definitions';// global W3C WoT Scripting API definitions
-import Servient from '@node-wot/core/src/servient';
-import HttpClientFactory from "@node-wot/binding-http/src/http-client-factory";
-import HttpServer from '@node-wot/binding-http/src/http-server';
-import ThingDescription from '@node-wot/td-tools/src/thing-description';
-import * as TD from '@node-wot/td-tools/src/thing-description';
-import * as TDParser from '@node-wot/td-tools/src/td-parser';
-import * as tdHelpers from '@node-wot/td-tools/src/td-helpers'
+import Servient from '@node-wot/core';
+import HttpClientFactory from "@node-wot/binding-http";
+import HttpServer from '@node-wot/binding-http';
+import ThingDescription from '@node-wot/td-tools';
+import * as TD from '@node-wot/td-tools';
+import * as TDParser from '@node-wot/td-tools';
+import * as tdHelpers from '@node-wot/td-tools'
 import * as TdFunctions from './tdFunctions'
 import { CodeGenerator } from './CodeGenerator'
 import { TestReport } from './TestReport'
@@ -89,7 +89,7 @@ export class Tester {
             let answer: JSON;
             //generating the message to send 
             try {
-                toSend = self.codeGen.createRequest(actionName, testScenario,interactionIndex);
+                toSend = self.codeGen.createRequest(actionName, self.testConfig.SchemaLocation, "Action");
             } catch (Error) {
                 // if (logMode) logger.error("Cannot create message for " + actionName + ", look at the previous message to identify the problem");
                 if (logMode) console.log("Cannot create message for " + actionName + ", look at the previous message to identify the problem");
@@ -99,7 +99,7 @@ export class Tester {
             //validating request against a schema. Validator returns an array that describes the error. This array is empty when there is no error
             //a first thinking would say that it shouldnt be necessary but since the requests are user written, there can be errors there as well.
             if (toSend != null) {
-                let errors: Array<any> = SchemaValidator.validateRequest(actionName, toSend, self.testConfig.SchemaLocation);
+                let errors: Array<any> = SchemaValidator.validateRequest(actionName, toSend, self.testConfig.SchemaLocation, "Action");
                 if (errors.length > 0) { //meaning that there is a validation error
                     // if (logMode) logger.error("Created request is not valid for " + actionName + "\nMessage is " + toSend + "\nError is " + errors);
                     if (logMode) console.log("Created request is not valid for " + actionName + "\nMessage is " + toSend + "\nError is " + errors);
@@ -128,7 +128,7 @@ export class Tester {
                             resolve(false);
                         }
                         //validating the response against its schema, same as before
-                        let errorsRes: Array<any> = SchemaValidator.validateResponse(actionName, answer, self.testConfig.SchemaLocation);
+                        let errorsRes: Array<any> = SchemaValidator.validateResponse(actionName, answer, self.testConfig.SchemaLocation, 'Action');
                         if (errorsRes.length > 0) { //meaning that there is a validation error
                             // if (logMode) logger.error("Received response is not valid for  " + actionName);
                             if (logMode) console.log("Received response is not valid for  " + actionName);
@@ -189,16 +189,14 @@ export class Tester {
                 if (logMode) console.log("Gotten propery data is ", data);
                 console.log('propertyname=', propertyName);
                 console.log('test-config SchemaLocation is ', self.testConfig.SchemaLocation);
-                console.log('response data = ', data)
+                console.log('response data = ', data);
                 console.log('----lalala-----')
                 //validating the property value with its Schemas
-                let errorsProp: Array<any> = SchemaValidator.validateResponse(propertyName, data, self.testConfig.SchemaLocation)
+                let errorsProp: Array<any> = SchemaValidator.validateResponse(propertyName, data, self.testConfig.SchemaLocation, "Property")
                 
                 console.log('----lalala-----');
                 console.log(errorsProp);
 
-
-                console.log(errorsProp)
                 if (errorsProp.length > 0) { //meaning that there is a validation error
                     if (logMode) console.log("Received response is not valid for  " + propertyName, errorsProp);
                     self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""), data, 35, "Received response is not valid, " + JSON.stringify(errorsProp));
@@ -217,7 +215,11 @@ export class Tester {
                     //generating the message to send 
                     try {
                         console.log('-------**********_____________---------');
-                        toSend = self.codeGen.createRequest(propertyName, testScenario,interactionIndex);
+                        console.log('propertyname=', propertyName);
+                        console.log('Testing Scenariooo: ', testScenario);
+                        console.log('INTERACTIONindex = ', interactionIndex);
+                        console.log('location of request schema:',self.testConfig.SchemaLocation)
+                        toSend = self.codeGen.createRequest(propertyName, self.testConfig.SchemaLocation, "Property");
                         console.log('Value to Send : ', toSend);
                     } catch (Error) {
                         if (logMode) console.log("Cannot create message for " + propertyName + ", look at the previous message to identify the problem");
@@ -227,7 +229,7 @@ export class Tester {
 
                     //validating request against a schema, same as the action. Since the requests are written by the user there can be errors
                     //Pay attention that validateResponse is called because writing to a property is based on its outputData
-                    let errors: Array<any> = SchemaValidator.validateResponse(propertyName, toSend, self.testConfig.SchemaLocation);
+                    let errors: Array<any> = SchemaValidator.validateResponse(propertyName, toSend, self.testConfig.SchemaLocation, "Property");
                     if (errors.length > 0) { //meaning that there is a validation error
                         if (logMode) console.log("Created request is not valid for " + propertyName + "\nMessage is " + toSend + "\nError is " + errors);
                         self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend, JSON.parse("\"nothing\""), 41, "Created message has bad format: " + JSON.stringify(errors));
@@ -243,7 +245,7 @@ export class Tester {
                             if (logMode) console.log("For the second one, gotten propery data is ", data2);
                             //validating the gotten value (this shouldnt be necessary since the first time was correct but it is here nonetheless)
 
-                            let errorsProp2: Array<any> = SchemaValidator.validateResponse(propertyName, data2, self.testConfig.SchemaLocation)
+                            let errorsProp2: Array<any> = SchemaValidator.validateResponse(propertyName, data2, self.testConfig.SchemaLocation, "Property")
 
                             if (errorsProp2.length > 0) { //meaning that there is a validation error
                                 if (logMode) console.log("Received second response is not valid for  " + propertyName, errorsProp2);

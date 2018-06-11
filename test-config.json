@@ -1,6 +1,6 @@
 {
     "TBname": "test-bench2",
-    "ThingTdLocation" : "/home/jp39/Desktop/thesis/tb_update/",
+    "ThingTdLocation" : "/home/jp39/Desktop/master_thesis/testbench/",
     "ThingTdName":"myTuT",
     "SchemaLocation" : "Resources/SchemasSimpleString/",
     "TestReportsLocation" : "ReportsSimpleString/",

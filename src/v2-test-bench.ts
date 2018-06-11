@@ -2,11 +2,11 @@
 // insert node-wot location to compilerOptions path
 
 import _ from '@node-wot/core/node_modules/wot-typescript-definitions';
-import Servient from '@node-wot/core/src/servient';
-import HttpClientFactory from "@node-wot/binding-http/src/http-client-factory";
-import HttpServer from '@node-wot/binding-http/src/http-server';
-import ThingDescription from '@node-wot/td-tools/src/thing-description';
-import * as TDParser from '@node-wot/td-tools/src/td-parser';
+import {Servient} from '@node-wot/core';
+import {HttpClientFactory} from "@node-wot/binding-http";
+import {HttpServer} from '@node-wot/binding-http';
+import {ThingDescription} from '@node-wot/td-tools';
+import * as TDParser from '@node-wot/td-tools';
 import * as TdFunctions from './tdFunctions';
 import fs = require('fs');
 // import { CodeGenerator } from './CodeGenerator'
