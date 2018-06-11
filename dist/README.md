@@ -1,1 +1,1 @@
-Javascript files appear inside this folder after compiling typescript files using tsc.
+## here are all compiled javascript files

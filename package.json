@@ -5,7 +5,7 @@
 	"dependencies": {
 		"jsonschema": "*",
 		"@types/node": "*",
-		"fs": "*",
+		"xmlhttprequest": "*",
 		"mkdirp": "*"
 	}
 }

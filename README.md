@@ -1,21 +1,44 @@
+## system Setup Ubuntu 18.04 LTS:
+
+install git:
+`sudo apt install git`
+
+install node:
+`sudo apt install curl`
+`curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -`
+`sudo apt-get install nodejs`
+
+`node --version`: v10.4.0
+
+ìnstall npm:
+`sudo apt install npm`
+
+`npm -v`: 6.1.0
+
+install typescript:
+`npm install -g typescript@2.8.3`
+
+`tsc -v`: Version 2.8.3
+
+## Download testbench from github using git clone
+
+switch into testbench folder and execute:
+`sudo npm install --global`
+
 ## Prerequisites:
 - download node-wot
-- follow install instructions in readme
+- follow install instructions in README.md
 - make sure to run the optional `sudo npm run link`
 
 ## Dependencies & Configurations:
 
-switch into testbench folder and execute:
-`npm install`
+- specify node-wot path in tsconfig:
+- set "paths": to `{ "@node-wot/*": ["path-to-node_modules/@node-wot/*"] }`
 
-edit test-config.json:
-
-- specify TuT in test-config.json by setting ThingTdLocation to location of TuT and ThingTdName to TuT name
-
-specify node-wot path in tsconfig:
-
-- set "baseUrl": "src"
-    "paths": { "@node-wot/*": ["/usr/local/lib/node_modules/@node-wot/*"] } // path to global @node-wot location
+example of paths:
+`"paths": {
+        "@node-wot/*": ["/usr/lib/node_modules/@node-wot/*"]
+    } `
 
 ## Starting the testbench:
 
@@ -23,8 +46,8 @@ compile with: `tsc -p .` inside testbench folder.
 start testbench with: `node dist/path-to-v2-test-bench.js-file`
 
 
-## Additional Information:
+## personal notes:
+remember commands:
 
-- testing computer:
-	`tsc --version`: Version 2.8.3
-	`node --version`: v10.0.0
+1. `tsc --init`
+2. `npm init`
