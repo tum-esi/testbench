@@ -52,3 +52,5 @@ jsf.resolve(schema3).then(function (sample) {
     console.log('mysample:', sample);
     // "[object Object]"
 });
+var sync_sample = jsf(schema3);
+console.log('here is the sync sample :) ', sync_sample);

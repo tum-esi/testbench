@@ -184,7 +184,7 @@ export class Tester {
             }
             //getting the property value
             let curPropertyData: any = self.tut.readProperty(propertyName).then((res: any) => {
-
+                console.log('printing <REQUESTED data from reAD PROPERTY', res)
                 let data: JSON = res;
                 if (logMode) console.log("Gotten propery data is ", data);
                 console.log('propertyname=', propertyName);
@@ -192,7 +192,7 @@ export class Tester {
                 console.log('response data = ', data);
                 console.log('----lalala-----')
                 //validating the property value with its Schemas
-                let errorsProp: Array<any> = SchemaValidator.validateResponse(propertyName, data, self.testConfig.SchemaLocation, "Property")
+                let errorsProp: Array<any> = SchemaValidator.validateResponse(propertyName, data, self.testConfig.SchemaLocation, "Property");
                 
                 console.log('----lalala-----');
                 console.log(errorsProp);
@@ -220,7 +220,7 @@ export class Tester {
                         console.log('INTERACTIONindex = ', interactionIndex);
                         console.log('location of request schema:',self.testConfig.SchemaLocation)
                         toSend = self.codeGen.createRequest(propertyName, self.testConfig.SchemaLocation, "Property");
-                        console.log('Value to Send : ', toSend);
+                        console.log('VALUE to SEND : ', toSend);
                     } catch (Error) {
                         if (logMode) console.log("Cannot create message for " + propertyName + ", look at the previous message to identify the problem");
                         self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend, JSON.parse("\"nothing\""), 40, "Cannot create message: " + Error);
@@ -342,15 +342,20 @@ export class Tester {
     */
     public testScenario(testCycle: number, testScenario: number, logMode: boolean): Promise<any> {
         let interactionsLength: number = this.tutTd.interaction.length; //how many interactions we have to test
-        let returnBool: boolean = true; // the return value that indicates false even if only on interaction is tested to prove false
-        /*for (var i = 0; i < interactionsLength; i++) {
+        let interactionList: Array<string> = [];
+        console.log('output INTEEACION LENGTH-----', interactionsLength)
+        // console.log(this.tutTd.interaction);
+        for (var i = 0; i < interactionsLength; i++) {
             let curInter: TD.Interaction = this.tutTd.interaction[i];
-            //iterating through the list of interactions in the order that they are listed in the TD
-
+            // iterating through the list of interactions in the order that they are listed in the TD
+            interactionList.push(curInter.name);
         }
-        */
-        //constructing the list of interactions for this scenario
-        let interactionList: Array<string> = this.buildInteractionList(testScenario)
+        
+        // constructing the list of interactions for this scenario
+        // let interactionList: Array<string> = this.buildInteractionList(testScenario)
+
+        console.log('PRINTING INTERACTION LIST:', interactionList);
+
         var self = this;
         return new Promise(function (resolve, reject) {
             let promise: Promise<any> = Promise.resolve();
@@ -454,16 +459,16 @@ export class Tester {
         return maxSize;
     }
 
-    private buildInteractionList(scenario: number): Array<string> {
-        let reqLoc: string = this.testConfig.RequestsLocation;
-        let requests: any = JSON.parse(fs.readFileSync(reqLoc, "utf8")); //fetching the requests
+    // private buildInteractionList(scenario: number): Array<string> {
+    //     let reqLoc: string = this.testConfig.RequestsLocation;
+    //     let requests: any = JSON.parse(fs.readFileSync(reqLoc, "utf8")); //fetching the requests
 
-        let interactionList: Array<string> = [];
-        requests[scenario].forEach((curScenario: any) => {
-            interactionList.push(curScenario.interactionName);
-        });
-        //console.log("this scenarios interactions are", interactionList); 
-        return interactionList;
-    }
+    //     let interactionList: Array<string> = [];
+    //     requests[scenario].forEach((curScenario: any) => {
+    //         interactionList.push(curScenario.interactionName);
+    //     });
+    //     //console.log("this scenarios interactions are", interactionList); 
+    //     return interactionList;
+    // }
 
 }

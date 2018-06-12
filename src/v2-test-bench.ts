@@ -110,8 +110,6 @@ srv.start().then(WoT=>{
     // testing a thing action handler, input boolean for logMode:
     // if input true, logMode is on
     TestBenchT.setActionHandler("testThing", function(input) {
-        console.log(input);
-        console.log(testConfig.Repetitions);
         return new Promise((resolve, reject) => {
             tester.testThing(testConfig.Repetitions, input).then(testReport => {
                 testReport.printResults();

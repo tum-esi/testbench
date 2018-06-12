@@ -5,7 +5,7 @@
     "SchemaLocation" : "Resources/SchemasSimpleString/",
     "TestReportsLocation" : "ReportsSimpleString/",
     "RequestsLocation" : "Resources/requests-simpleString.json",
-    "Repetitions" : 2
+    "Repetitions" : 1
 }
 
 

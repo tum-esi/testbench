@@ -28,15 +28,6 @@ export class CodeGenerator {
     public createRequest(requestName: string, loc: string, pat: string):JSON {
         let scheme = JSON.parse(fs.readFileSync(loc+"Requests/"+requestName+pat+".json","utf8"));
         console.log('PRINTING SCHEME:', scheme);
-
-        var promise1 = jsf.resolve(scheme).then(function(sample) {
-                console.log('faker schema sample:', sample);
-                return sample;
-            });
-
-            Promise.all([promise1]).then(function(values) {
-              console.log(values);
-              return values;
-            });
+        return jsf(scheme);
     }
 }
