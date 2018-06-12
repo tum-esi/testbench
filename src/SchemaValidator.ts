@@ -13,8 +13,7 @@ export function validateRequest(requestName: string, request: JSON, schemaLoc: s
 
 export function validateResponse(responseName: string, response: JSON, schemaLoc: string, styp: string) : Array<any> {
     let resSchema : any = fs.readFileSync(schemaLoc+"Responses/"+responseName+styp+".json","utf8");
-    console.log('1. propertyName:  ,2.PropertyData:  , 3.Propertylocation', responseName, response, resSchema);
-
+    // console.log('1. propertyName:  ,2.PropertyData:  , 3.Propertylocation', responseName, response, resSchema);
     return v.validate(response, JSON.parse(resSchema)).errors;
 }
 

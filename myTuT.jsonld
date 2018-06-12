@@ -28,7 +28,7 @@
 		},
 		"counter": {
 			"observable" : true,
-        	"writable" : false,
+        	"writable" : true,
 			"type": "number",
 			"const" : 22,
 			"forms": [{
@@ -56,6 +56,14 @@
 			},
 			"forms": [{
 					"href" : "http://localhost:8081/mything/actions/setdisplay",
+					"mediaType": "application/json"
+				}],
+			"output": {"type": "number"}
+		},
+		"gettemp": {
+			"label": "get temp value",
+			"forms": [{
+					"href" : "http://localhost:8081/mything/actions/gettemp",
 					"mediaType": "application/json"
 				}],
 			"output": {"type": "number"}

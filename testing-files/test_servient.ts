@@ -29,7 +29,7 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
         schema : '{ "type": "number"}',
         value : 2,
         observable : true,
-        writable : false
+        writable : true
     });
     thing.addProperty({
         name : "temp",
@@ -41,6 +41,10 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
     thing.addAction({
         name: "setcounter",
         inputSchema: '{ "type": "number" }'
+    });
+    thing.addAction({
+        name: "gettemp",
+        outputSchema: '{ "type": "number" }'
     });
     thing.addEvent({
         name: "onchange",
@@ -56,9 +60,9 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
 
     // input: number, output: string_
     thing.setActionHandler("setcounter", (input: number) => {
-        console.log("Setting counter using ACTION");
+        console.log("ACTION HANDLER FUNCTION for setcounter");
         console.log(input);
-        thing.writeProperty("temp", input);
+        thing.writeProperty("counter", input);
 
         // not necessarily required...
         return new Promise((resolve, reject) => {
@@ -66,19 +70,27 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
             resolve(examplePropertyValue);
           });
     });
+    thing.setActionHandler("gettemp", () => {
+        console.log("ACTION HANDLER FUNCTION for gettemp");
+        let count = thing.readProperty("temp");
+        // not necessarily required...
+        return new Promise((resolve, reject) => {
+            resolve(count);
+          });
+    });
     // input: string, output: string
     thing.setActionHandler("setdisplay", (input: string) => {
-        console.log("Setting DISPLAY TEXT using ACTION");
+        console.log("ACTION HANDLER FUNCTION for setdisplay");
         console.log(input);
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = function() { 
-            if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
-                console.log(xmlHttp.responseText);
-                let temperatur = xmlHttp.responseText;
-                thing.writeProperty("temp", parseFloat(temperatur));
-        }
-        xmlHttp.open("GET", "http://raspberrypi.local:5000/dispmsg/"+input+"-blue", true); // true for asynchronous 
-        xmlHttp.send(null);
+        // var xmlHttp = new XMLHttpRequest();
+        // xmlHttp.onreadystatechange = function() { 
+        //     if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+        //         console.log(xmlHttp.responseText);
+        //         let temperatur = xmlHttp.responseText;
+        //         thing.writeProperty("temp", parseFloat(temperatur));
+        // }
+        // xmlHttp.open("GET", "http://raspberrypi.local:5000/dispmsg/"+input+"-blue", true); // true for asynchronous 
+        // xmlHttp.send(null);
 
         // due to console logs... during compile
         return new Promise((resolve, reject) => {
@@ -90,9 +102,10 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
 
     // example of property read handler...
     thing.setPropertyReadHandler("counter", () => {
-        console.log("Handling read request for " + "counter");
+        console.log("HANDLER FUNCTION for " + "counter");
         return new Promise((resolve, reject) => {
             let examplePropertyValue = 13;
+            console.log('returning value:', examplePropertyValue);
             resolve(examplePropertyValue);
           });
       });

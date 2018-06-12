@@ -70,9 +70,13 @@ export class Tester {
         return true;
     }
 
-    // todo !!!
-    public testEvent() {
+    // todo thing of timers to cause event
+    public testEvent(testCycle: number, actionName: string, testScenario: number, interactionIndex:number,logMode: boolean): Promise<any> {
         // testing event function
+
+        return new Promise(function (resolve, reject) {
+            // implement event testing here:
+        });
     }
 
     /*
@@ -81,7 +85,6 @@ export class Tester {
     testScenario number is related to the json file that contains the requests to be sent. In this file, in the array of interaction names,
     you can put different json values that will be sent to the thing
     */
-    //SHOULD BE changed with a version that return a promise
     public testAction(testCycle: number, actionName: string, testScenario: number, interactionIndex:number,logMode: boolean): Promise<any> {
         var self = this;
         return new Promise(function (resolve, reject) {
@@ -90,8 +93,8 @@ export class Tester {
             //generating the message to send 
             try {
                 toSend = self.codeGen.createRequest(actionName, self.testConfig.SchemaLocation, "Action");
+                console.log('toSend for action:', actionName, ',value to send:', toSend);
             } catch (Error) {
-                // if (logMode) logger.error("Cannot create message for " + actionName + ", look at the previous message to identify the problem");
                 if (logMode) console.log("Cannot create message for " + actionName + ", look at the previous message to identify the problem");
                 self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, JSON.parse("\"nothing\""), 12, "Cannot create message: " + Error);
                 resolve(false);
@@ -101,7 +104,6 @@ export class Tester {
             if (toSend != null) {
                 let errors: Array<any> = SchemaValidator.validateRequest(actionName, toSend, self.testConfig.SchemaLocation, "Action");
                 if (errors.length > 0) { //meaning that there is a validation error
-                    // if (logMode) logger.error("Created request is not valid for " + actionName + "\nMessage is " + toSend + "\nError is " + errors);
                     if (logMode) console.log("Created request is not valid for " + actionName + "\nMessage is " + toSend + "\nError is " + errors);
                     self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, JSON.parse("\"nothing\""), 13, "Created message has bad format: " + JSON.stringify(errors));
                     resolve(false);
@@ -110,13 +112,11 @@ export class Tester {
 
             //invoking the action
             try {
-                // if (logMode) logger.info("Invoking action " + actionName + " with toSend = ", toSend)
                 if (logMode) console.log("Invoking action " + actionName + " with toSend = ", toSend)
                 self.tut.invokeAction(actionName, toSend).then((res: any) => {
                     let curAction: TD.Interaction = tdHelpers.findInteractionByName(self.tutTd, actionName);
-                    if (curAction.hasOwnProperty("outputData")) { //the action doesnt have to answer something back
+                    if (curAction.hasOwnProperty("outputSchema")) { //the action doesnt have to answer something back
                         answer = res;
-                        // if (logMode) logger.info("Answer is ", answer);
                         if (logMode) console.log("Answer is ", answer);
                         //the actual parsing is done at the validation method so this is just an error check. SHOULD be removed later on
                         try {
@@ -130,18 +130,16 @@ export class Tester {
                         //validating the response against its schema, same as before
                         let errorsRes: Array<any> = SchemaValidator.validateResponse(actionName, answer, self.testConfig.SchemaLocation, 'Action');
                         if (errorsRes.length > 0) { //meaning that there is a validation error
-                            // if (logMode) logger.error("Received response is not valid for  " + actionName);
+                            
                             if (logMode) console.log("Received response is not valid for  " + actionName);
                             self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 16, "Received response is not valid, " + JSON.stringify(errorsRes));
                             resolve(false);
                         }
                         //if nothing is wrong, putting a good result
-                        // if (logMode) logger.info(actionName + " is succesful");
                         if (logMode) console.log(actionName + " is succesful");
                         self.testReport.addMessage(testCycle, testScenario, actionName, true, toSend, answer, 100, "");
                         resolve(true);
                     } else { // in case there is no answer needed it is a succesful test as well
-                        // if (logMode) logger.info(actionName + " is succesful without return value");
                         if (logMode) console.log(actionName + " is succesful without return value");
                         self.testReport.addMessage(testCycle, testScenario, actionName, true, toSend, JSON.parse("\"nothing\""), 101, "no return value needed");
                         resolve(true);
@@ -149,7 +147,6 @@ export class Tester {
 
                 })
             } catch (Error) { // in case there is a problem with the invoke of the action
-                // if (logMode) logger.error("Response receiving for  " + actionName + "is unsuccesful, continuing with other scenarios");
                 if (logMode) console.log("Response receiving for  " + actionName + "is unsuccesful, continuing with other scenarios");
                 self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, JSON.parse("\"nothing\""), 10, "Problem invoking the action" + Error);
                 resolve(false);
@@ -291,19 +288,19 @@ export class Tester {
     private testInteraction(testCycle: number, testScenario: number, interactionIndex:number , interaction: TD.Interaction, logMode: boolean): Promise<any> {
         var self = this;
         return new Promise(function (resolve, reject) {
-            console.log(testCycle);
-            console.log(testScenario);
-            console.log(interactionIndex);
-            console.log(interaction);
-            console.log(logMode);
+            console.log(testCycle, 'testcycle');
+            console.log(testScenario, 'testscenario');
+            console.log(interactionIndex, 'interactionindex');
+            console.log(interaction, 'interaction');
+            console.log(logMode, 'logmode');
             console.log('------');
-            console.log(interaction.semanticType);
+            console.log(interaction.semanticType, 'semantictype');
             // if (interaction.semanticType.indexOf('Property') > -1) { //testing a property
             if (interaction.pattern == 'Property') {
                 console.log('------&&&&&&')
                 let propName: string = interaction.name;
                 if (logMode) console.log(" Testing Property ", propName); // the i alue is put just to be able to track the order
-                self.testProperty(testCycle, propName, testScenario,interactionIndex, logMode).then((curBool) => {
+                self.testProperty(testCycle, propName, testScenario, interactionIndex, logMode).then((curBool) => {
                     resolve(curBool);
                 }).catch((curBool) => {
                     if (logMode) console.log("Error in testing property ", propName, ", check previous messages")
@@ -313,7 +310,7 @@ export class Tester {
             } else if (interaction.pattern == 'Action') {
                 let actName: string = interaction.name;
                 if (logMode) console.log(" Testing Action ", actName);// the i alue is put just to be able to track the order
-                self.testAction(testCycle, actName, testScenario,interactionIndex, logMode).then((curBool) => {
+                self.testAction(testCycle, actName, testScenario, interactionIndex, logMode).then((curBool) => {
                     resolve(curBool);
                 }).catch((curBool) => {
                     if (logMode) console.log("Error in testing action ", actName, ", check previous messages")
@@ -322,15 +319,15 @@ export class Tester {
             // } else if (interaction.semanticType.indexOf('Event') > -1) { //testing an event
             } else if (interaction.pattern == 'Event') {    
                 let eveName: string = interaction.name;
-                if (logMode) console.log(" Testing Action ", actName);// the i alue is put just to be able to track the order
-                self.testAction(testCycle, actName, testScenario,interactionIndex, logMode).then((curBool) => {
+                if (logMode) console.log(" Testing Event ", eveName);// the i alue is put just to be able to track the order
+                self.testEvent(testCycle, eveName, testScenario, interactionIndex, logMode).then((curBool) => {
                     resolve(curBool);
                 }).catch((curBool) => {
-                    if (logMode) console.log("Error in testing action ", actName, ", check previous messages")
+                    if (logMode) console.log("Error in testing event ", eveName, ", check previous messages")
                     reject(curBool);
                 });
             } else {
-                if (logMode) console.log("Asked for something other than Action or Property")
+                if (logMode) console.log("Asked for something other than Action or Property or Event")
                 reject(false);
             }
         });

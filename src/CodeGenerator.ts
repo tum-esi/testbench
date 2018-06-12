@@ -26,8 +26,13 @@ export class CodeGenerator {
     }
 
     public createRequest(requestName: string, loc: string, pat: string):JSON {
-        let scheme = JSON.parse(fs.readFileSync(loc+"Requests/"+requestName+pat+".json","utf8"));
-        console.log('PRINTING SCHEME:', scheme);
-        return jsf(scheme);
+        try {
+            let scheme = JSON.parse(fs.readFileSync(loc+"Requests/"+requestName+pat+".json","utf8"));
+            console.log('PRINTING SCHEME:', scheme);
+            return jsf(scheme);
+        } catch(Error) {
+            console.log('----no request schema available----')
+            return null;
+        }
     }
 }
