@@ -4,12 +4,63 @@
             {
                 "name": "display",
                 "result": true,
-                "sent": "sed fugiat minim",
+                "sent": "consequat deserunt non ad",
                 "received": [
-                    "qui pariatur non ipsum in",
-                    "sed fugiat minim"
+                    "morning,sleeping",
+                    "consequat deserunt non ad"
                 ],
                 "errorId": 201,
+                "error": ""
+            },
+            {
+                "name": "temp",
+                "result": true,
+                "sent": "nothing",
+                "received": 0,
+                "errorId": 200,
+                "error": ""
+            },
+            {
+                "name": "counter",
+                "result": false,
+                "sent": -56972244.736073256,
+                "received": [
+                    13,
+                    13
+                ],
+                "errorId": 46,
+                "error": "The second get didn't match the write"
+            },
+            {
+                "name": "setcounter",
+                "result": true,
+                "sent": -63579432.01759424,
+                "received": "set value to 11",
+                "errorId": 100,
+                "error": ""
+            },
+            {
+                "name": "setdisplay",
+                "result": false,
+                "sent": "dolore ad nulla",
+                "received": "resolved your string",
+                "errorId": 16,
+                "error": "Received response is not valid, [{\"property\":\"instance\",\"message\":\"is not of a type(s) number\",\"schema\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"setdisplay\",\"type\":\"number\"},\"instance\":\"resolved your string\",\"name\":\"type\",\"argument\":[\"number\"],\"stack\":\"instance is not of a type(s) number\"}]"
+            },
+            {
+                "name": "setdisplay",
+                "result": true,
+                "sent": "dolore ad nulla",
+                "received": "resolved your string",
+                "errorId": 100,
+                "error": ""
+            },
+            {
+                "name": "gettemp",
+                "result": true,
+                "sent": null,
+                "received": 0,
+                "errorId": 100,
                 "error": ""
             }
         ],
@@ -17,12 +68,63 @@
             {
                 "name": "display",
                 "result": true,
-                "sent": "cupidatat officia ea",
+                "sent": "in ullamco",
                 "received": [
-                    "sed fugiat minim",
-                    "cupidatat officia ea"
+                    "consequat deserunt non ad",
+                    "in ullamco"
                 ],
                 "errorId": 201,
+                "error": ""
+            },
+            {
+                "name": "temp",
+                "result": true,
+                "sent": "nothing",
+                "received": 0,
+                "errorId": 200,
+                "error": ""
+            },
+            {
+                "name": "counter",
+                "result": false,
+                "sent": -50814005.08262939,
+                "received": [
+                    13,
+                    13
+                ],
+                "errorId": 46,
+                "error": "The second get didn't match the write"
+            },
+            {
+                "name": "setcounter",
+                "result": true,
+                "sent": 79762804.76155698,
+                "received": "set value to 11",
+                "errorId": 100,
+                "error": ""
+            },
+            {
+                "name": "setdisplay",
+                "result": false,
+                "sent": "eiusmod eu do amet commodo",
+                "received": "resolved your string",
+                "errorId": 16,
+                "error": "Received response is not valid, [{\"property\":\"instance\",\"message\":\"is not of a type(s) number\",\"schema\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"setdisplay\",\"type\":\"number\"},\"instance\":\"resolved your string\",\"name\":\"type\",\"argument\":[\"number\"],\"stack\":\"instance is not of a type(s) number\"}]"
+            },
+            {
+                "name": "setdisplay",
+                "result": true,
+                "sent": "eiusmod eu do amet commodo",
+                "received": "resolved your string",
+                "errorId": 100,
+                "error": ""
+            },
+            {
+                "name": "gettemp",
+                "result": true,
+                "sent": null,
+                "received": 0,
+                "errorId": 100,
                 "error": ""
             }
         ]

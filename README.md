@@ -40,10 +40,24 @@ example of paths:
         "@node-wot/*": ["/usr/lib/node_modules/@node-wot/*"]
     } `
 
-## Starting the testbench:
+## Running the testbench:
 
 compile with: `tsc -p .` inside testbench folder.
-start testbench with: `node dist/path-to-v2-test-bench.js-file`
+
+start test-servient to become TuT:
+
+`node dist/path-to-test_servient.js`
+
+start testbench with: 
+
+`node dist/path-to-v2-test-bench.js`
+
+start postman and perform request with properties:
+
+- POST
+- content-type: application/json
+- body: true 
+- url: http://your-address:8090/thing_test_bench/actions/testThing 
 
 
 ## personal notes:

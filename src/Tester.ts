@@ -76,6 +76,7 @@ export class Tester {
 
         return new Promise(function (resolve, reject) {
             // implement event testing here:
+            resolve(true);
         });
     }
 
