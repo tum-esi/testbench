@@ -38,6 +38,31 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
         observable : true,
         writable : false
     });
+    thing.addProperty({
+        name : "testobject",
+        schema : `{ 
+            "type": "object", 
+            "properties": { 
+                "brightness": {
+                    "type": "number", 
+                    "minimum": 0.0, 
+                    "maximum": 100.0
+                }, 
+                "status" : {
+                    "type": "string"
+                } 
+            } 
+        }`,
+        writable : true
+    });
+    thing.addProperty({
+        name : "testarray",
+        schema : `{ 
+            "type": "array", 
+            "items": { "type": "number" }
+        }`,
+        writable : true
+    });
     thing.addAction({
         name: "setcounter",
         inputSchema: '{ "type": "number" }'
@@ -109,11 +134,41 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
             resolve(examplePropertyValue);
           });
       });
-
-    thing.start().then(() => {
-          thing.register();
+    thing.setPropertyReadHandler("testobject", () => {
+        console.log("* HANDLER FUNCTION for testobject");
+        let testObj = thing.readProperty("testobject");
+        return testObj.then(function(value) {
+            console.log('* HHHHHHHHHHHHHHHHHHHHHHH')
+            if (testObj == null) {
+                console.log('* BBBBBBBBBBBBBBBBBBBBBBBBBBB')
+                return {"brightness": 100, "status": "sample object testing"}
+            }
+            else {
+                console.log('* QQQQQQQQQQQQQQQQQQQQQQ')
+                return {"brightness": 100, "status": "sample object"}
+            }
+        });
       });
+    // thing.setPropertyWriteHandler("testobject", (input: any) => {
+    //     console.log("* HANDLER FUNCTION for testobject");
+    //     console.log('* OBJECT RECEIVED:', input);
+    //     thing.writeProperty("testobject", input);
+    //     return new Promise((resolve, reject) => {
+    //         console.log('* returning written value:', input);
+    //         resolve(input);
+    //       });
+    //   });
 
+}).catch(err => { throw "Couldnt connect to one servient" });
+
+
+
+
+/////////////////////// CODE BACKUP //////////////////////////
+
+    // thing.start().then(() => {
+    //       thing.register();
+    //   });
     
     // replace this functionality be set handlers....
     // setInterval( async () => {
@@ -138,7 +193,6 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
 
     // }, 5000);
 
-}).catch(err => { throw "Couldnt connect to one servient" });
 
 // console.log(srv);
 /*

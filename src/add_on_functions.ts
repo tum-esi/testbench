@@ -74,34 +74,30 @@ export function convertTDtoNodeWotTD040(td: string): string {
 	      									// look for properties key
 	      									if (tdPlain[fieldNameRoot][prop].hasOwnProperty("properties")) {
 	      										for (var propName in tdPlain[fieldNameRoot][prop]["properties"]) {
-	      											console.log('* Printing Properties of object');
-	      											console.log('* properties name:', propName);
-	      											console.log(tdPlain[fieldNameRoot][prop]["properties"][propName])
 	      											propNames.push(propName);
-	      											propertiesValue[propName] = tdPlain[fieldNameRoot][prop]["properties"][propName]
+
+	      											let propScheme = {};
+	      											for (var propProps in tdPlain[fieldNameRoot][prop]["properties"][propName]) {
+	      												propScheme[propProps] = tdPlain[fieldNameRoot][prop]["properties"][propName][propProps];
+	      											}
+	      											propertiesValue[propName] = propScheme;
 	      										}
+	      										properties["schema"] = {"type": "object", "properties": propertiesValue, "required": propNames};
+	      										console.log(JSON.stringify(properties, null, ' '))
 	      									}
-	      									properties["schema"] = {"type": "object", "properties": propertiesValue, "required": propNames};
 	      								case "array":
 	      									// look for items key
+	      									if (tdPlain[fieldNameRoot][prop].hasOwnProperty("items")) {
+	      										properties["schema"] = {"type": "array", "items": tdPlain[fieldNameRoot][prop]["items"]}
+	      									}
+	      									console.log(JSON.stringify(properties, null, ' '))
 	      									break;
 	      							}
 	      							break;
-	      						// case "properties":
-	      						// 	for (var k in tdPlain[fieldNameRoot][prop][propKey]) {
-
-	      						// 		for (var insideK in tdPlain[fieldNameRoot][prop][propKey][k]) {
-	      						// 			if (tdPlain[fieldNameRoot][prop][propKey][k].hasOwnProperty(insideK)) {
-	      						// 				switch (insideK) {
-	      						// 					case "const":
-	      						// 						properties["value"] = tdPlain[fieldNameRoot][prop][propKey][k][insideK];
-	      						// 						break;
-	      						// 				}
-	      						// 			}
-	      						// 		}
-	      						// 	}
-	      						// 	break;
 	      						case "const":
+	      							properties[propKey] = tdPlain[fieldNameRoot][prop][propKey];
+	      							break;
+	      						case "value":
 	      							properties[propKey] = tdPlain[fieldNameRoot][prop][propKey];
 	      							break;
 	      						default:

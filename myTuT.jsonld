@@ -22,6 +22,17 @@
 				"mediaType": "application/json"
 			}]
 		},
+		"testarray": {
+			"type": "array",
+			"writable" : true,
+			"items": {
+				"type": "number"
+			},
+			"forms": [{
+				"href" : "http://localhost:8081/mything/properties/testarray",
+				"mediaType": "application/json"
+			}]
+		},
 		"display": {
 			"label": "LEDdisplay",
 			"type": "string",

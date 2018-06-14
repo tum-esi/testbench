@@ -12,8 +12,8 @@ After the test a test report can be generated and analyzed to get more meaning o
 import fs = require('fs');
 // import _ from 'wot-typescript-definitions';// global W3C WoT Scripting API definitions
 import Servient from '@node-wot/core';
-import HttpClientFactory from "@node-wot/binding-http";
-import HttpServer from '@node-wot/binding-http';
+// import HttpClientFactory from "@node-wot/binding-http";
+// import HttpServer from '@node-wot/binding-http';
 import ThingDescription from '@node-wot/td-tools';
 import * as TD from '@node-wot/td-tools';
 import * as TDParser from '@node-wot/td-tools';
@@ -191,9 +191,6 @@ export class Tester {
                 console.log('* ----lalala-----')
                 //validating the property value with its Schemas
                 let errorsProp: Array<any> = SchemaValidator.validateResponse(propertyName, data, self.testConfig.SchemaLocation, "Property");
-                
-                console.log('* ----lalala-----');
-                console.log(errorsProp);
 
                 if (errorsProp.length > 0) { //meaning that there is a validation error
                     if (logMode) console.log("* Received response is not valid for  " + propertyName, errorsProp);
