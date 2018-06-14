@@ -19,10 +19,10 @@ export function findPort(td : ThingDescription) : number {
 }
 
 export function generateSchemas(td:ThingDescription, schemaLocation:string) : void{
-    console.log('in generateschema functoin')
-    console.log('...................................................');
-    console.log('generate schemas from this thing description:', td);
-    console.log('...................................................');
+    console.log('* in generateschema functoin')
+    // console.log('...................................................');
+    // console.log('* generate schemas from this thing description:', td);
+    // console.log('* ...................................................');
     let padInitial:string = "{\n\t\"$schema\": \"http://json-schema.org/draft-04/schema#\",\n\t\"title\": \"";
     let tdInteractions:any= td.interaction;
     let reqSchemaCount : number = 0;
@@ -30,11 +30,11 @@ export function generateSchemas(td:ThingDescription, schemaLocation:string) : vo
     mkdirp(schemaLocation + "Requests");
     mkdirp(schemaLocation + "Responses");
 
-    console.log('interaction length:', tdInteractions.length );
+    console.log('* interaction length:', tdInteractions.length );
     // extract interactions
     for (var i = 0; i < tdInteractions.length; i++) {
 
-        console.log(tdInteractions[i]);
+        console.log("* ",tdInteractions[i]);
 
         let curInter : any  = tdInteractions[i];
         // let type :string = curInter.semanticTypes[0];
@@ -49,6 +49,27 @@ export function generateSchemas(td:ThingDescription, schemaLocation:string) : vo
                 // check for writable 
                 if (curInter.writable) {
                     // request schema
+
+                    // loop recursively into schema and add found detections to genSchema
+                    // while (curInter.schema) {
+
+                    // }
+
+
+                    // let dummyType = JSON.stringify(curInter.schema);
+                    // switch (JSON.parse(dummyType)['type']) {
+                    //     case "object":
+                    //         if (curInter.properties) {
+
+                    //         }
+                    //         break;
+                    //     case "array":
+
+                    //         break;
+                    //     default:
+
+                    //         break;
+                    // }
                     let dummyType = JSON.stringify(curInter.schema);
                     let schema :string = padInitial+name+"\",\n\t"+dummyType.substring(1,dummyType.length-1)+"}";
                     let writeLoc :string = schemaLocation+"Requests/"+name+"Property.json";
@@ -74,22 +95,22 @@ export function generateSchemas(td:ThingDescription, schemaLocation:string) : vo
             case "Action":
                 // check for input and output data , create requests based on this 
                 if ("inputSchema" in curInter) {
-                    let dummyType = JSON.stringify(curInter.inputSchema);
-                    let schema :string = padInitial+name+"\",\n\t"+dummyType.substring(1,dummyType.length-1)+"}";
+                    let dataSchema = JSON.stringify(curInter.inputSchema);
+                    let schema :string = padInitial+name+"\",\n\t"+dataSchema.substring(1,dataSchema.length-1)+"}";
                     let writeLoc :string = schemaLocation+"Requests/"+name+"Action.json";
                     fs.writeFileSync(writeLoc, schema);
                     reqSchemaCount++;
                 }
                 if ("outputSchema" in curInter) {
-                    let dummyType = JSON.stringify(curInter.outputSchema);
-                    let schema :string = padInitial+name+"\",\n\t"+dummyType.substring(1,dummyType.length-1)+"}";
+                    let dataSchema = JSON.stringify(curInter.outputSchema);
+                    let schema :string = padInitial+name+"\",\n\t"+dataSchema.substring(1,dataSchema.length-1)+"}";
                     let writeLoc = schemaLocation+"Responses/"+name+"Action.json";
                     fs.writeFileSync(writeLoc, schema);
                     resSchemaCount++;
                 }
                 break;
             case "Event":
-                // code...
+                // treated exactly like Property, cause same description:
                 let dummyType = '{"type": '+JSON.stringify(curInter.schema)+'}';
                 let schema :string = padInitial+name+"\",\n\t"+dummyType.substring(1,dummyType.length-1)+"}";
                 let writeLoc = schemaLocation+"Responses/"+name+"Event.json";
@@ -100,9 +121,9 @@ export function generateSchemas(td:ThingDescription, schemaLocation:string) : vo
                 // code...
                 break;
         }
-        console.log('...................................................');
+        console.log('* ...................................................');
     }
-    console.log(reqSchemaCount +" request schemas and "+ resSchemaCount+" response schemas have been created")
+    console.log("* ",reqSchemaCount +" request schemas and "+ resSchemaCount+" response schemas have been created")
 }
 /*                    
 {

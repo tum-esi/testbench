@@ -10,13 +10,13 @@ srv.addClientFactory(new HttpClientFactory());
 //You dont have to put both functionalities, if you only consume Things then you dont need a server or if you only expose a Thing you shouldnt need a client
 srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the community agreed on
     
-	console.log('started servient');
+	console.log('* started servient');
     let thing = WoT.produce({
         name: "mything",
     });
     console.log(thing.getThingDescription());
-    console.log('nanana')
-    console.log("Created thing " + thing.name);
+    console.log('* nanana')
+    console.log("* Created thing " + thing.name);
     thing.addProperty({
         name : "display",
         schema : '{ "type": "string"}',
@@ -60,8 +60,8 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
 
     // input: number, output: string_
     thing.setActionHandler("setcounter", (input: number) => {
-        console.log("ACTION HANDLER FUNCTION for setcounter");
-        console.log(input);
+        console.log("* ACTION HANDLER FUNCTION for setcounter");
+        console.log("* ",input);
         thing.writeProperty("counter", input);
 
         // not necessarily required...
@@ -71,7 +71,7 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
           });
     });
     thing.setActionHandler("gettemp", () => {
-        console.log("ACTION HANDLER FUNCTION for gettemp");
+        console.log("* ACTION HANDLER FUNCTION for gettemp");
         let count = thing.readProperty("temp");
         // not necessarily required...
         return new Promise((resolve, reject) => {
@@ -80,8 +80,8 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
     });
     // input: string, output: string
     thing.setActionHandler("setdisplay", (input: string) => {
-        console.log("ACTION HANDLER FUNCTION for setdisplay");
-        console.log(input);
+        console.log("* ACTION HANDLER FUNCTION for setdisplay");
+        console.log("* ",input);
         // var xmlHttp = new XMLHttpRequest();
         // xmlHttp.onreadystatechange = function() { 
         //     if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
@@ -102,10 +102,10 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
 
     // example of property read handler...
     thing.setPropertyReadHandler("counter", () => {
-        console.log("HANDLER FUNCTION for " + "counter");
+        console.log("* HANDLER FUNCTION for " + "counter");
         return new Promise((resolve, reject) => {
             let examplePropertyValue = 13;
-            console.log('returning value:', examplePropertyValue);
+            console.log('* returning value:', examplePropertyValue);
             resolve(examplePropertyValue);
           });
       });

@@ -52,11 +52,11 @@ let tutTd: ThingDescription = TDParser.parseTDString(convertedTD);
 
 //creating the Test Bench as a servient. It will test the Thing as a client and interact with the tester as a Server
 let srv = new Servient();
-console.log('Created Test Bench');
+console.log('*Created Test Bench');
 srv.addServer(new HttpServer(TdFunctions.findPort(tbTd))); //at the port specified in the TD
 srv.addClientFactory(new HttpClientFactory());
 srv.start().then(WoT=>{
-    console.log('TestBench servient started');
+    console.log('*TestBench servient started');
     
     let TestBenchT = WoT.produce({
         name: "thing_test_bench",
@@ -69,7 +69,7 @@ srv.start().then(WoT=>{
     // console.log(JSON.stringify(TuTT));
 
     let tester: Tester = new Tester(testConfig, tutTd, TuTT);
-    let check = tester.initiate();
+    // let check = tester.initiate();
 
     // initiate testbench:
     TestBenchT.addAction({
@@ -117,7 +117,7 @@ srv.start().then(WoT=>{
                 TestBenchT.writeProperty("testReport",testReport.getResults());
                 resolve(true);
             }).catch(() => {
-                console.log("Something went wrong");
+                console.log("*Something went wrong");
                 reject(false);
             });
         });
@@ -155,7 +155,7 @@ srv.start().then(WoT=>{
     });
 
     async function asyncCall(propname) {
-      console.log('calling');
+      console.log('*calling');
       var result = await TuTT.readProperty(propname);
       return result;
       // expected output: "resolved"

@@ -43,21 +43,21 @@ export class Tester {
     // End Goal: Fetching the thing under test
     // This can be called by using the Initiate action of the test bench
     public initiate():boolean {
-        console.log("Initiation has started")
+        console.log("* Initiation has started")
         //Generating JSON Schemas for input and output Data of each interaction. Go into the function to find explanations
         try {
-            console.log('trying')
+            console.log('* trying')
             TdFunctions.generateSchemas(this.tutTd, this.testConfig.SchemaLocation);
-            console.log('done with generate schema')
+            console.log('* done with generate schema')
         } catch (Error) {
             throw "Schema Generation Error" + Error
         }
 
         //initiliazing this class doesnt do much
         try {
-            console.log('trying code generation')
+            console.log('* trying code generation')
             this.codeGen = new CodeGenerator(this.tutTd, this.testConfig)
-            console.log('done with code generation :)')
+            console.log('* done with code generation :)')
         } catch (Error) {
             throw "CodeGenerator Initialization Error" + Error
         }
@@ -66,7 +66,7 @@ export class Tester {
         this.testReport = new TestReport();
         // this.testReport.addTestCycle();
         //this.testReport.addTestScenario();
-        console.log("Initialization finished")
+        console.log("* Initialization finished")
         return true;
     }
 
@@ -94,9 +94,9 @@ export class Tester {
             //generating the message to send 
             try {
                 toSend = self.codeGen.createRequest(actionName, self.testConfig.SchemaLocation, "Action");
-                console.log('toSend for action:', actionName, ',value to send:', toSend);
+                console.log('* toSend for action:', actionName, ',value to send:', toSend);
             } catch (Error) {
-                if (logMode) console.log("Cannot create message for " + actionName + ", look at the previous message to identify the problem");
+                if (logMode) console.log("* Cannot create message for " + actionName + ", look at the previous message to identify the problem");
                 self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, JSON.parse("\"nothing\""), 12, "Cannot create message: " + Error);
                 resolve(false);
             }
@@ -105,7 +105,7 @@ export class Tester {
             if (toSend != null) {
                 let errors: Array<any> = SchemaValidator.validateRequest(actionName, toSend, self.testConfig.SchemaLocation, "Action");
                 if (errors.length > 0) { //meaning that there is a validation error
-                    if (logMode) console.log("Created request is not valid for " + actionName + "\nMessage is " + toSend + "\nError is " + errors);
+                    if (logMode) console.log("* Created request is not valid for " + actionName + "\nMessage is " + toSend + "\nError is " + errors);
                     self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, JSON.parse("\"nothing\""), 13, "Created message has bad format: " + JSON.stringify(errors));
                     resolve(false);
                 }
@@ -113,18 +113,18 @@ export class Tester {
 
             //invoking the action
             try {
-                if (logMode) console.log("Invoking action " + actionName + " with toSend = ", toSend)
+                if (logMode) console.log("* Invoking action " + actionName + " with toSend = ", toSend)
                 self.tut.invokeAction(actionName, toSend).then((res: any) => {
                     let curAction: TD.Interaction = tdHelpers.findInteractionByName(self.tutTd, actionName);
                     if (curAction.hasOwnProperty("outputSchema")) { //the action doesnt have to answer something back
                         answer = res;
-                        if (logMode) console.log("Answer is ", answer);
+                        if (logMode) console.log("* Answer is ", answer);
                         //the actual parsing is done at the validation method so this is just an error check. SHOULD be removed later on
                         try {
                             let temp: JSON = answer;
                         } catch (error) {
                             // if (logMode) logger.error("Response is not in JSON format");
-                            if (logMode) console.log("Response is not in JSON format");
+                            if (logMode) console.log("* Response is not in JSON format");
                             self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 15, "Response is not in JSON format: " + error);
                             resolve(false);
                         }
@@ -132,23 +132,23 @@ export class Tester {
                         let errorsRes: Array<any> = SchemaValidator.validateResponse(actionName, answer, self.testConfig.SchemaLocation, 'Action');
                         if (errorsRes.length > 0) { //meaning that there is a validation error
                             
-                            if (logMode) console.log("Received response is not valid for  " + actionName);
+                            if (logMode) console.log("* Received response is not valid for  " + actionName);
                             self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 16, "Received response is not valid, " + JSON.stringify(errorsRes));
                             resolve(false);
                         }
                         //if nothing is wrong, putting a good result
-                        if (logMode) console.log(actionName + " is succesful");
+                        if (logMode) console.log(actionName + "*  is succesful");
                         self.testReport.addMessage(testCycle, testScenario, actionName, true, toSend, answer, 100, "");
                         resolve(true);
                     } else { // in case there is no answer needed it is a succesful test as well
-                        if (logMode) console.log(actionName + " is succesful without return value");
+                        if (logMode) console.log(actionName + "*  is succesful without return value");
                         self.testReport.addMessage(testCycle, testScenario, actionName, true, toSend, JSON.parse("\"nothing\""), 101, "no return value needed");
                         resolve(true);
                     }
 
                 })
             } catch (Error) { // in case there is a problem with the invoke of the action
-                if (logMode) console.log("Response receiving for  " + actionName + "is unsuccesful, continuing with other scenarios");
+                if (logMode) console.log("* Response receiving for  " + actionName + "is unsuccesful, continuing with other scenarios");
                 self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, JSON.parse("\"nothing\""), 10, "Problem invoking the action" + Error);
                 resolve(false);
             }
@@ -173,54 +173,54 @@ export class Tester {
                 let curProperty: TD.Interaction = tdHelpers.findInteractionByName(self.tutTd, propertyName);
                 isWritable = curProperty.writable;
 
-                console.log('checking if property is writable:, ', isWritable)
+                console.log('* checking if property is writable:, ', isWritable)
 
             } catch (error) {
-                if (logMode) console.log("The property " + propertyName + " doesn't exist in the TD");
+                if (logMode) console.log("* The property " + propertyName + " doesn't exist in the TD");
                 self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""), JSON.parse("\"nothing\""), 33, "The property doesn't exist in the TD");
                 resolve(false);
             }
             //getting the property value
             let curPropertyData: any = self.tut.readProperty(propertyName).then((res: any) => {
-                console.log('printing <REQUESTED data from reAD PROPERTY', res)
+                console.log('* printing <REQUESTED data from reAD PROPERTY', res)
                 let data: JSON = res;
-                if (logMode) console.log("Gotten propery data is ", data);
-                console.log('propertyname=', propertyName);
-                console.log('test-config SchemaLocation is ', self.testConfig.SchemaLocation);
-                console.log('response data = ', data);
-                console.log('----lalala-----')
+                if (logMode) console.log("*Gotten propery data is ", data);
+                console.log('* propertyname=', propertyName);
+                console.log('* test-config SchemaLocation is ', self.testConfig.SchemaLocation);
+                console.log('* response data = ', data);
+                console.log('* ----lalala-----')
                 //validating the property value with its Schemas
                 let errorsProp: Array<any> = SchemaValidator.validateResponse(propertyName, data, self.testConfig.SchemaLocation, "Property");
                 
-                console.log('----lalala-----');
+                console.log('* ----lalala-----');
                 console.log(errorsProp);
 
                 if (errorsProp.length > 0) { //meaning that there is a validation error
-                    if (logMode) console.log("Received response is not valid for  " + propertyName, errorsProp);
+                    if (logMode) console.log("* Received response is not valid for  " + propertyName, errorsProp);
                     self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""), data, 35, "Received response is not valid, " + JSON.stringify(errorsProp));
                     resolve(false);
                 } else if (!isWritable) {
                     // if it is not writable, we are done here! 
-                    if (logMode) console.log("Property test of " + propertyName + " is succesful")
+                    if (logMode) console.log("* Property test of " + propertyName + " is succesful")
                     self.testReport.addMessage(testCycle, testScenario, propertyName, true, JSON.parse("\"nothing\""), data, 200, "");
                     resolve(true);
                 }
                 if (isWritable) { //if we can write into the property, it means that we can test whether we can write and get back the same type
                     //the same value will be expected but a spceial error case will be written if it is not the same since maybe the value is changing very fast
-                    if (logMode) console.log("Testing the write functionality for ", propertyName);
+                    if (logMode) console.log("* Testing the write functionality for ", propertyName);
                     let toSend: JSON;
                     let answer: JSON;
                     //generating the message to send 
                     try {
-                        console.log('-------**********_____________---------');
-                        console.log('propertyname=', propertyName);
-                        console.log('Testing Scenariooo: ', testScenario);
-                        console.log('INTERACTIONindex = ', interactionIndex);
-                        console.log('location of request schema:',self.testConfig.SchemaLocation)
+                        console.log('* -------**********_____________---------');
+                        console.log('* propertyname=', propertyName);
+                        console.log('* Testing Scenariooo: ', testScenario);
+                        console.log('* INTERACTIONindex = ', interactionIndex);
+                        console.log('* location of request schema:',self.testConfig.SchemaLocation)
                         toSend = self.codeGen.createRequest(propertyName, self.testConfig.SchemaLocation, "Property");
-                        console.log('VALUE to SEND : ', toSend);
+                        console.log('* VALUE to SEND :', toSend);
                     } catch (Error) {
-                        if (logMode) console.log("Cannot create message for " + propertyName + ", look at the previous message to identify the problem");
+                        if (logMode) console.log("* Cannot create message for " + propertyName + ", look at the previous message to identify the problem");
                         self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend, JSON.parse("\"nothing\""), 40, "Cannot create message: " + Error);
                         resolve(false);
                     }
@@ -229,49 +229,49 @@ export class Tester {
                     //Pay attention that validateResponse is called because writing to a property is based on its outputData
                     let errors: Array<any> = SchemaValidator.validateResponse(propertyName, toSend, self.testConfig.SchemaLocation, "Property");
                     if (errors.length > 0) { //meaning that there is a validation error
-                        if (logMode) console.log("Created request is not valid for " + propertyName + "\nMessage is " + toSend + "\nError is " + errors);
+                        if (logMode) console.log("* Created request is not valid for " + propertyName + "\nMessage is " + toSend + "\nError is " + errors);
                         self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend, JSON.parse("\"nothing\""), 41, "Created message has bad format: " + JSON.stringify(errors));
                         resolve(false);
                     }
 
                     //setting the property, aka writing into it
-                    if (logMode) console.log("Setting property " + propertyName + " with toSend = ", toSend)
+                    if (logMode) console.log("* Setting property " + propertyName + " with toSend = ", toSend)
                     self.tut.writeProperty(propertyName, toSend).then(() => {
                         //now reading and hoping to get the same value
                         let curPropertyData2: any = self.tut.readProperty(propertyName).then((res2: any) => {
                             let data2: JSON = res2;
-                            if (logMode) console.log("For the second one, gotten propery data is ", data2);
+                            if (logMode) console.log("* For the second one, gotten propery data is ", data2);
                             //validating the gotten value (this shouldnt be necessary since the first time was correct but it is here nonetheless)
 
                             let errorsProp2: Array<any> = SchemaValidator.validateResponse(propertyName, data2, self.testConfig.SchemaLocation, "Property")
 
                             if (errorsProp2.length > 0) { //meaning that there is a validation error
-                                if (logMode) console.log("Received second response is not valid for  " + propertyName, errorsProp2);
+                                if (logMode) console.log("* Received second response is not valid for: " + propertyName, errorsProp2);
                                 //here for the received, two response values are put
                                 self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend, JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify(data2) + "]"), 45, "Received second response is not valid, " + JSON.stringify(errorsProp2));
                                 resolve(false);
                             } else { //if there is no validation error we can test if the value we've gotten is the same as the one we wrote
                                 if (JSON.stringify(data2) == JSON.stringify(toSend)) {
                                     // wohoo everything is fine
-                                    if (logMode) console.log("Property test of " + propertyName + " is succesful");
-                                    if (logMode) console.log("The value gotten after writing is the same for the property " + propertyName);
+                                    if (logMode) console.log("* Property test of " + propertyName + " is succesful");
+                                    if (logMode) console.log("* The value gotten after writing is the same for the property " + propertyName);
                                     self.testReport.addMessage(testCycle, testScenario, propertyName, true, toSend, JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify(data2) + "]"), 201, "");
                                     resolve(true);
                                 } else {
                                     //maybe the value changed between two requests...
-                                    if (logMode) console.log("Property test of " + propertyName + " is succesful BUT");
-                                    if (logMode) console.log("The second get didn't match the write")
+                                    if (logMode) console.log("* Property test of " + propertyName + " is succesful BUT");
+                                    if (logMode) console.log("* The second get didn't match the write")
                                     self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend, JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify(data2) + "]"), 46, "The second get didn't match the write");
                                     resolve(false);
                                 }
                             }
                         }).catch((error: any) => { //problem in the node-wot level
-                            if (logMode) console.log("Problem fetching property " + propertyName + "in the second get");
+                            if (logMode) console.log("* Problem fetching property " + propertyName + "in the second get");
                             self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""), JSON.parse("\"nothing\""), 31, "Couldnt fetch property in the second get" + error);
                             reject(false);
                         });
                     }).catch((error: any) => {
-                        if (logMode) console.log("Couldn't set the property " + propertyName);
+                        if (logMode) console.log("* Couldn't set the property " + propertyName);
                         self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend, JSON.parse("\"nothing\""), 32, "Problem setting property" + Error);
                         resolve(false);
                     });
@@ -279,7 +279,7 @@ export class Tester {
 
                 }
             }).catch((error: any) => { //problem in the node-wot level
-                if (logMode) console.log("Problem fetching property " + propertyName);
+                if (logMode) console.log("* Problem fetching property " + propertyName);
                 self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""), JSON.parse("\"nothing\""), 30, "Couldnt fetch property");
                 reject(false);
             });
@@ -289,46 +289,46 @@ export class Tester {
     private testInteraction(testCycle: number, testScenario: number, interactionIndex:number , interaction: TD.Interaction, logMode: boolean): Promise<any> {
         var self = this;
         return new Promise(function (resolve, reject) {
-            console.log(testCycle, 'testcycle');
-            console.log(testScenario, 'testscenario');
-            console.log(interactionIndex, 'interactionindex');
-            console.log(interaction, 'interaction');
-            console.log(logMode, 'logmode');
-            console.log('------');
-            console.log(interaction.semanticType, 'semantictype');
+            console.log("* ",testCycle, 'testcycle');
+            console.log("* ",testScenario, 'testscenario');
+            console.log("* ",interactionIndex, 'interactionindex');
+            console.log("* ",interaction, 'interaction');
+            console.log("* ",logMode, 'logmode');
+            console.log("* ",'------');
+            console.log("* ",interaction.semanticType, 'semantictype');
             // if (interaction.semanticType.indexOf('Property') > -1) { //testing a property
             if (interaction.pattern == 'Property') {
-                console.log('------&&&&&&')
+                console.log('* ------&&&&&&')
                 let propName: string = interaction.name;
-                if (logMode) console.log(" Testing Property ", propName); // the i alue is put just to be able to track the order
+                if (logMode) console.log("*  Testing Property:", propName); // the i alue is put just to be able to track the order
                 self.testProperty(testCycle, propName, testScenario, interactionIndex, logMode).then((curBool) => {
                     resolve(curBool);
                 }).catch((curBool) => {
-                    if (logMode) console.log("Error in testing property ", propName, ", check previous messages")
+                    if (logMode) console.log("* Error in testing property ", propName, ", check previous messages")
                     reject(curBool);
                 });
             // } else if (interaction.semanticType.indexOf('Action') > -1) { //testing an action
             } else if (interaction.pattern == 'Action') {
                 let actName: string = interaction.name;
-                if (logMode) console.log(" Testing Action ", actName);// the i alue is put just to be able to track the order
+                if (logMode) console.log("*  Testing Action ", actName);// the i alue is put just to be able to track the order
                 self.testAction(testCycle, actName, testScenario, interactionIndex, logMode).then((curBool) => {
                     resolve(curBool);
                 }).catch((curBool) => {
-                    if (logMode) console.log("Error in testing action ", actName, ", check previous messages")
+                    if (logMode) console.log("* Error in testing action ", actName, ", check previous messages")
                     reject(curBool);
                 });
             // } else if (interaction.semanticType.indexOf('Event') > -1) { //testing an event
             } else if (interaction.pattern == 'Event') {    
                 let eveName: string = interaction.name;
-                if (logMode) console.log(" Testing Event ", eveName);// the i alue is put just to be able to track the order
+                if (logMode) console.log("*  Testing Event ", eveName);// the i alue is put just to be able to track the order
                 self.testEvent(testCycle, eveName, testScenario, interactionIndex, logMode).then((curBool) => {
                     resolve(curBool);
                 }).catch((curBool) => {
-                    if (logMode) console.log("Error in testing event ", eveName, ", check previous messages")
+                    if (logMode) console.log("* Error in testing event ", eveName, ", check previous messages")
                     reject(curBool);
                 });
             } else {
-                if (logMode) console.log("Asked for something other than Action or Property or Event")
+                if (logMode) console.log("* Asked for something other than Action or Property or Event")
                 reject(false);
             }
         });
@@ -341,7 +341,7 @@ export class Tester {
     public testScenario(testCycle: number, testScenario: number, logMode: boolean): Promise<any> {
         let interactionsLength: number = this.tutTd.interaction.length; //how many interactions we have to test
         let interactionList: Array<string> = [];
-        console.log('output INTEEACION LENGTH-----', interactionsLength)
+        console.log('* output INTEEACION LENGTH-----', interactionsLength)
         // console.log(this.tutTd.interaction);
         for (var i = 0; i < interactionsLength; i++) {
             let curInter: TD.Interaction = this.tutTd.interaction[i];
@@ -352,23 +352,23 @@ export class Tester {
         // constructing the list of interactions for this scenario
         // let interactionList: Array<string> = this.buildInteractionList(testScenario)
 
-        console.log('PRINTING INTERACTION LIST:', interactionList);
+        console.log('* PRINTING INTERACTION LIST:', interactionList);
 
         var self = this;
         return new Promise(function (resolve, reject) {
             let promise: Promise<any> = Promise.resolve();
             interactionList.forEach((interactionName,index) => {
                 promise = promise.then(() => {
-                    console.log('printing interaction name:', interactionName);
+                    console.log('* printing interaction name:', interactionName);
                     return self.testInteraction(testCycle, testScenario, index, tdHelpers.findInteractionByName(self.tutTd, interactionName), logMode);
                 });
             });
             //in the end the return value indicates if at least one interaction failed
             promise.then(() => {
-                if (logMode) console.log("Test Scenario nb", testScenario, " has finished")
+                if (logMode) console.log("* Test Scenario nb", testScenario, " has finished")
                 resolve();
             }).catch((error:Error) => {
-                if (logMode) console.log("Test Scenario nb", testScenario, " has finished with an error")
+                if (logMode) console.log("* Test Scenario nb", testScenario, " has finished with an error")
                 reject(error);
             });
         });
@@ -391,10 +391,10 @@ export class Tester {
                 });
             });
             promise.then(() => {
-                if (logMode) console.log("Test Cycle nb", cycleNumber, " has finished")
+                if (logMode) console.log("* Test Cycle nb", cycleNumber, " has finished")
                 resolve();
             }).catch(() => {
-                if (logMode) console.log("Test Cycle nb", cycleNumber, " has finished with an error")
+                if (logMode) console.log("* Test Cycle nb", cycleNumber, " has finished with an error")
                 reject();
             });
         });
@@ -419,16 +419,16 @@ export class Tester {
             let promise = Promise.resolve();
             reps.forEach(repNb => {
                 promise = promise.then(() => {
-                    if (logMode) console.log("Cycle " + repNb + ", testing all scenarios")
+                    if (logMode) console.log("* Cycle " + repNb + ", testing all scenarios")
                     self.testReport.addTestCycle();
                     return self.testCycle(repNb, logMode);
                 });
             });
             promise.then(() => {
-                if (logMode) console.log("Testing the Thing has finished")
+                if (logMode) console.log("* Testing the Thing has finished")
                 resolve(self.testReport);
             }).catch(() => {
-                if (logMode) console.log("Testing the Thing has finished with an error")
+                if (logMode) console.log("* Testing the Thing has finished with an error")
                 reject();
             });
         });

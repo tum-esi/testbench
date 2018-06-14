@@ -22,16 +22,16 @@ export class CodeGenerator {
         let requestsLoc:string = testConf.RequestsLocation;
         console.log(requestsLoc);
         this.requests =  JSON.parse( fs.readFileSync(requestsLoc,"utf8"));
-        console.log('code generator init done')
+        console.log('* code generator init done')
     }
 
     public createRequest(requestName: string, loc: string, pat: string):JSON {
         try {
             let scheme = JSON.parse(fs.readFileSync(loc+"Requests/"+requestName+pat+".json","utf8"));
-            console.log('PRINTING SCHEME:', scheme);
+            console.log('* PRINTING SCHEME:', scheme);
             return jsf(scheme);
         } catch(Error) {
-            console.log('----no request schema available----')
+            console.log('* ----no request schema available----')
             return null;
         }
     }

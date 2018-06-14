@@ -6,6 +6,22 @@
 	"base": "http://localhost:8081/mything",
 	"description": "This will be my Thing under Test",
 	"properties": {
+		"testobject": {
+			"type": "object",
+			"writable" : true,
+			"properties": {
+				"brightness": {
+					"type": "number",
+					"minimum": 0.0,
+					"maximum": 100.0
+				},
+				"status" : {"type": "string"}
+			},
+			"forms": [{
+				"href" : "http://localhost:8081/mything/properties/testobject",
+				"mediaType": "application/json"
+			}]
+		},
 		"display": {
 			"label": "LEDdisplay",
 			"type": "string",

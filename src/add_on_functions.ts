@@ -56,7 +56,36 @@ export function convertTDtoNodeWotTD040(td: string): string {
 	      							// taking propery key as name in properties["name"]
 	      							break;
 	      						case "type":
-	      							properties["schema"] = {"type": tdPlain[fieldNameRoot][prop][propKey]};
+	      							console.log('* PRINTING SCHEMA OF OBJECT');
+	      							console.log('* propKey', propKey);
+	      							console.log(tdPlain[fieldNameRoot][prop][propKey]);
+
+	      							switch (tdPlain[fieldNameRoot][prop][propKey]) {
+	      								case "string":
+	      									properties["schema"] = {"type": "string"};
+	      									break;
+	      								case "number":
+	      									properties["schema"] = {"type": "number"};
+	      									break;
+	      								case "object":
+
+	      									let propertiesValue = {};
+	      									let propNames = [];
+	      									// look for properties key
+	      									if (tdPlain[fieldNameRoot][prop].hasOwnProperty("properties")) {
+	      										for (var propName in tdPlain[fieldNameRoot][prop]["properties"]) {
+	      											console.log('* Printing Properties of object');
+	      											console.log('* properties name:', propName);
+	      											console.log(tdPlain[fieldNameRoot][prop]["properties"][propName])
+	      											propNames.push(propName);
+	      											propertiesValue[propName] = tdPlain[fieldNameRoot][prop]["properties"][propName]
+	      										}
+	      									}
+	      									properties["schema"] = {"type": "object", "properties": propertiesValue, "required": propNames};
+	      								case "array":
+	      									// look for items key
+	      									break;
+	      							}
 	      							break;
 	      						// case "properties":
 	      						// 	for (var k in tdPlain[fieldNameRoot][prop][propKey]) {
@@ -190,8 +219,8 @@ export function convertTDtoNodeWotTD040(td: string): string {
 	// console.log('Printing Interaction::::::', interaction);
 	returnObj["interaction"] = interaction;
 
-	// console.log(JSON.stringify(returnObj));
-	// console.log('""""""""""""""""""""""""""""""""""""""""""""""""""""')
+	console.log(JSON.stringify(returnObj));
+	console.log('""""""""""""""""""""""""""""""""""""""""""""""""""""')
 
 	return JSON.stringify(returnObj);
 };
