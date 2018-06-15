@@ -71,14 +71,14 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
         name: "gettemp",
         outputSchema: '{ "type": "number" }'
     });
-    thing.addEvent({
-        name: "onchange",
-        schema: '{ "type": "number" }'
-    });
     thing.addAction({
         name: "setdisplay",
         inputSchema: '{ "type": "string" }',
         outputSchema: '{ "type": "string" }'
+    });
+    thing.addEvent({
+        name: "onchange",
+        schema: '{ "type": "number" }'
     });
     //////////////////////////////////
     // add server functionality:
@@ -136,28 +136,28 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
       });
     thing.setPropertyReadHandler("testobject", () => {
         console.log("* HANDLER FUNCTION for testobject");
-        let testObj = thing.readProperty("testobject");
-        return testObj.then(function(value) {
-            console.log('* HHHHHHHHHHHHHHHHHHHHHHH')
-            if (testObj == null) {
-                console.log('* BBBBBBBBBBBBBBBBBBBBBBBBBBB')
-                return {"brightness": 100, "status": "sample object testing"}
+        let testObjectValue = thing.propertyStates.get('testobject').value;
+        return new Promise((resolve, reject) => {
+            if (testObjectValue == null) {
+                resolve({"brightness": 100, "status": "sample object testing"})
             }
             else {
-                console.log('* QQQQQQQQQQQQQQQQQQQQQQ')
-                return {"brightness": 100, "status": "sample object"}
+                resolve(testObjectValue)
             }
-        });
-      });
-    // thing.setPropertyWriteHandler("testobject", (input: any) => {
-    //     console.log("* HANDLER FUNCTION for testobject");
-    //     console.log('* OBJECT RECEIVED:', input);
-    //     thing.writeProperty("testobject", input);
-    //     return new Promise((resolve, reject) => {
-    //         console.log('* returning written value:', input);
-    //         resolve(input);
-    //       });
-    //   });
+          });
+    });
+    thing.setPropertyReadHandler("testarray", () => {
+        console.log("* HANDLER FUNCTION for testarray");
+        let testArrayValue = thing.propertyStates.get('testarray').value;
+        return new Promise((resolve, reject) => {
+            if (testArrayValue == null) {
+                resolve([-3,15,27])
+            }
+            else {
+                resolve(testArrayValue)
+            }
+          });
+    });
 
 }).catch(err => { throw "Couldnt connect to one servient" });
 
