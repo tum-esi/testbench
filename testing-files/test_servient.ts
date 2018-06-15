@@ -15,7 +15,6 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
         name: "mything",
     });
     console.log(thing.getThingDescription());
-    console.log('* nanana')
     console.log("* Created thing " + thing.name);
     thing.addProperty({
         name : "display",

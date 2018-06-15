@@ -18,11 +18,11 @@ export function findPort(td : ThingDescription) : number {
 	return parseInt(returnString);
 }
 
+
+// TODO: IMPLEMENT RECURSIVE SCHEMA GENERATION
+
 export function generateSchemas(td:ThingDescription, schemaLocation:string) : void{
     console.log('* in generateschema functoin')
-    // console.log('...................................................');
-    // console.log('* generate schemas from this thing description:', td);
-    // console.log('* ...................................................');
     let padInitial:string = "{\n\t\"$schema\": \"http://json-schema.org/draft-04/schema#\",\n\t\"title\": \"";
     let tdInteractions:any= td.interaction;
     let reqSchemaCount : number = 0;
@@ -49,27 +49,6 @@ export function generateSchemas(td:ThingDescription, schemaLocation:string) : vo
                 // check for writable 
                 if (curInter.writable) {
                     // request schema
-
-                    // loop recursively into schema and add found detections to genSchema
-                    // while (curInter.schema) {
-
-                    // }
-
-
-                    // let dummyType = JSON.stringify(curInter.schema);
-                    // switch (JSON.parse(dummyType)['type']) {
-                    //     case "object":
-                    //         if (curInter.properties) {
-
-                    //         }
-                    //         break;
-                    //     case "array":
-
-                    //         break;
-                    //     default:
-
-                    //         break;
-                    // }
                     let dummyType = JSON.stringify(curInter.schema);
                     let schema :string = padInitial+name+"\",\n\t"+dummyType.substring(1,dummyType.length-1)+"}";
                     let writeLoc :string = schemaLocation+"Requests/"+name+"Property.json";
@@ -125,8 +104,3 @@ export function generateSchemas(td:ThingDescription, schemaLocation:string) : vo
     }
     console.log("* ",reqSchemaCount +" request schemas and "+ resSchemaCount+" response schemas have been created")
 }
-/*                    
-{
-"$ref": "/home/eko/Code/Thing-Description-Code-Generator/TDs/responseOverhead.json#/responseOverhead"
-},
-*/

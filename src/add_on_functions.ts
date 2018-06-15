@@ -1,13 +1,3 @@
-
-// TODOOOO !!!!:
-// 
-// 	change my TuT TD to newest standard: 
-// 		->	Property DOES NOT FOLLOW SPECIFICATION
-
-
-// first function translates 
-// new thing desc specification to node wot implementation:
-
 export function convertTDtoNodeWotTD040(td: string): string {
 	let tdPlain = JSON.parse(td);
 	let returnObj = {};
@@ -214,9 +204,5 @@ export function convertTDtoNodeWotTD040(td: string): string {
 	}
 	// console.log('Printing Interaction::::::', interaction);
 	returnObj["interaction"] = interaction;
-
-	console.log(JSON.stringify(returnObj));
-	console.log('""""""""""""""""""""""""""""""""""""""""""""""""""""')
-
 	return JSON.stringify(returnObj);
 };

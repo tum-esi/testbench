@@ -1,6 +1,3 @@
-// insert node-wot installation location to tsconfig.json 
-// insert node-wot location to compilerOptions path
-
 import _ from '@node-wot/core/node_modules/wot-typescript-definitions';
 import {Servient} from '@node-wot/core';
 import {HttpClientFactory} from "@node-wot/binding-http";
@@ -9,10 +6,7 @@ import {ThingDescription} from '@node-wot/td-tools';
 import * as TDParser from '@node-wot/td-tools';
 import * as TdFunctions from './tdFunctions';
 import fs = require('fs');
-// import { CodeGenerator } from './CodeGenerator'
-import { TestReport } from './TestReport'
 import { Tester } from './Tester'
-import * as SchemaValidator from './SchemaValidator'
 // my imports:
 import {convertTDtoNodeWotTD040} from './add_on_functions';
 
@@ -43,30 +37,20 @@ let tutTdString: string = fs.readFileSync(tutTdLocation + tutName + ".jsonld", "
 // convert to node-wot TD version:
 let convertedTD: string = convertTDtoNodeWotTD040(tutTdString);
 let tutTd: ThingDescription = TDParser.parseTDString(convertedTD);
-// let convTUT: ThingDescription = TDParser.parseTDString(convertedTD);
-// console.log('---------------------------------------------------')
-// console.log(tutTdString);
-// console.log('---------------------------------------------------')
-// console.log('---------------------------------------------------')
-// console.log(convertedTD);
 
 //creating the Test Bench as a servient. It will test the Thing as a client and interact with the tester as a Server
 let srv = new Servient();
-console.log('*Created Test Bench');
+console.log('* Created Test Bench');
 srv.addServer(new HttpServer(TdFunctions.findPort(tbTd))); //at the port specified in the TD
 srv.addClientFactory(new HttpClientFactory());
 srv.start().then(WoT=>{
-    console.log('*TestBench servient started');
+    console.log('* TestBench servient started');
     
     let TestBenchT = WoT.produce({
         name: "thing_test_bench",
     });
     // ask ege about input of this function:
     let TuTT = WoT.consume(convertedTD);
-    // console.log('*************************************************');
-    // console.log(TuTT);
-    // console.log('*************************************************');
-    // console.log(JSON.stringify(TuTT));
 
     let tester: Tester = new Tester(testConfig, tutTd, TuTT);
     // let check = tester.initiate();
@@ -111,13 +95,14 @@ srv.start().then(WoT=>{
     // if input true, logMode is on
     TestBenchT.setActionHandler("testThing", function(input) {
         return new Promise((resolve, reject) => {
+            console.log('* --------------------- START OF TESTTHING METHOD ---------------------')
             tester.testThing(testConfig.Repetitions, input).then(testReport => {
                 testReport.printResults();
                 testReport.storeReport(testConfig.TestReportsLocation);
                 TestBenchT.writeProperty("testReport",testReport.getResults());
                 resolve(true);
             }).catch(() => {
-                console.log("*Something went wrong");
+                console.log("* Something went wrong");
                 reject(false);
             });
         });
@@ -133,9 +118,6 @@ srv.start().then(WoT=>{
         schema : '{ "type": "array"}',
         writable : true
     });
-
-
-
 
     // Add Validation to thing description in the beginning
     TestBenchT.addProperty({
@@ -155,7 +137,6 @@ srv.start().then(WoT=>{
     });
 
     async function asyncCall(propname) {
-      console.log('*calling');
       var result = await TuTT.readProperty(propname);
       return result;
       // expected output: "resolved"
@@ -165,9 +146,6 @@ srv.start().then(WoT=>{
       return new Promise((resolve, reject) => {
           if (answer) {
               resolve(answer);
-            // setTimeout(() => {
-            //   resolve('resolved');
-            // }, 2000);
           } else {
               reject(Error('getpropertyvalue did not work'))
           }
@@ -175,26 +153,3 @@ srv.start().then(WoT=>{
     });
     // console.log(TestBenchT.getThingDescription())
 }).catch(err => { throw "Couldnt connect to one servient" });
-
-
-
-    //tb.setProperty("TestConfig", testConfig);
-    
-        /*
-        tester.testReport.addTestCycle();
-         tester.testReport.addTestScenario();
-        tester.testScenario(0,0,true).then(()=>{
-            console.log("nice")
-        }).catch((error:Error)=>{
-            console.log("not nice", error)
-        });
-        */
-        /*
-        tester.testCycle(0,true).then(()=>{
-            console.log("nice")
-        }).catch(()=>{
-            console.log("not nice")
-        });
-        */
-
-
