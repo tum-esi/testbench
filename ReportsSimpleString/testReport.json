@@ -5,8 +5,8 @@
                 "name": "testobject",
                 "result": true,
                 "sent": {
-                    "brightness": 88.85191646935615,
-                    "status": "occaecat sunt deserunt ut"
+                    "brightness": 91.02553695664169,
+                    "status": "incididunt ut dolor voluptate"
                 },
                 "received": [
                     {
@@ -14,8 +14,8 @@
                         "status": "sample object testing"
                     },
                     {
-                        "brightness": 88.85191646935615,
-                        "status": "occaecat sunt deserunt ut"
+                        "brightness": 91.02553695664169,
+                        "status": "incididunt ut dolor voluptate"
                     }
                 ],
                 "errorId": 201,
@@ -25,11 +25,11 @@
                 "name": "testarray",
                 "result": true,
                 "sent": [
-                    96902863.1384412,
-                    94206118.81689745,
-                    -83119369.1694688,
-                    92236103.55973127,
-                    44718241.36549464
+                    59141353.60283247,
+                    68624972.38716036,
+                    -6852172.960164353,
+                    -25814303.547821954,
+                    -61423122.82232263
                 ],
                 "received": [
                     [
@@ -38,11 +38,11 @@
                         27
                     ],
                     [
-                        96902863.1384412,
-                        94206118.81689745,
-                        -83119369.1694688,
-                        92236103.55973127,
-                        44718241.36549464
+                        59141353.60283247,
+                        68624972.38716036,
+                        -6852172.960164353,
+                        -25814303.547821954,
+                        -61423122.82232263
                     ]
                 ],
                 "errorId": 201,
@@ -51,10 +51,10 @@
             {
                 "name": "display",
                 "result": true,
-                "sent": "est deserunt id",
+                "sent": "laboris nostrud et fugiat",
                 "received": [
                     "morning,sleeping",
-                    "est deserunt id"
+                    "laboris nostrud et fugiat"
                 ],
                 "errorId": 201,
                 "error": ""
@@ -70,7 +70,7 @@
             {
                 "name": "counter",
                 "result": false,
-                "sent": -38592677.54025439,
+                "sent": 213988.50773897767,
                 "received": [
                     13,
                     13
@@ -81,7 +81,7 @@
             {
                 "name": "setcounter",
                 "result": true,
-                "sent": 47961195.58292872,
+                "sent": 97649635.26622236,
                 "received": "set value to 11",
                 "errorId": 100,
                 "error": ""
@@ -89,7 +89,7 @@
             {
                 "name": "setdisplay",
                 "result": false,
-                "sent": "irure consequat anim laborum nulla",
+                "sent": "voluptate enim",
                 "received": "resolved your string",
                 "errorId": 16,
                 "error": "Received response is not valid, [{\"property\":\"instance\",\"message\":\"is not of a type(s) number\",\"schema\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"setdisplay\",\"type\":\"number\"},\"instance\":\"resolved your string\",\"name\":\"type\",\"argument\":[\"number\"],\"stack\":\"instance is not of a type(s) number\"}]"
@@ -97,7 +97,7 @@
             {
                 "name": "setdisplay",
                 "result": true,
-                "sent": "irure consequat anim laborum nulla",
+                "sent": "voluptate enim",
                 "received": "resolved your string",
                 "errorId": 100,
                 "error": ""
@@ -114,8 +114,8 @@
                 "name": "settestobject",
                 "result": true,
                 "sent": {
-                    "brightness": 39.89069272395793,
-                    "status": "enim"
+                    "brightness": 76.92912643830306,
+                    "status": "elit nostrud incididunt"
                 },
                 "received": "nothing",
                 "errorId": 101,
@@ -125,10 +125,14 @@
                 "name": "settestarray",
                 "result": true,
                 "sent": [
-                    -19920766.66629465
+                    56598269.32370752,
+                    34780015.982146084,
+                    -42833530.94240447
                 ],
                 "received": [
-                    -19920766.66629465
+                    56598269.32370752,
+                    34780015.982146084,
+                    -42833530.94240447
                 ],
                 "errorId": 100,
                 "error": ""
@@ -139,17 +143,17 @@
                 "name": "testobject",
                 "result": true,
                 "sent": {
-                    "brightness": 69.05780449580308,
-                    "status": "reprehenderit fugiat enim"
+                    "brightness": 74.16245361064529,
+                    "status": "eu"
                 },
                 "received": [
                     {
-                        "brightness": 39.89069272395793,
-                        "status": "enim"
+                        "brightness": 76.92912643830306,
+                        "status": "elit nostrud incididunt"
                     },
                     {
-                        "brightness": 69.05780449580308,
-                        "status": "reprehenderit fugiat enim"
+                        "brightness": 74.16245361064529,
+                        "status": "eu"
                     }
                 ],
                 "errorId": 201,
@@ -159,14 +163,20 @@
                 "name": "testarray",
                 "result": true,
                 "sent": [
-                    32352705.612729996
+                    -78072795.78707926,
+                    -48916486.5631543,
+                    -20730884.301725045
                 ],
                 "received": [
                     [
-                        -19920766.66629465
+                        56598269.32370752,
+                        34780015.982146084,
+                        -42833530.94240447
                     ],
                     [
-                        32352705.612729996
+                        -78072795.78707926,
+                        -48916486.5631543,
+                        -20730884.301725045
                     ]
                 ],
                 "errorId": 201,
@@ -175,10 +185,10 @@
             {
                 "name": "display",
                 "result": true,
-                "sent": "dolore in ullamco",
+                "sent": "Ut esse sunt",
                 "received": [
-                    "est deserunt id",
-                    "dolore in ullamco"
+                    "laboris nostrud et fugiat",
+                    "Ut esse sunt"
                 ],
                 "errorId": 201,
                 "error": ""
@@ -194,7 +204,7 @@
             {
                 "name": "counter",
                 "result": false,
-                "sent": 62067078.849913746,
+                "sent": 32218602.44448203,
                 "received": [
                     13,
                     13
@@ -205,7 +215,7 @@
             {
                 "name": "setcounter",
                 "result": true,
-                "sent": -24588886.03568816,
+                "sent": 48146431.15140748,
                 "received": "set value to 11",
                 "errorId": 100,
                 "error": ""
@@ -213,7 +223,7 @@
             {
                 "name": "setdisplay",
                 "result": false,
-                "sent": "nostrud reprehenderit est Ut",
+                "sent": "non sit fugiat Ut",
                 "received": "resolved your string",
                 "errorId": 16,
                 "error": "Received response is not valid, [{\"property\":\"instance\",\"message\":\"is not of a type(s) number\",\"schema\":{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"title\":\"setdisplay\",\"type\":\"number\"},\"instance\":\"resolved your string\",\"name\":\"type\",\"argument\":[\"number\"],\"stack\":\"instance is not of a type(s) number\"}]"
@@ -221,7 +231,7 @@
             {
                 "name": "setdisplay",
                 "result": true,
-                "sent": "nostrud reprehenderit est Ut",
+                "sent": "non sit fugiat Ut",
                 "received": "resolved your string",
                 "errorId": 100,
                 "error": ""
@@ -238,8 +248,8 @@
                 "name": "settestobject",
                 "result": true,
                 "sent": {
-                    "brightness": 9.149016769374963,
-                    "status": "culpa in"
+                    "brightness": 38.48310979958087,
+                    "status": "ipsum aute cupidatat eiusmod nisi"
                 },
                 "received": "nothing",
                 "errorId": 101,
@@ -249,16 +259,12 @@
                 "name": "settestarray",
                 "result": true,
                 "sent": [
-                    -83986481.49834913,
-                    -75115187.32202211,
-                    84760593.77597389,
-                    96136586.85451445
+                    -87736502.29314938,
+                    -88994575.14004618
                 ],
                 "received": [
-                    -83986481.49834913,
-                    -75115187.32202211,
-                    84760593.77597389,
-                    96136586.85451445
+                    -87736502.29314938,
+                    -88994575.14004618
                 ],
                 "errorId": 100,
                 "error": ""
