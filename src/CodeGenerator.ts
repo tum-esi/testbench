@@ -14,7 +14,7 @@ export class CodeGenerator {
 
     public createRequest(requestName: string, loc: string, pat: string):JSON {
         try {
-            let scheme = JSON.parse(fs.readFileSync(loc+"Requests/"+requestName+pat+".json","utf8"));
+            let scheme = JSON.parse(fs.readFileSync(loc+"Requests/"+requestName+'-'+pat+".json","utf8"));
             return jsf(scheme);
         } catch(Error) {
             console.log('\x1b[36m%s\x1b[0m', '* ----no request schema available----')

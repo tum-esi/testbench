@@ -18,6 +18,7 @@ export interface testConfig {
     SchemaLocation?: string;
     TestReportsLocation?: string;
     RequestsLocation?: string;
+    Scenarios?: number;
     Repetitions?: number;
 }
 

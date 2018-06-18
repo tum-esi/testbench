@@ -1,4 +1,6 @@
 # Compiled javascript
+ReportsSimpleString
+Resources
 dist/*
 !/dist/README.md
 
