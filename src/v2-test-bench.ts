@@ -40,11 +40,11 @@ let tutTd: ThingDescription = TDParser.parseTDString(convertedTD);
 
 //creating the Test Bench as a servient. It will test the Thing as a client and interact with the tester as a Server
 let srv = new Servient();
-console.log('* Created Test Bench');
+console.log('\x1b[36m%s\x1b[0m', '* Created Test Bench');
 srv.addServer(new HttpServer(TdFunctions.findPort(tbTd))); //at the port specified in the TD
 srv.addClientFactory(new HttpClientFactory());
 srv.start().then(WoT=>{
-    console.log('* TestBench servient started');
+    console.log('\x1b[36m%s\x1b[0m', '* TestBench servient started');
     
     let TestBenchT = WoT.produce({
         name: "thing_test_bench",
@@ -95,14 +95,14 @@ srv.start().then(WoT=>{
     // if input true, logMode is on
     TestBenchT.setActionHandler("testThing", function(input) {
         return new Promise((resolve, reject) => {
-            console.log('* --------------------- START OF TESTTHING METHOD ---------------------')
+            console.log('\x1b[36m%s\x1b[0m', '* --------------------- START OF TESTTHING METHOD ---------------------')
             tester.testThing(testConfig.Repetitions, input).then(testReport => {
                 testReport.printResults();
                 testReport.storeReport(testConfig.TestReportsLocation);
                 TestBenchT.writeProperty("testReport",testReport.getResults());
                 resolve(true);
             }).catch(() => {
-                console.log("* Something went wrong");
+                console.log('\x1b[36m%s\x1b[0m', "* Something went wrong");
                 reject(false);
             });
         });

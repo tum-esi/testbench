@@ -22,7 +22,6 @@ export function findPort(td : ThingDescription) : number {
 // TODO: IMPLEMENT RECURSIVE SCHEMA GENERATION
 
 export function generateSchemas(td:ThingDescription, schemaLocation:string) : void{
-    console.log('* in generateschema functoin')
     let padInitial:string = "{\n\t\"$schema\": \"http://json-schema.org/draft-04/schema#\",\n\t\"title\": \"";
     let tdInteractions:any= td.interaction;
     let reqSchemaCount : number = 0;
@@ -30,7 +29,6 @@ export function generateSchemas(td:ThingDescription, schemaLocation:string) : vo
     mkdirp(schemaLocation + "Requests");
     mkdirp(schemaLocation + "Responses");
 
-    console.log('* interaction length:', tdInteractions.length );
     // extract interactions
     for (var i = 0; i < tdInteractions.length; i++) {
 
@@ -74,14 +72,34 @@ export function generateSchemas(td:ThingDescription, schemaLocation:string) : vo
             case "Action":
                 // check for input and output data , create requests based on this 
                 if ("inputSchema" in curInter) {
-                    let dataSchema = JSON.stringify(curInter.inputSchema);
+                    let dataSchema = "";
+                    if (curInter.inputSchema['type'] == 'object') {
+                        let propNames = [];
+                        for (var propName in curInter.inputSchema['properties']) {
+                            propNames.push(propName);
+                        }
+                        curInter.inputSchema['required'] = propNames;
+                        dataSchema = JSON.stringify(curInter.inputSchema);
+                    } else {
+                        dataSchema = JSON.stringify(curInter.inputSchema);
+                    }
                     let schema :string = padInitial+name+"\",\n\t"+dataSchema.substring(1,dataSchema.length-1)+"}";
                     let writeLoc :string = schemaLocation+"Requests/"+name+"Action.json";
                     fs.writeFileSync(writeLoc, schema);
                     reqSchemaCount++;
                 }
                 if ("outputSchema" in curInter) {
-                    let dataSchema = JSON.stringify(curInter.outputSchema);
+                    let dataSchema = "";
+                    if (curInter.outputSchema['type'] == 'object') {
+                        let propNames = [];
+                        for (var propName in curInter.outputSchema['properties']) {
+                            propNames.push(propName);
+                        }
+                        curInter.outputSchema['required'] = propNames;
+                        dataSchema = JSON.stringify(curInter.outputSchema);
+                    } else {
+                        dataSchema = JSON.stringify(curInter.outputSchema);
+                    }
                     let schema :string = padInitial+name+"\",\n\t"+dataSchema.substring(1,dataSchema.length-1)+"}";
                     let writeLoc = schemaLocation+"Responses/"+name+"Action.json";
                     fs.writeFileSync(writeLoc, schema);
@@ -100,7 +118,7 @@ export function generateSchemas(td:ThingDescription, schemaLocation:string) : vo
                 // code...
                 break;
         }
-        console.log('* ...................................................');
+        console.log('\x1b[36m%s\x1b[0m', '* ...................................................');
     }
-    console.log("* ",reqSchemaCount +" request schemas and "+ resSchemaCount+" response schemas have been created")
+    console.log('\x1b[36m%s%s\x1b[0m', "* ", reqSchemaCount + " request schemas and " + resSchemaCount + " response schemas have been created")
 }

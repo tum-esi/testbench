@@ -6,7 +6,6 @@ var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 let srv = new Servient();
 srv.addServer(new HttpServer(8081)); 
 srv.addClientFactory(new HttpClientFactory());
-// console.log(srv);
 //You dont have to put both functionalities, if you only consume Things then you dont need a server or if you only expose a Thing you shouldnt need a client
 srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the community agreed on
     
@@ -75,6 +74,33 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
         inputSchema: '{ "type": "string" }',
         outputSchema: '{ "type": "string" }'
     });
+    thing.addAction({
+        name: "settestobject",
+        inputSchema: `{ 
+            "type": "object", 
+            "properties": { 
+                "brightness": {
+                    "type": "number", 
+                    "minimum": 0.0, 
+                    "maximum": 100.0
+                }, 
+                "status" : {
+                    "type": "string"
+                } 
+            } 
+        }`
+    });
+    thing.addAction({
+        name: "settestarray",
+        inputSchema: `{ 
+            "type": "array", 
+            "items": { "type": "number" }
+        }`,
+        outputSchema: `{ 
+            "type": "array", 
+            "items": { "type": "number" }
+        }`
+    });
     thing.addEvent({
         name: "onchange",
         schema: '{ "type": "number" }'
@@ -85,7 +111,7 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
     // input: number, output: string_
     thing.setActionHandler("setcounter", (input: number) => {
         console.log("* ACTION HANDLER FUNCTION for setcounter");
-        console.log("* ",input);
+        console.log("* ", input);
         thing.writeProperty("counter", input);
 
         // not necessarily required...
@@ -105,7 +131,7 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
     // input: string, output: string
     thing.setActionHandler("setdisplay", (input: string) => {
         console.log("* ACTION HANDLER FUNCTION for setdisplay");
-        console.log("* ",input);
+        console.log("* ", input);
         // var xmlHttp = new XMLHttpRequest();
         // xmlHttp.onreadystatechange = function() { 
         //     if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
@@ -116,6 +142,26 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
         // xmlHttp.open("GET", "http://raspberrypi.local:5000/dispmsg/"+input+"-blue", true); // true for asynchronous 
         // xmlHttp.send(null);
 
+        // due to console logs... during compile
+        return new Promise((resolve, reject) => {
+            let examplePropertyValue = "resolved your string";
+            resolve(examplePropertyValue);
+          });
+        // return 'LEDs Text';
+    });
+    thing.setActionHandler("settestobject", (input: string) => {
+        console.log("* ACTION HANDLER FUNCTION for settestobject");
+        console.log("* ", input);
+        // due to console logs... during compile
+        return new Promise((resolve, reject) => {
+            let examplePropertyValue = "resolved your string";
+            resolve(examplePropertyValue);
+          });
+        // return 'LEDs Text';
+    });
+    thing.setActionHandler("settestarray", (input: string) => {
+        console.log("* ACTION HANDLER FUNCTION for settestarray");
+        console.log("* ", input);
         // due to console logs... during compile
         return new Promise((resolve, reject) => {
             let examplePropertyValue = "resolved your string";

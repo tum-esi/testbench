@@ -22,8 +22,9 @@ export function convertTDtoNodeWotTD040(td: string): string {
 	          	returnObj[fieldNameRoot] = tdPlain[fieldNameRoot];
 	          	break;
 	        case "support":
-	          
 	          	break;
+
+	        // TODO: NO COMPLETE SOLUTION FOR ALL CASES
 	        case "properties":
 	          	// every property key becomes new type property:
 	          	for (var prop in tdPlain[fieldNameRoot]) {
@@ -46,10 +47,6 @@ export function convertTDtoNodeWotTD040(td: string): string {
 	      							// taking propery key as name in properties["name"]
 	      							break;
 	      						case "type":
-	      							console.log('* PRINTING SCHEMA OF OBJECT');
-	      							console.log('* propKey', propKey);
-	      							console.log(tdPlain[fieldNameRoot][prop][propKey]);
-
 	      							switch (tdPlain[fieldNameRoot][prop][propKey]) {
 	      								case "string":
 	      									properties["schema"] = {"type": "string"};
@@ -60,7 +57,11 @@ export function convertTDtoNodeWotTD040(td: string): string {
 	      								case "object":
 
 	      									let propertiesValue = {};
+
+	      									// propNames necessary for json-schema-faker generator !!! where to create best ?
+	      									// maybe better place this functionality inside tdFunctions - generateSchema function ??
 	      									let propNames = [];
+
 	      									// look for properties key
 	      									if (tdPlain[fieldNameRoot][prop].hasOwnProperty("properties")) {
 	      										for (var propName in tdPlain[fieldNameRoot][prop]["properties"]) {
@@ -73,14 +74,14 @@ export function convertTDtoNodeWotTD040(td: string): string {
 	      											propertiesValue[propName] = propScheme;
 	      										}
 	      										properties["schema"] = {"type": "object", "properties": propertiesValue, "required": propNames};
-	      										console.log(JSON.stringify(properties, null, ' '))
+	      										// console.log(JSON.stringify(properties, null, ' '))
 	      									}
 	      								case "array":
 	      									// look for items key
 	      									if (tdPlain[fieldNameRoot][prop].hasOwnProperty("items")) {
 	      										properties["schema"] = {"type": "array", "items": tdPlain[fieldNameRoot][prop]["items"]}
 	      									}
-	      									console.log(JSON.stringify(properties, null, ' '))
+	      									// console.log(JSON.stringify(properties, null, ' '))
 	      									break;
 	      							}
 	      							break;
@@ -102,6 +103,7 @@ export function convertTDtoNodeWotTD040(td: string): string {
 	          		}
 	          	}
 	          	break;
+	        // WORKS FOR ALL INPUT/OUTPUT SCHEMAS
 	        case "actions":
 	        	// every actioen key becomes new type action:
 	        	for (var prop in tdPlain[fieldNameRoot]) {
@@ -138,6 +140,8 @@ export function convertTDtoNodeWotTD040(td: string): string {
 	          		}
           		}
 	          	break;
+
+	        // TODO: CHECK EVENT PARSING WHEN IMPLEMENTING EVENT TESTING AGAIN
 	        case "events":
 	        	// every event key becomes new type event:
 	        	for (var prop in tdPlain[fieldNameRoot]) {

@@ -94,6 +94,31 @@
 					"mediaType": "application/json"
 				}],
 			"output": {"type": "number"}
+		},
+		"settestobject": {
+			"input": {
+				"type": "object", 
+				"properties": { 
+				    "brightness": {
+				        "type": "number", 
+				        "minimum": 0.0, 
+				        "maximum": 100.0
+				    }, 
+				    "status" : {
+				        "type": "string"
+				    } 
+				}
+			}
+		},
+		"settestarray": {
+			"input": {
+				"type": "array", 
+				"items": { "type": "number" }
+			},
+			"output": {
+				"type": "array", 
+            	"items": { "type": "number" }
+			}
 		}
 	},
 	"events": {

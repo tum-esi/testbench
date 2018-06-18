@@ -20,9 +20,7 @@ export class CodeGenerator {
     constructor(tdesc: ThingDescription, testConf: any) {
         this.td = tdesc;
         let requestsLoc:string = testConf.RequestsLocation;
-        console.log(requestsLoc);
         this.requests =  JSON.parse( fs.readFileSync(requestsLoc,"utf8"));
-        console.log('* code generator init done')
     }
 
     public createRequest(requestName: string, loc: string, pat: string):JSON {
@@ -30,7 +28,7 @@ export class CodeGenerator {
             let scheme = JSON.parse(fs.readFileSync(loc+"Requests/"+requestName+pat+".json","utf8"));
             return jsf(scheme);
         } catch(Error) {
-            console.log('* ----no request schema available----')
+            console.log('\x1b[36m%s\x1b[0m', '* ----no request schema available----')
             return null;
         }
     }
