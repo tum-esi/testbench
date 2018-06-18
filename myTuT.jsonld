@@ -108,13 +108,21 @@
 				        "type": "string"
 				    } 
 				}
-			}
+			},
+			"forms": [{
+					"href" : "http://localhost:8081/mything/actions/settestobject",
+					"mediaType": "application/json"
+				}]
 		},
 		"settestarray": {
 			"input": {
 				"type": "array", 
 				"items": { "type": "number" }
 			},
+			"forms": [{
+					"href" : "http://localhost:8081/mything/actions/settestarray",
+					"mediaType": "application/json"
+				}],
 			"output": {
 				"type": "array", 
             	"items": { "type": "number" }

@@ -147,27 +147,22 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
             let examplePropertyValue = "resolved your string";
             resolve(examplePropertyValue);
           });
-        // return 'LEDs Text';
     });
     thing.setActionHandler("settestobject", (input: string) => {
         console.log("* ACTION HANDLER FUNCTION for settestobject");
         console.log("* ", input);
-        // due to console logs... during compile
+        thing.writeProperty("testobject", input);
         return new Promise((resolve, reject) => {
-            let examplePropertyValue = "resolved your string";
-            resolve(examplePropertyValue);
-          });
-        // return 'LEDs Text';
+            resolve(input);
+            });
     });
     thing.setActionHandler("settestarray", (input: string) => {
         console.log("* ACTION HANDLER FUNCTION for settestarray");
         console.log("* ", input);
-        // due to console logs... during compile
+        thing.writeProperty("testarray", input);
         return new Promise((resolve, reject) => {
-            let examplePropertyValue = "resolved your string";
-            resolve(examplePropertyValue);
-          });
-        // return 'LEDs Text';
+            resolve(input);
+            });
     });
 
     // example of property read handler...

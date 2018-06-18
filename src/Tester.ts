@@ -290,9 +290,9 @@ export class Tester {
                 });
             } else if (interaction.pattern == 'Action') {
                 let actName: string = interaction.name;
-                if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... Testing Action ", actName, ".................");
+                if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... Testing Action:", actName, ".................");
                 self.testAction(testCycle, actName, testScenario, interactionIndex, logMode).then((curBool) => {
-                    if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... End Testing Action ", actName, ".................");
+                    if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... End Testing Action:", actName, ".................");
                     resolve(curBool);
                 }).catch((curBool) => {
                     if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* Error in testing action ", actName, ", check previous messages")
@@ -300,9 +300,9 @@ export class Tester {
                 });
             } else if (interaction.pattern == 'Event') {    
                 let eveName: string = interaction.name;
-                if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... Testing Event ", eveName, ".................");
+                if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... Testing Event: ", eveName, ".................");
                 self.testEvent(testCycle, eveName, testScenario, interactionIndex, logMode).then((curBool) => {
-                    if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... End Testing Event ", eveName, ".................");
+                    if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... End Testing Event: ", eveName, ".................");
                     resolve(curBool);
                 }).catch((curBool) => {
                     if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* Error in testing event ", eveName, ", check previous messages")
@@ -414,7 +414,12 @@ export class Tester {
     */
     private findMaxScenario(): number {
         let reqLoc: string = this.testConfig.RequestsLocation;
+
+        console.log('debugging reqLoc:', reqLoc);
+
         let requests: any = JSON.parse(fs.readFileSync(reqLoc, "utf8")); //fetching the requests
+
+        console.log('debugging requests:', requests);
 
         //going through the array to find the biggest length
         let maxSize: number = 0;
