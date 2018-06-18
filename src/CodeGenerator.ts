@@ -2,17 +2,6 @@ import ThingDescription, { Interaction } from '@node-wot/td-tools/src/thing-desc
 import fs = require('fs');
 var jsf = require('json-schema-faker');
 
-/*
-QUESTIONS:
-
-Do we need requests-simpleString.json file with requests 
-or can we parse schema if there is one
-to use json faker and create request inside method. not beforehand
-
-do we need the values testscenario and interactionIndex elsewhere ? or can we discard them too ?
-
-*/
-
 export class CodeGenerator {
     private td: ThingDescription;
     private requests:any;

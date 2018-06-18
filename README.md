@@ -32,6 +32,7 @@ switch into testbench folder and execute:
 
 ## Dependencies & Configurations:
 
+- go into testbench folder
 - specify node-wot path in tsconfig:
 - set "paths": to `{ "@node-wot/*": ["path-to-node_modules/@node-wot/*"] }`
 
@@ -41,6 +42,8 @@ example of paths:
     } `
 
 ## Running the testbench:
+
+go into testbench folder
 
 compile with: `tsc -p .` inside testbench folder.
 
@@ -56,7 +59,8 @@ start postman and perform request with properties:
 
 - POST
 - content-type: application/json
-- body: true 
+- body-form: raw
+- body-data: true 
 - url: http://your-address:8090/thing_test_bench/actions/testThing 
 
 
