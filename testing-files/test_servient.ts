@@ -37,7 +37,7 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
         writable : false
     });
     thing.addProperty({
-        name : "testobject",
+        name : "testObject",
         schema : `{ 
             "type": "object", 
             "properties": { 
@@ -54,7 +54,7 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
         writable : true
     });
     thing.addProperty({
-        name : "testarray",
+        name : "testArray",
         schema : `{ 
             "type": "array", 
             "items": { "type": "number" }
@@ -62,20 +62,20 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
         writable : true
     });
     thing.addAction({
-        name: "setcounter",
+        name: "setCounter",
         inputSchema: '{ "type": "number" }'
     });
     thing.addAction({
-        name: "gettemp",
+        name: "getTemp",
         outputSchema: '{ "type": "number" }'
     });
     thing.addAction({
-        name: "setdisplay",
+        name: "setDisplay",
         inputSchema: '{ "type": "string" }',
         outputSchema: '{ "type": "string" }'
     });
     thing.addAction({
-        name: "settestobject",
+        name: "setTestObject",
         inputSchema: `{ 
             "type": "object", 
             "properties": { 
@@ -91,7 +91,7 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
         }`
     });
     thing.addAction({
-        name: "settestarray",
+        name: "setTestArray",
         inputSchema: `{ 
             "type": "array", 
             "items": { "type": "number" }
@@ -102,15 +102,15 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
         }`
     });
     thing.addEvent({
-        name: "onchange",
+        name: "onChange",
         schema: '{ "type": "number" }'
     });
     //////////////////////////////////
     // add server functionality:
 
     // input: number, output: string_
-    thing.setActionHandler("setcounter", (input: number) => {
-        console.log("* ACTION HANDLER FUNCTION for setcounter");
+    thing.setActionHandler("setCounter", (input: number) => {
+        console.log("* ACTION HANDLER FUNCTION for setCounter");
         console.log("* ", input);
         thing.writeProperty("counter", input);
 
@@ -120,8 +120,8 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
             resolve(examplePropertyValue);
           });
     });
-    thing.setActionHandler("gettemp", () => {
-        console.log("* ACTION HANDLER FUNCTION for gettemp");
+    thing.setActionHandler("getTemp", () => {
+        console.log("* ACTION HANDLER FUNCTION for getTemp");
         let count = thing.readProperty("temp");
         // not necessarily required...
         return new Promise((resolve, reject) => {
@@ -129,8 +129,8 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
           });
     });
     // input: string, output: string
-    thing.setActionHandler("setdisplay", (input: string) => {
-        console.log("* ACTION HANDLER FUNCTION for setdisplay");
+    thing.setActionHandler("setDisplay", (input: string) => {
+        console.log("* ACTION HANDLER FUNCTION for setDisplay");
         console.log("* ", input);
         // var xmlHttp = new XMLHttpRequest();
         // xmlHttp.onreadystatechange = function() { 
@@ -148,18 +148,18 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
             resolve(examplePropertyValue);
           });
     });
-    thing.setActionHandler("settestobject", (input: string) => {
-        console.log("* ACTION HANDLER FUNCTION for settestobject");
+    thing.setActionHandler("setTestObject", (input: string) => {
+        console.log("* ACTION HANDLER FUNCTION for setTestObject");
         console.log("* ", input);
-        thing.writeProperty("testobject", input);
+        thing.writeProperty("testObject", input);
         return new Promise((resolve, reject) => {
             resolve(input);
             });
     });
-    thing.setActionHandler("settestarray", (input: string) => {
-        console.log("* ACTION HANDLER FUNCTION for settestarray");
+    thing.setActionHandler("setTestArray", (input: string) => {
+        console.log("* ACTION HANDLER FUNCTION for setTestArray");
         console.log("* ", input);
-        thing.writeProperty("testarray", input);
+        thing.writeProperty("testArray", input);
         return new Promise((resolve, reject) => {
             resolve(input);
             });
@@ -174,9 +174,9 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
             resolve(examplePropertyValue);
           });
       });
-    thing.setPropertyReadHandler("testobject", () => {
-        console.log("* HANDLER FUNCTION for testobject");
-        let testObjectValue = thing.propertyStates.get('testobject').value;
+    thing.setPropertyReadHandler("testObject", () => {
+        console.log("* HANDLER FUNCTION for testObject");
+        let testObjectValue = thing.propertyStates.get('testObject').value;
         return new Promise((resolve, reject) => {
             if (testObjectValue == null) {
                 resolve({"brightness": 100, "status": "sample object testing"})
@@ -186,9 +186,9 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
             }
           });
     });
-    thing.setPropertyReadHandler("testarray", () => {
-        console.log("* HANDLER FUNCTION for testarray");
-        let testArrayValue = thing.propertyStates.get('testarray').value;
+    thing.setPropertyReadHandler("testArray", () => {
+        console.log("* HANDLER FUNCTION for testArray");
+        let testArrayValue = thing.propertyStates.get('testArray').value;
         return new Promise((resolve, reject) => {
             if (testArrayValue == null) {
                 resolve([-3,15,27])

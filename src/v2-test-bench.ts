@@ -8,7 +8,7 @@ import * as TdFunctions from './tdFunctions';
 import fs = require('fs');
 import { Tester } from './Tester'
 // my imports:
-import {convertTDtoNodeWotTD040} from './add_on_functions';
+import {convertTDtoNodeWotTD040} from './convertTDs';
 
 // a test config file is always configured like this
 export interface testConfig {

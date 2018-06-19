@@ -18,11 +18,31 @@ export function findPort(td : ThingDescription) : number {
 	return parseInt(returnString);
 }
 
+// add required object key to json type object
+function addRequired(scheme) {
+    if (scheme['type'] == 'object') {
+        let propNames = [];
+        for (var propName in scheme['properties']) {
+            propNames.push(propName);
+        }
+        // json schema faker requires this add on otherwise creates empty data thats valid
+        scheme['required'] = propNames;
+        return JSON.stringify(scheme);
+    } else {
+        return JSON.stringify(scheme);
+    }
+}
+// writes extracted schema to file
+function writeSchema(name, dataSchema, schemaLocation, folder, interaction) {
+    let padInitial:string = "{\n\t\"$schema\": \"http://json-schema.org/draft-04/schema#\",\n\t\"title\": \"";
+    let schema :string = padInitial+name+"\",\n\t"+dataSchema.substring(1,dataSchema.length-1)+"}";
+    let writeLoc :string = schemaLocation+folder+name+"-"+interaction+".json";
+    fs.writeFileSync(writeLoc, schema);
+}
 
 // TODO: IMPLEMENT RECURSIVE SCHEMA GENERATION
 
 export function generateSchemas(td:ThingDescription, schemaLocation:string) : void{
-    let padInitial:string = "{\n\t\"$schema\": \"http://json-schema.org/draft-04/schema#\",\n\t\"title\": \"";
     let tdInteractions:any= td.interaction;
     let reqSchemaCount : number = 0;
     let resSchemaCount : number = 0;
@@ -32,7 +52,7 @@ export function generateSchemas(td:ThingDescription, schemaLocation:string) : vo
     // extract interactions
     for (var i = 0; i < tdInteractions.length; i++) {
 
-        console.log("* ",tdInteractions[i]);
+        console.log("* ", tdInteractions[i]);
 
         let curInter : any  = tdInteractions[i];
         // let type :string = curInter.semanticTypes[0];
@@ -47,67 +67,37 @@ export function generateSchemas(td:ThingDescription, schemaLocation:string) : vo
                 // check for writable 
                 if (curInter.writable) {
                     // request schema
-                    let dummyType = JSON.stringify(curInter.schema);
-                    let schema :string = padInitial+name+"\",\n\t"+dummyType.substring(1,dummyType.length-1)+"}";
-                    let writeLoc :string = schemaLocation+"Requests/"+name+"-"+"Property.json";
-                    fs.writeFileSync(writeLoc, schema);
+                    let dataSchema = addRequired(curInter.schema);
+                    writeSchema(name, dataSchema, schemaLocation, 'Requests/', type);
                     reqSchemaCount ++;
-
                     // response schema:
-                    writeLoc = schemaLocation+"Responses/"+name+"-"+"Property.json";
-                    fs.writeFileSync(writeLoc, schema);
+                    writeSchema(name, dataSchema, schemaLocation, 'Responses/', type);
                     resSchemaCount++;
                 } else {
                     // response schema:
-                    let dummyType = JSON.stringify(curInter.schema);
-                    let schema :string = padInitial+name+"\",\n\t"+dummyType.substring(1,dummyType.length-1)+"}";
-                    let writeLoc = schemaLocation+"Responses/"+name+"-"+"Property.json";
-                    fs.writeFileSync(writeLoc, schema);
+                    let dataSchema = addRequired(curInter.schema);
+                    writeSchema(name, dataSchema, schemaLocation, 'Responses/', type);;
                     resSchemaCount++;
                 }
                 // if not writable test if really not writable... ??
-
                 // todo: check if observable think which request schema for this ? how test observable in general
                 break;
             case "Action":
                 // check for input and output data , create requests based on this 
                 if ("inputSchema" in curInter) {
-                    let dataSchema = "";
-                    if (curInter.inputSchema['type'] == 'object') {
-                        let propNames = [];
-                        for (var propName in curInter.inputSchema['properties']) {
-                            propNames.push(propName);
-                        }
-                        curInter.inputSchema['required'] = propNames;
-                        dataSchema = JSON.stringify(curInter.inputSchema);
-                    } else {
-                        dataSchema = JSON.stringify(curInter.inputSchema);
-                    }
-                    let schema :string = padInitial+name+"\",\n\t"+dataSchema.substring(1,dataSchema.length-1)+"}";
-                    let writeLoc :string = schemaLocation+"Requests/"+name+"-"+"Action.json";
-                    fs.writeFileSync(writeLoc, schema);
+                    let dataSchema = addRequired(curInter.inputSchema);
+                    writeSchema(name, dataSchema, schemaLocation, 'Requests/', type);
                     reqSchemaCount++;
                 }
                 if ("outputSchema" in curInter) {
-                    let dataSchema = "";
-                    if (curInter.outputSchema['type'] == 'object') {
-                        let propNames = [];
-                        for (var propName in curInter.outputSchema['properties']) {
-                            propNames.push(propName);
-                        }
-                        curInter.outputSchema['required'] = propNames;
-                        dataSchema = JSON.stringify(curInter.outputSchema);
-                    } else {
-                        dataSchema = JSON.stringify(curInter.outputSchema);
-                    }
-                    let schema :string = padInitial+name+"\",\n\t"+dataSchema.substring(1,dataSchema.length-1)+"}";
-                    let writeLoc = schemaLocation+"Responses/"+name+"-"+"Action.json";
-                    fs.writeFileSync(writeLoc, schema);
+                    let dataSchema = addRequired(curInter.outputSchema);
+                    writeSchema(name, dataSchema, schemaLocation, 'Responses/', type);
                     resSchemaCount++;
                 }
                 break;
             case "Event":
                 // treated exactly like Property, cause same description:
+                let padInitial:string = "{\n\t\"$schema\": \"http://json-schema.org/draft-04/schema#\",\n\t\"title\": \"";
                 let dummyType = '{"type": '+JSON.stringify(curInter.schema)+'}';
                 let schema :string = padInitial+name+"\",\n\t"+dummyType.substring(1,dummyType.length-1)+"}";
                 let writeLoc = schemaLocation+"Responses/"+name+"-"+"Event.json";

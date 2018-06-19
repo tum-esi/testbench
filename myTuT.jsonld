@@ -6,7 +6,7 @@
 	"base": "http://localhost:8081/mything",
 	"description": "This will be my Thing under Test",
 	"properties": {
-		"testobject": {
+		"testObject": {
 			"type": "object",
 			"writable" : true,
 			"properties": {
@@ -18,18 +18,18 @@
 				"status" : {"type": "string"}
 			},
 			"forms": [{
-				"href" : "http://localhost:8081/mything/properties/testobject",
+				"href" : "http://localhost:8081/mything/properties/testObject",
 				"mediaType": "application/json"
 			}]
 		},
-		"testarray": {
+		"testArray": {
 			"type": "array",
 			"writable" : true,
 			"items": {
 				"type": "number"
 			},
 			"forms": [{
-				"href" : "http://localhost:8081/mything/properties/testarray",
+				"href" : "http://localhost:8081/mything/properties/testArray",
 				"mediaType": "application/json"
 			}]
 		},
@@ -65,37 +65,37 @@
 		}
 	},
 	"actions": {
-		"setcounter": {
+		"setCounter": {
 			"label": "sets counter to desired number",
 			"description": "Resets the counter to specific value",
 			"input": {
 			  "type": "number"
 			},
 			"forms": [{
-					"href" : "http://localhost:8081/mything/actions/setcounter",
+					"href" : "http://localhost:8081/mything/actions/setCounter",
 					"mediaType": "application/json"
 				}],
 			"output": {"type": "string"}
 		},
-		"setdisplay" : {
+		"setDisplay" : {
 			"input": {
 			  "type": "string"
 			},
 			"forms": [{
-					"href" : "http://localhost:8081/mything/actions/setdisplay",
+					"href" : "http://localhost:8081/mything/actions/setDisplay",
 					"mediaType": "application/json"
 				}],
 			"output": {"type": "number"}
 		},
-		"gettemp": {
+		"getTemp": {
 			"label": "get temp value",
 			"forms": [{
-					"href" : "http://localhost:8081/mything/actions/gettemp",
+					"href" : "http://localhost:8081/mything/actions/getTemp",
 					"mediaType": "application/json"
 				}],
 			"output": {"type": "number"}
 		},
-		"settestobject": {
+		"setTestObject": {
 			"input": {
 				"type": "object", 
 				"properties": { 
@@ -110,17 +110,17 @@
 				}
 			},
 			"forms": [{
-					"href" : "http://localhost:8081/mything/actions/settestobject",
+					"href" : "http://localhost:8081/mything/actions/setTestObject",
 					"mediaType": "application/json"
 				}]
 		},
-		"settestarray": {
+		"setTestArray": {
 			"input": {
 				"type": "array", 
 				"items": { "type": "number" }
 			},
 			"forms": [{
-					"href" : "http://localhost:8081/mything/actions/settestarray",
+					"href" : "http://localhost:8081/mything/actions/setTestArray",
 					"mediaType": "application/json"
 				}],
 			"output": {
@@ -130,13 +130,13 @@
 		}
 	},
 	"events": {
-		"onchange": {
+		"onChange": {
 			"type": "object",
 			"properties": {
 				"temperature": { "type": "number" }
 			},
 			"forms": [{
-				"href" : "http://localhost:8081/mything/events/onchange",
+				"href" : "http://localhost:8081/mything/events/onChange",
 				"mediaType": "application/json"
 			}]
 		}

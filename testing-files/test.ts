@@ -33,7 +33,7 @@ var schema = {
     }
   }
 };
- 
+
 jsf.resolve(schema).then(function(sample) {
   console.log(sample);
   // "[object Object]"

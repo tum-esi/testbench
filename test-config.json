@@ -4,7 +4,7 @@
     "ThingTdName":"myTuT",
     "SchemaLocation" : "Resources/InteractionSchemas/",
     "TestReportsLocation" : "Reports/",
-    "RequestsLocation" : "Resources/generated-requests.json",
+    "RequestsLocation" : "Resources/req-fake-data.json",
     "Scenarios": 2,
     "Repetitions" : 1
 }

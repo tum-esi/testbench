@@ -55,17 +55,10 @@ export function convertTDtoNodeWotTD040(td: string): string {
 	      									properties["schema"] = {"type": "number"};
 	      									break;
 	      								case "object":
-
 	      									let propertiesValue = {};
-
-	      									// propNames necessary for json-schema-faker generator !!! where to create best ?
-	      									// maybe better place this functionality inside tdFunctions - generateSchema function ??
-	      									let propNames = [];
-
 	      									// look for properties key
 	      									if (tdPlain[fieldNameRoot][prop].hasOwnProperty("properties")) {
 	      										for (var propName in tdPlain[fieldNameRoot][prop]["properties"]) {
-	      											propNames.push(propName);
 
 	      											let propScheme = {};
 	      											for (var propProps in tdPlain[fieldNameRoot][prop]["properties"][propName]) {
@@ -73,7 +66,7 @@ export function convertTDtoNodeWotTD040(td: string): string {
 	      											}
 	      											propertiesValue[propName] = propScheme;
 	      										}
-	      										properties["schema"] = {"type": "object", "properties": propertiesValue, "required": propNames};
+	      										properties["schema"] = {"type": "object", "properties": propertiesValue};
 	      										// console.log(JSON.stringify(properties, null, ' '))
 	      									}
 	      								case "array":

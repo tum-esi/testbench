@@ -22,5 +22,5 @@ export class CodeGenerator {
         }
     }
 
-
+    // TODO Create file for fake data and expose requests as property, set write handler
 }
