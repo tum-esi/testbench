@@ -9,7 +9,7 @@ export class CodeGenerator {
     constructor(tdesc: ThingDescription, testConf: any) {
         this.td = tdesc;
         let requestsLoc:string = testConf.RequestsLocation;
-        this.requests =  JSON.parse( fs.readFileSync(requestsLoc,"utf8"));
+        // this.requests =  JSON.parse( fs.readFileSync(requestsLoc,"utf8"));
     }
 
     public createRequest(requestName: string, loc: string, pat: string):JSON {

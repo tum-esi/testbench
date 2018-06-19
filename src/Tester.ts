@@ -347,9 +347,11 @@ export class Tester {
 
     }
 
-    public testCycle(cycleNumber: number, logMode: boolean): Promise<any> {
+    public testCycle(cycleNumber: number, scenarioNumber: number, logMode: boolean): Promise<any> {
         var self = this;
-        let maxScenario: number = self.findMaxScenario(); //finding how many test scenarios are there to test
+        // let maxScenario: number = self.findMaxScenario(); //finding how many test scenarios are there to test
+        let maxScenario: number = scenarioNumber;
+        console.log('maxScenarion Number:', maxScenario)
         let scenarios: Array<number> = [];
         for (var i = 0; i < maxScenario; i++) {
             scenarios[i] = i;
@@ -381,7 +383,7 @@ export class Tester {
     It return the test report that has all the required functions to display the results
     */
 
-    public testThing(repetition: number, logMode: boolean): Promise<TestReport> {
+    public testThing(repetition: number, scenarioNumber: number, logMode: boolean): Promise<TestReport> {
         var self = this;
         let reps: Array<number> = [];
         for (var i = 0; i < repetition; i++) {
@@ -391,9 +393,10 @@ export class Tester {
             let promise = Promise.resolve();
             reps.forEach(repNb => {
                 promise = promise.then(() => {
-                    if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* Cycle " + repNb + ", testing all scenarios")
+                    if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Cycle " + repNb + ", testing all scenarios")
                     self.testReport.addTestCycle();
-                    return self.testCycle(repNb, logMode);
+                console.log('DEEEEBUGGING')
+                    return self.testCycle(repNb, scenarioNumber, logMode);
                 });
             });
             promise.then(() => {
@@ -410,28 +413,28 @@ export class Tester {
         This function goes through the requests file to find which one has the most requests and this becomes the maxScenario 
         value that is used in the TestThing method
     */
-    private findMaxScenario(): number {
-        let reqLoc: string = this.testConfig.RequestsLocation;
+    // private findMaxScenario(): number {
+    //     let reqLoc: string = this.testConfig.RequestsLocation;
 
-        console.log('debugging reqLoc:', reqLoc);
+    //     console.log('debugging reqLoc:', reqLoc);
 
-        let requests: any = JSON.parse(fs.readFileSync(reqLoc, "utf8")); //fetching the requests
+    //     let requests: any = JSON.parse(fs.readFileSync(reqLoc, "utf8")); //fetching the requests
 
-        console.log('debugging requests:', requests);
+    //     console.log('debugging requests:', requests);
 
-        //going through the array to find the biggest length
-        let maxSize: number = 0;
-        /*
-        Object.getOwnPropertyNames(requests).forEach(function (val, idx, array) {
-            let curSize: number = requests[val].length
-            if (curSize > maxSize) {
-                maxSize = curSize;
-            }
-        });
-        */
-        maxSize = requests.length;
-        return maxSize;
-    }
+    //     //going through the array to find the biggest length
+    //     let maxSize: number = 0;
+    //     /*
+    //     Object.getOwnPropertyNames(requests).forEach(function (val, idx, array) {
+    //         let curSize: number = requests[val].length
+    //         if (curSize > maxSize) {
+    //             maxSize = curSize;
+    //         }
+    //     });
+    //     */
+    //     maxSize = requests.length;
+    //     return maxSize;
+    // }
 
     // private buildInteractionList(scenario: number): Array<string> {
     //     let reqLoc: string = this.testConfig.RequestsLocation;

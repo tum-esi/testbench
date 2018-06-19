@@ -97,7 +97,7 @@ srv.start().then(WoT=>{
     TestBenchT.setActionHandler("testThing", function(input) {
         return new Promise((resolve, reject) => {
             console.log('\x1b[36m%s\x1b[0m', '* --------------------- START OF TESTTHING METHOD ---------------------')
-            tester.testThing(testConfig.Repetitions, input).then(testReport => {
+            tester.testThing(testConfig.Repetitions, testConfig.Scenarios, input).then(testReport => {
                 testReport.printResults();
                 testReport.storeReport(testConfig.TestReportsLocation);
                 TestBenchT.writeProperty("testReport",testReport.getResults());
@@ -121,36 +121,36 @@ srv.start().then(WoT=>{
     });
 
     // Add Validation to thing description in the beginning
-    TestBenchT.addProperty({
-        name : "testsactions",
-        schema : '{ "type": "string"}',
-        value : "testwritable,getpropertydesc,testaction,testevent",
-        observable : true,
-        writable : false
-    });
-    // performs read request
-    TestBenchT.addAction({
-        name: "getpropertyvalue",
-        // insert should be property name
-        inputSchema: '{ "type": "string" }',
-        // returns property value
-        outputSchema: '{ "type": "string" }'
-    });
+    // TestBenchT.addProperty({
+    //     name : "testsactions",
+    //     schema : '{ "type": "string"}',
+    //     value : "testwritable,getpropertydesc,testaction,testevent",
+    //     observable : true,
+    //     writable : false
+    // });
+    // // performs read request
+    // TestBenchT.addAction({
+    //     name: "getpropertyvalue",
+    //     // insert should be property name
+    //     inputSchema: '{ "type": "string" }',
+    //     // returns property value
+    //     outputSchema: '{ "type": "string" }'
+    // });
 
-    async function asyncCall(propname) {
-      var result = await TuTT.readProperty(propname);
-      return result;
-      // expected output: "resolved"
-    }
-    TestBenchT.setActionHandler("getpropertyvalue", function(propname: string) {
-      var answer = asyncCall(propname);
-      return new Promise((resolve, reject) => {
-          if (answer) {
-              resolve(answer);
-          } else {
-              reject(Error('getpropertyvalue did not work'))
-          }
-      });
-    });
+    // async function asyncCall(propname) {
+    //   var result = await TuTT.readProperty(propname);
+    //   return result;
+    //   // expected output: "resolved"
+    // }
+    // TestBenchT.setActionHandler("getpropertyvalue", function(propname: string) {
+    //   var answer = asyncCall(propname);
+    //   return new Promise((resolve, reject) => {
+    //       if (answer) {
+    //           resolve(answer);
+    //       } else {
+    //           reject(Error('getpropertyvalue did not work'))
+    //       }
+    //   });
+    // });
     // console.log(TestBenchT.getThingDescription())
 }).catch(err => { throw "Couldnt connect to one servient" });
