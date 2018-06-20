@@ -52,7 +52,7 @@ export function generateSchemas(td:ThingDescription, schemaLocation:string) : vo
     // extract interactions
     for (var i = 0; i < tdInteractions.length; i++) {
 
-        console.log("* ", tdInteractions[i]);
+        // console.log("* ", tdInteractions[i]);
 
         let curInter : any  = tdInteractions[i];
         let type :string = curInter.pattern;
@@ -107,7 +107,7 @@ export function generateSchemas(td:ThingDescription, schemaLocation:string) : vo
                 // code...
                 break;
         }
-        console.log('\x1b[36m%s\x1b[0m', '* ...................................................');
+        // console.log('\x1b[36m%s\x1b[0m', '* ...................................................');
     }
     console.log('\x1b[36m%s%s\x1b[0m', "* ", reqSchemaCount + " request schemas and " + resSchemaCount + " response schemas have been created")
 }

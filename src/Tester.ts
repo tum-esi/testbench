@@ -274,6 +274,7 @@ export class Tester {
 
     private testInteraction(testCycle: number, testScenario: number, interactionIndex:number , interaction: TD.Interaction, logMode: boolean): Promise<any> {
         var self = this;
+        // console.log('\x1b[36m%s\x1b[0m', '* ******* TESTING INTERACTION:', interaction);
         return new Promise(function (resolve, reject) {
             if (interaction.pattern == 'Property') {
                 let propName: string = interaction.name;
