@@ -61,6 +61,14 @@ srv.start().then(WoT=>{
     });
     TestBenchT.writeProperty("testConfig", testConfig);
     TestBenchT.addProperty({
+        name : "TuTTD",
+        schema : '{"type": "string"}',
+        writable : false
+    });
+    TestBenchT.writeProperty("TuTTD", testConfig);
+
+
+    TestBenchT.addProperty({
         name : "requests",
         schema : '{"type": "string"}',
         writable : false
@@ -82,6 +90,10 @@ srv.start().then(WoT=>{
         outputSchema: '{ "type": "boolean" }'
     });
     TestBenchT.setActionHandler("initiate", function(propname: string) {
+
+        // add consume thing in here:
+        // using a read property
+
         return new Promise((resolve, reject) => {
             if (tester.initiate()) {
                 // additionally update requests property with generated data:
@@ -93,16 +105,17 @@ srv.start().then(WoT=>{
         });
     });
 
+    TestBenchT.addProperty({
+        name : "testReport",
+        schema : '{ "type": "string"}',
+        writable : false
+    });
+
     // test a thing action:
     TestBenchT.addAction({
         name: "testThing",
         inputSchema: '{ "type": "boolean" }',
         outputSchema: '{ "type": "boolean" }'
-    });
-    TestBenchT.addProperty({
-        name : "testReport",
-        schema : '{ "type": "string"}',
-        writable : false
     });
     // testing a thing action handler, input boolean for logMode:
     // if input true, logMode is on

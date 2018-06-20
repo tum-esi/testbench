@@ -65,18 +65,6 @@
 		}
 	},
 	"actions": {
-		"setCounter": {
-			"label": "sets counter to desired number",
-			"description": "Resets the counter to specific value",
-			"input": {
-			  "type": "number"
-			},
-			"forms": [{
-					"href" : "http://localhost:8081/mything/actions/setCounter",
-					"mediaType": "application/json"
-				}],
-			"output": {"type": "string"}
-		},
 		"setDisplay" : {
 			"input": {
 			  "type": "string"
@@ -113,20 +101,6 @@
 					"href" : "http://localhost:8081/mything/actions/setTestObject",
 					"mediaType": "application/json"
 				}]
-		},
-		"setTestArray": {
-			"input": {
-				"type": "array", 
-				"items": { "type": "number" }
-			},
-			"forms": [{
-					"href" : "http://localhost:8081/mything/actions/setTestArray",
-					"mediaType": "application/json"
-				}],
-			"output": {
-				"type": "array", 
-            	"items": { "type": "number" }
-			}
 		}
 	},
 	"events": {
