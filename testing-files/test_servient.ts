@@ -262,3 +262,19 @@ this then and catch structure exists because of Promises. It is a very hyped and
 //     xhr.send();
 //   });
 // }
+
+// async function asyncCall(propname) {
+//   var result = await TuTT.readProperty(propname);
+//   return result;
+//   // expected output: "resolved"
+// }
+// TestBenchT.setActionHandler("getpropertyvalue", function(propname: string) {
+//   var answer = asyncCall(propname);
+//   return new Promise((resolve, reject) => {
+//       if (answer) {
+//           resolve(answer);
+//       } else {
+//           reject(Error('getpropertyvalue did not work'))
+//       }
+//   });
+// });

@@ -1,4 +1,5 @@
 import _ from '@node-wot/core/node_modules/wot-typescript-definitions';
+ // for çhecking valid properties, check index.d.ts at /home/jp39/Desktop/thesis/node-wot/packages/core/node_modules/wot-typescript-definitions
 import {Servient} from '@node-wot/core';
 import {HttpClientFactory} from "@node-wot/binding-http";
 import {HttpServer} from '@node-wot/binding-http';
@@ -7,7 +8,6 @@ import * as TDParser from '@node-wot/td-tools';
 import * as TdFunctions from './tdFunctions';
 import fs = require('fs');
 import { Tester } from './Tester'
-// my imports:
 import {convertTDtoNodeWotTD040} from './convertTDs';
 
 // a test config file is always configured like this
@@ -41,7 +41,6 @@ let tutTd: ThingDescription = TDParser.parseTDString(convertedTD);
 
 //creating the Test Bench as a servient. It will test the Thing as a client and interact with the tester as a Server
 let srv = new Servient();
-console.log('\x1b[36m%s\x1b[0m', '* Created Test Bench');
 srv.addServer(new HttpServer(TdFunctions.findPort(tbTd))); //at the port specified in the TD
 srv.addClientFactory(new HttpClientFactory());
 srv.start().then(WoT=>{
@@ -57,8 +56,8 @@ srv.start().then(WoT=>{
     // infos of testbench configurations:
     TestBenchT.addProperty({
         name : "testConfig",
-        schema : '{ "type": "string"}',
-        writable : true
+        schema : '{"type": "string"}',
+        writable : false
     });
     TestBenchT.writeProperty("testConfig", testConfig);
     TestBenchT.addProperty({
@@ -71,27 +70,22 @@ srv.start().then(WoT=>{
         inputSchema: '{ "type": "string" }',
         outputSchema: '{ "type": "boolean" }'
     });
-    TestBenchT.setActionHandler("updateRequests", function(propname: string) {
-        
-        return new Promise((resolve, reject) => {
-            if (tester.initiate()) {
-                resolve(true);
-            } else {
-                reject(false);
-            }
-        });
+    TestBenchT.setActionHandler("updateRequests", function(requestsUpdate: string) {
+        fs.writeFileSync(testConfig.RequestsLocation, JSON.stringify(requestsUpdate, null, ' '));
+        var p = TestBenchT.writeProperty('requests', requestsUpdate);
+        return p.then(() => true, () => false);
     });
 
     // initiate testbench:
     TestBenchT.addAction({
-        // for çhecking valid properties, check index.d.ts at /home/jp39/Desktop/thesis/node-wot/packages/core/node_modules/wot-typescript-definitions
         name: "initiate",
-        // returns property value
         outputSchema: '{ "type": "boolean" }'
     });
     TestBenchT.setActionHandler("initiate", function(propname: string) {
         return new Promise((resolve, reject) => {
             if (tester.initiate()) {
+                // additionally update requests property with generated data:
+                TestBenchT.writeProperty('requests', tester.codeGen.getRequests(testConfig.RequestsLocation));
                 resolve(true);
             } else {
                 reject(false);
@@ -101,14 +95,13 @@ srv.start().then(WoT=>{
 
     // test a thing action:
     TestBenchT.addAction({
-        // for çhecking valid properties, check index.d.ts at /home/jp39/Desktop/thesis/node-wot/packages/core/node_modules/wot-typescript-definitions
         name: "testThing",
         inputSchema: '{ "type": "boolean" }',
         outputSchema: '{ "type": "boolean" }'
     });
     TestBenchT.addProperty({
         name : "testReport",
-        schema : '{ "type": "array"}',
+        schema : '{ "type": "string"}',
         writable : false
     });
     // testing a thing action handler, input boolean for logMode:
@@ -127,6 +120,13 @@ srv.start().then(WoT=>{
             });
         });
     });
+
+
+    // until here......... need to add one property for TuT Thing Description
+
+
+
+
 
     // Add Validation to thing description in the beginning
     // TestBenchT.addProperty({

@@ -82,16 +82,14 @@ export class Tester {
     testScenario number is related to the json file that contains the requests to be sent. In this file, in the array of interaction names,
     you can put different json values that will be sent to the thing
     */
-    public testAction(testCycle: number, actionName: string, testScenario: number, interactionIndex:number,logMode: boolean): Promise<any> {
+    public testAction(testCycle: number, actionName: string, testScenario: number, interactionIndex:number, logMode: boolean): Promise<any> {
         var self = this;
         return new Promise(function (resolve, reject) {
             let toSend: JSON;
             let answer: JSON;
             //generating the message to send 
             try {
-                // toSend = JSON.parse( fs.readFileSync(requestsLoc,"utf8"))[testCycle][testScenario]['interactionValue']
-                // console.log(toSend, '******************************* HHHHHHHHHHEEEEEERRRRRRRRREEEEEEEE')
-                toSend = self.codeGen.createRequest(actionName, self.testConfig.SchemaLocation, "Action");
+                toSend = self.codeGen.findRequestValue(self.testConfig.RequestsLocation, testScenario, interactionIndex, actionName);
                 if (logMode) console.log('\x1b[36m%s%s\x1b[0m', '* Created value to send :', JSON.stringify(toSend, null, ' '));
             } catch (Error) {
                 if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Cannot create message for " + actionName + ", look at the previous message to identify the problem");
