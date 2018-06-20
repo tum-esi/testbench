@@ -55,7 +55,6 @@ export function generateSchemas(td:ThingDescription, schemaLocation:string) : vo
         console.log("* ", tdInteractions[i]);
 
         let curInter : any  = tdInteractions[i];
-        // let type :string = curInter.semanticTypes[0];
         let type :string = curInter.pattern;
         let name :string = curInter.name;
 

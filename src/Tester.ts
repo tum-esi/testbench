@@ -17,7 +17,7 @@ import * as TD from '@node-wot/td-tools';
 import * as TDParser from '@node-wot/td-tools';
 import * as tdHelpers from '@node-wot/td-tools'
 import * as TdFunctions from './tdFunctions'
-import { CodeGenerator } from './CodeGenerator'
+import { CodeGenerator } from './DataGenerator'
 import { TestReport } from './TestReport'
 import * as SchemaValidator from './SchemaValidator'
 import { testConfig } from './test-bench'
@@ -89,6 +89,8 @@ export class Tester {
             let answer: JSON;
             //generating the message to send 
             try {
+                // toSend = JSON.parse( fs.readFileSync(requestsLoc,"utf8"))[testCycle][testScenario]['interactionValue']
+                // console.log(toSend, '******************************* HHHHHHHHHHEEEEEERRRRRRRRREEEEEEEE')
                 toSend = self.codeGen.createRequest(actionName, self.testConfig.SchemaLocation, "Action");
                 if (logMode) console.log('\x1b[36m%s%s\x1b[0m', '* Created value to send :', JSON.stringify(toSend, null, ' '));
             } catch (Error) {
@@ -153,7 +155,6 @@ export class Tester {
         });
     }
 
-
     /*
     This method tests the property given in the parameters
     logMode toggles between outputting every single step and error into the terminal. TRUE outputs to the terminal
@@ -163,7 +164,7 @@ export class Tester {
     Then property values are fetched again. Here it is hoped that the value is the same as the written one but if the value changes in between it will
     be different. This is recorded as an error but has a specific error case number. This basically tests if the property is really writable
     */
-    public testProperty(testCycle: number, propertyName: string, testScenario: number, interactionIndex:number,logMode: boolean): Promise<any> {
+    public testProperty(testCycle: number, propertyName: string, testScenario: number, interactionIndex:number, logMode: boolean): Promise<any> {
         var self = this;
         return new Promise(function (resolve, reject) {
             let isWritable: boolean; //is the property we are testing now writable
@@ -204,7 +205,7 @@ export class Tester {
                     let answer: JSON;
                     //generating the message to send 
                     try {
-                        toSend = self.codeGen.createRequest(propertyName, self.testConfig.SchemaLocation, "Property");
+                        toSend = self.codeGen.findRequestValue(self.testConfig.RequestsLocation, testScenario, interactionIndex, propertyName);
                         if (logMode) console.log('\x1b[36m%s%s\x1b[0m', '* Created value to send:', JSON.stringify(toSend, null, ' '));
                     } catch (Error) {
                         if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Cannot create message for " + propertyName + ", look at the previous message to identify the problem");
@@ -324,8 +325,6 @@ export class Tester {
             let curInter: TD.Interaction = this.tutTd.interaction[i];
             interactionList.push(curInter.name);
         }
-        // constructing the list of interactions for this scenario
-        // let interactionList: Array<string> = this.buildInteractionList(testScenario)
 
         var self = this;
         return new Promise(function (resolve, reject) {
@@ -349,9 +348,7 @@ export class Tester {
 
     public testCycle(cycleNumber: number, scenarioNumber: number, logMode: boolean): Promise<any> {
         var self = this;
-        // let maxScenario: number = self.findMaxScenario(); //finding how many test scenarios are there to test
         let maxScenario: number = scenarioNumber;
-        console.log('maxScenarion Number:', maxScenario)
         let scenarios: Array<number> = [];
         for (var i = 0; i < maxScenario; i++) {
             scenarios[i] = i;
@@ -395,7 +392,6 @@ export class Tester {
                 promise = promise.then(() => {
                     if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Cycle " + repNb + ", testing all scenarios")
                     self.testReport.addTestCycle();
-                console.log('DEEEEBUGGING')
                     return self.testCycle(repNb, scenarioNumber, logMode);
                 });
             });
@@ -408,43 +404,4 @@ export class Tester {
             });
         });
     }
-
-    /*
-        This function goes through the requests file to find which one has the most requests and this becomes the maxScenario 
-        value that is used in the TestThing method
-    */
-    // private findMaxScenario(): number {
-    //     let reqLoc: string = this.testConfig.RequestsLocation;
-
-    //     console.log('debugging reqLoc:', reqLoc);
-
-    //     let requests: any = JSON.parse(fs.readFileSync(reqLoc, "utf8")); //fetching the requests
-
-    //     console.log('debugging requests:', requests);
-
-    //     //going through the array to find the biggest length
-    //     let maxSize: number = 0;
-    //     /*
-    //     Object.getOwnPropertyNames(requests).forEach(function (val, idx, array) {
-    //         let curSize: number = requests[val].length
-    //         if (curSize > maxSize) {
-    //             maxSize = curSize;
-    //         }
-    //     });
-    //     */
-    //     maxSize = requests.length;
-    //     return maxSize;
-    // }
-
-    // private buildInteractionList(scenario: number): Array<string> {
-    //     let reqLoc: string = this.testConfig.RequestsLocation;
-    //     let requests: any = JSON.parse(fs.readFileSync(reqLoc, "utf8")); //fetching the requests
-
-    //     let interactionList: Array<string> = [];
-    //     requests[scenario].forEach((curScenario: any) => {
-    //         interactionList.push(curScenario.interactionName);
-    //     });
-    //     return interactionList;
-    // }
-
 }

@@ -52,9 +52,35 @@ srv.start().then(WoT=>{
     });
     // ask ege about input of this function:
     let TuTT = WoT.consume(convertedTD);
-
     let tester: Tester = new Tester(testConfig, tutTd, TuTT);
-    // let check = tester.initiate();
+
+    // infos of testbench configurations:
+    TestBenchT.addProperty({
+        name : "testConfig",
+        schema : '{ "type": "string"}',
+        writable : true
+    });
+    TestBenchT.writeProperty("testConfig", testConfig);
+    TestBenchT.addProperty({
+        name : "requests",
+        schema : '{"type": "string"}',
+        writable : false
+    });
+    TestBenchT.addAction({
+        name: "updateRequests",
+        inputSchema: '{ "type": "string" }',
+        outputSchema: '{ "type": "boolean" }'
+    });
+    TestBenchT.setActionHandler("updateRequests", function(propname: string) {
+        
+        return new Promise((resolve, reject) => {
+            if (tester.initiate()) {
+                resolve(true);
+            } else {
+                reject(false);
+            }
+        });
+    });
 
     // initiate testbench:
     TestBenchT.addAction({
@@ -65,21 +91,14 @@ srv.start().then(WoT=>{
     });
     TestBenchT.setActionHandler("initiate", function(propname: string) {
         return new Promise((resolve, reject) => {
-            try {
-                resolve(tester.initiate());
-            } catch (error) {
+            if (tester.initiate()) {
+                resolve(true);
+            } else {
                 reject(false);
             }
         });
     });
 
-    // infos of testbench configurations:
-    TestBenchT.addProperty({
-        name : "testConfig",
-        schema : '{ "type": "string"}',
-        writable : true
-    });
-    TestBenchT.writeProperty("testConfig", testConfig);
     // test a thing action:
     TestBenchT.addAction({
         // for çhecking valid properties, check index.d.ts at /home/jp39/Desktop/thesis/node-wot/packages/core/node_modules/wot-typescript-definitions
@@ -107,17 +126,6 @@ srv.start().then(WoT=>{
                 reject(false);
             });
         });
-    });
-
-    TestBenchT.addAction({
-        // for çhecking valid properties, check index.d.ts at /home/jp39/Desktop/thesis/node-wot/packages/core/node_modules/wot-typescript-definitions
-        name: "generateRequests",
-        inputSchema: '{ "type": "string" }'
-    });
-    TestBenchT.addProperty({
-        name : "requests",
-        schema : '{ "type": "array"}',
-        writable : true
     });
 
     // Add Validation to thing description in the beginning
