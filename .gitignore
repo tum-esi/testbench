@@ -3,7 +3,7 @@ Reports
 Resources
 dist/*
 !/dist/README.md
-
+.gitignore
 
 # Logs
 logs
