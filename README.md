@@ -56,7 +56,7 @@ TestBench is a Thing itself,
 
 - **First**: Calls initialization of TestBench where TestBench consumes the inside `test-config.json` provided Thing Desctiption of Thing under Test and exposes generated requests which are send during testing procedure as a property of TestBench.
 
-	| **POST** | TestBench initiation |
+| **POST** | TestBench initiation |
 | ------------- |:-------------:|
 | content-type      | application/json | 
 | body      |  empty   | 
@@ -67,7 +67,7 @@ TestBench is a Thing itself,
 
 - **Second**: Changes requests fake data. Execute only if desired.
 
-	| **POST** | TestBench update schema-faker request data |
+| **POST** | TestBench update schema-faker request data |
 | ------------- |:-------------:|
 | content-type      | application/json | 
 | body      |  [[\{"interactionName":"testObject","interactionValue":\{"brightness":50,"status":"my change"\}\},\{"interactionName":"testObject","interactionValue":\{"brightness":41.447134566914734,"status":"ut aut"\}\}],[\{"interactionName":"testArray","interactionValue":[87987366.27759776,18277015.91254884,-25996637.898988828,-31082548.946999773]\},\{"interactionName":"testArray","interactionValue":[2907339.2741234154,-24383724.353494212]}],[\{"interactionName":"display","interactionValue":"eu ad laborum"\}, ... ], ... ]  | 
@@ -77,7 +77,7 @@ TestBench is a Thing itself,
 
 - **Third**: Executes testing procedure on consumed Thing. Exposes test-report as a property afterwards. Body set to `"true"` activates logging to console.
 
-	| **POST** | TestBench execute action test Thing |
+| **POST** | TestBench execute action test Thing |
 | ------------- |:-------------:|
 | content-type      | application/json | 
 | body      |  "true"   | 
