@@ -15,6 +15,10 @@ export function findPort(td : ThingDescription) : number {
 	let columnLoc:number= base.indexOf(':',6);
 	let divLoc:number = base.indexOf('/',columnLoc);
 	let returnString:string = base.substring(columnLoc+1, divLoc);
+
+    console.log('#################################');
+    console.log(columnLoc);
+    console.log(returnString);
 	return parseInt(returnString);
 }
 

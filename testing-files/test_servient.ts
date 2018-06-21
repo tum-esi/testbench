@@ -156,13 +156,22 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
             resolve(input);
             });
     });
+
+    // delay function fo action return value:
+    function delay(t, v) {
+       return new Promise(function(resolve) { 
+           setTimeout(resolve.bind(null, v), t);
+       });
+    }
     thing.setActionHandler("setTestArray", (input: string) => {
         console.log("* ACTION HANDLER FUNCTION for setTestArray");
         console.log("* ", input);
         thing.writeProperty("testArray", input);
-        return new Promise((resolve, reject) => {
-            resolve(input);
-            });
+        // return delay(5000, input);
+        return delay(5000, input).then(function(input) {
+            console.log('returning now');
+            return input;
+        });
     });
 
     // example of property read handler...
@@ -198,7 +207,6 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
             }
           });
     });
-
 }).catch(err => { throw "Couldnt connect to one servient" });
 
 

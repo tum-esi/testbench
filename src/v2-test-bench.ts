@@ -3,7 +3,7 @@ import _ from '@node-wot/core/node_modules/wot-typescript-definitions';
 import {Servient} from '@node-wot/core';
 import {HttpClientFactory} from "@node-wot/binding-http";
 import {HttpServer} from '@node-wot/binding-http';
-import {ThingDescription} from '@node-wot/td-tools';
+import {Thing} from '@node-wot/td-tools';
 import * as TDParser from '@node-wot/td-tools';
 import * as TdFunctions from './tdFunctions';
 import fs = require('fs');
@@ -28,7 +28,7 @@ let testConfig: testConfig = JSON.parse(fs.readFileSync('./test-config.json', "u
 let tbName: string = testConfig["TBname"];
 //get the Thing Description of this Test Bench
 let tbTdString: string = fs.readFileSync('./' + tbName + '.jsonld', "utf8");
-let tbTd: ThingDescription = TDParser.parseTDString(tbTdString);
+let tbTd: Thing = TDParser.parseTDString(tbTdString);
 
 //get the Td of the Thing under test (tut)
 let tutName = testConfig.ThingTdName;
@@ -37,10 +37,13 @@ let tutTdLocation = testConfig.ThingTdLocation;
 let tutTdString: string = fs.readFileSync(tutTdLocation + tutName + ".jsonld", "utf8");
 // convert to node-wot TD version:
 let convertedTD: string = convertTDtoNodeWotTD040(tutTdString);
-let tutTd: ThingDescription = TDParser.parseTDString(convertedTD);
+let tutTd: Thing = TDParser.parseTDString(convertedTD);
+// for running old version thing descriptions
+// let tutTd: Thing = TDParser.parseTDString(tutTdString);
 
 //creating the Test Bench as a servient. It will test the Thing as a client and interact with the tester as a Server
 let srv = new Servient();
+console.log('############## creating servient')
 srv.addServer(new HttpServer(TdFunctions.findPort(tbTd))); //at the port specified in the TD
 srv.addClientFactory(new HttpClientFactory());
 srv.start().then(WoT=>{
@@ -50,6 +53,9 @@ srv.start().then(WoT=>{
         name: "thing_test_bench",
     });
     // ask ege about input of this function:
+
+    // for running old thing descripotion:
+    // let TuTT = WoT.consume(tutTdString);
     let TuTT = WoT.consume(convertedTD);
     let tester: Tester = new Tester(testConfig, tutTd, TuTT);
 

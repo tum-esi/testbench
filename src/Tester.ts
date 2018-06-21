@@ -12,7 +12,7 @@ After the test a test report can be generated and analyzed to get more meaning o
 import fs = require('fs');
 // import _ from 'wot-typescript-definitions';// global W3C WoT Scripting API definitions
 import Servient from '@node-wot/core';
-import ThingDescription from '@node-wot/td-tools';
+import {Thing} from '@node-wot/td-tools';
 import * as TD from '@node-wot/td-tools';
 import * as TDParser from '@node-wot/td-tools';
 import * as tdHelpers from '@node-wot/td-tools'
@@ -20,18 +20,18 @@ import * as TdFunctions from './tdFunctions'
 import { CodeGenerator } from './DataGenerator'
 import { TestReport } from './TestReport'
 import * as SchemaValidator from './SchemaValidator'
-import { testConfig } from './test-bench'
+import { testConfig } from './v2-test-bench'
 import timers = require("timers")
 
 export class Tester {
-    private tutTd: ThingDescription; //the TD that belongs to the Thing under Test
+    private tutTd: Thing; //the TD that belongs to the Thing under Test
     private testConfig: testConfig; //the file that describes various locations of the files that are needed. Must be configured by the user
-    private codeGen: CodeGenerator; //this will generate the requests to be sent to the tut
+    public codeGen: CodeGenerator; //this will generate the requests to be sent to the tut
     public testReport: TestReport; //after the testing, this will contain the bare results
     private tut: WoT.ConsumedThing; // the thing under test
 
     //this is a basic constructor, it is planned to change to incorporate more things into the initiate function
-    constructor(tC: testConfig, tutTd: ThingDescription, tut: WoT.ConsumedThing) {
+    constructor(tC: testConfig, tutTd: Thing, tut: WoT.ConsumedThing) {
         this.testConfig = tC;
         this.tutTd = tutTd;
         this.tut = tut;

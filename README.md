@@ -77,7 +77,7 @@ TestBench is a Thing itself,
 
 - **Third**: Executes testing procedure on consumed Thing. Exposes test-report as a property afterwards. Body set to `"true"` activates logging to console.
 
-| **POST** | TestBench execute action test Thing |
+| **POST** | TestBench execute action testThing |
 | ------------- |:-------------:|
 | content-type      | application/json | 
 | body      |  "true"   | 
