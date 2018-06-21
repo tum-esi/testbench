@@ -8,10 +8,8 @@ export class CodeGenerator {
     
     constructor(tdesc: ThingDescription, testConf: any) {
         this.td = tdesc;
-        let requestsLoc:string = testConf.RequestsLocation;
-        // console.log(tdesc, '--------')
+        let requestsLoc:string = testConf.TestDataLocation;
         this.generateFakeData(testConf, tdesc.interaction);
-        // this.requests =  JSON.parse( fs.readFileSync(requestsLoc,"utf8"));
     }
 
     private createRequest(requestName: string, loc: string, pat: string):JSON {
@@ -25,7 +23,7 @@ export class CodeGenerator {
     }
 
     public generateFakeData(testConf: any, interactions: any) {
-        // generates fake data and stores it to config RequestsLocation location
+        // generates fake data and stores it to config TestDataLocation location
 
         let requestList = [];
         for (var i in interactions) {
@@ -39,7 +37,7 @@ export class CodeGenerator {
             }
             requestList.push(scenarioList);
         }
-        fs.writeFileSync(testConf.RequestsLocation, JSON.stringify(requestList, null, ' '));
+        fs.writeFileSync(testConf.TestDataLocation, JSON.stringify(requestList, null, ' '));
     }
 
     // helper function finds created data:

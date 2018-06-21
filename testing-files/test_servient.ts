@@ -168,6 +168,8 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
         console.log("* ", input);
         thing.writeProperty("testArray", input);
         // return delay(5000, input);
+
+        // delay to simulate action which takes longer
         return delay(5000, input).then(function(input) {
             console.log('returning now');
             return input;

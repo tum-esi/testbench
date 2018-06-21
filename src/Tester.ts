@@ -89,7 +89,7 @@ export class Tester {
             let answer: JSON;
             //generating the message to send 
             try {
-                toSend = self.codeGen.findRequestValue(self.testConfig.RequestsLocation, testScenario, interactionIndex, actionName);
+                toSend = self.codeGen.findRequestValue(self.testConfig.TestDataLocation, testScenario, interactionIndex, actionName);
                 if (logMode) console.log('\x1b[36m%s%s\x1b[0m', '* Created value to send :', JSON.stringify(toSend, null, ' '));
             } catch (Error) {
                 if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Cannot create message for " + actionName + ", look at the previous message to identify the problem");
@@ -203,7 +203,7 @@ export class Tester {
                     let answer: JSON;
                     //generating the message to send 
                     try {
-                        toSend = self.codeGen.findRequestValue(self.testConfig.RequestsLocation, testScenario, interactionIndex, propertyName);
+                        toSend = self.codeGen.findRequestValue(self.testConfig.TestDataLocation, testScenario, interactionIndex, propertyName);
                         if (logMode) console.log('\x1b[36m%s%s\x1b[0m', '* Created value to send:', JSON.stringify(toSend, null, ' '));
                     } catch (Error) {
                         if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Cannot create message for " + propertyName + ", look at the previous message to identify the problem");
@@ -276,7 +276,8 @@ export class Tester {
         var self = this;
         // console.log('\x1b[36m%s\x1b[0m', '* ******* TESTING INTERACTION:', interaction);
         return new Promise(function (resolve, reject) {
-            if (interaction.pattern == 'Property') {
+            let pattern: string = String(interaction.pattern);
+            if (pattern == 'Property') {
                 let propName: string = interaction.name;
                 if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... Testing Property:", propName, ".................");
                 self.testProperty(testCycle, propName, testScenario, interactionIndex, logMode).then((curBool) => {
@@ -286,7 +287,7 @@ export class Tester {
                     if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* Error in testing property ", propName, ", check previous messages")
                     reject(curBool);
                 });
-            } else if (interaction.pattern == 'Action') {
+            } else if (pattern == 'Action') {
                 let actName: string = interaction.name;
                 if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... Testing Action:", actName, ".................");
                 self.testAction(testCycle, actName, testScenario, interactionIndex, logMode).then((curBool) => {
@@ -296,7 +297,7 @@ export class Tester {
                     if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* Error in testing action ", actName, ", check previous messages")
                     reject(curBool);
                 });
-            } else if (interaction.pattern == 'Event') {    
+            } else if (pattern == 'Event') {    
                 let eveName: string = interaction.name;
                 if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... Testing Event: ", eveName, ".................");
                 self.testEvent(testCycle, eveName, testScenario, interactionIndex, logMode).then((curBool) => {

@@ -1,12 +1,8 @@
 {
-    "TBname": "test-bench2",
-    "ThingTdLocation" : "/home/jp39/Desktop/master_thesis/testbench/",
-    "ThingTdName":"myTuT-complete",
+    "TBname": "TestBench",
     "SchemaLocation" : "Resources/InteractionSchemas/",
     "TestReportsLocation" : "Reports/",
-    "RequestsLocation" : "Resources/fake-data.json",
+    "TestDataLocation" : "Resources/fake-data.json",
     "Scenarios": 1,
     "Repetitions" : 1
 }
-
-
