@@ -4,24 +4,6 @@ import * as TDParser from '@node-wot/td-tools/src/td-parser';
 import fs = require('fs');
 var mkdirp = require("mkdirp");
 
-// export function findProtocol(td : ThingDescription) : string {
-// 	let base:string = td.base;
-// 	let columnLoc:number = base.indexOf(":");
-// 	return base.substring(0,columnLoc);
-// }
-
-// export function findPort(td : ThingDescription) : number { 
-// 	let base:string = td.base;
-// 	let columnLoc:number= base.indexOf(':',6);
-// 	let divLoc:number = base.indexOf('/',columnLoc);
-// 	let returnString:string = base.substring(columnLoc+1, divLoc);
-
-//     console.log('#################################');
-//     console.log(columnLoc);
-//     console.log(returnString);
-// 	return parseInt(returnString);
-// }
-
 // add required object key to json type object
 function addRequired(scheme) {
     if (scheme['type'] == 'object') {

@@ -6,7 +6,6 @@ import {HttpServer} from '@node-wot/binding-http';
 import {CoapServer} from "@node-wot/binding-coap";
 import {Thing} from '@node-wot/td-tools';
 import * as TDParser from '@node-wot/td-tools';
-// import * as TdFunctions from './tdFunctions';
 import fs = require('fs');
 import { Tester } from './Tester'
 import {convertTDtoNodeWotTD040} from './convertTDs';
@@ -36,6 +35,7 @@ srv.start().then(WoT=>{
     let TestBenchT = WoT.produce({
         name: tbName,
     });
+    console.log('we are here aaaah ')
     // inits:
     let tester: Tester = null;
 
@@ -46,6 +46,7 @@ srv.start().then(WoT=>{
         writable : true
     });
     TestBenchT.writeProperty("testConfig", testConfig);
+
     TestBenchT.addProperty({
         name : "thingUnderTestTD",
         schema : '{"type": "string"}',
@@ -58,16 +59,19 @@ srv.start().then(WoT=>{
         writable : true
     });
 
-    // initiate testbench:
+    // update config file and variable, consume thing and add Tester:
     TestBenchT.addAction({
         name: "initiate",
         outputSchema: '{ "type": "boolean" }'
     });
     TestBenchT.setActionHandler("initiate", () => {
-        //consume thing and add Tester:
-        return TestBenchT.readProperty('thingUnderTestTD').then((tut) => {
+        console.log('starting initiation:::::::')
+        var p1 = TestBenchT.readProperty("testConfig").then((newConf) => {
+            testConfig = JSON.parse(JSON.stringify(newConf));
+            fs.writeFileSync('./test-config.json', JSON.stringify(testConfig, null, ' '));
+        });
+        return p1.then(() => {return TestBenchT.readProperty('thingUnderTestTD')}).then((tut) => {
             tut = JSON.stringify(tut);
-            console.log('$$$$$$$', tut);
             if (tut != null) {
                 // ---------------------------------- CONVERTING !! TAKE NEW NODE WOT
                 let convertedTD: string = convertTDtoNodeWotTD040(tut);
@@ -81,11 +85,11 @@ srv.start().then(WoT=>{
                     } else {
                         reject(false);
                     }
-                });
+                }).catch(err => {throw "Error"});
             } else {
                 return new Promise((resolve, reject) => {reject(false);});
             }
-        });
+        }).catch(err => {throw "Error"});
     });
 
     TestBenchT.addProperty({

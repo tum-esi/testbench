@@ -4,6 +4,7 @@ Resources
 dist/*
 !/dist/README.md
 .gitignore
+package-lock.json
 
 # Logs
 logs

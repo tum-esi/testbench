@@ -1,8 +1,8 @@
 {
-    "TBname": "TestBench",
-    "SchemaLocation" : "Resources/InteractionSchemas/",
-    "TestReportsLocation" : "Reports/",
-    "TestDataLocation" : "Resources/fake-data.json",
-    "Scenarios": 1,
-    "Repetitions" : 1
+ "TBname": "v2-test-bench",
+ "SchemaLocation": "Resources/InteractionSchemas/",
+ "TestReportsLocation": "Reports/",
+ "TestDataLocation": "Resources/fake-data.json",
+ "Scenarios": 4,
+ "Repetitions": 2
 }
