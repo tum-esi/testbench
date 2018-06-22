@@ -35,28 +35,37 @@ srv.start().then(WoT=>{
     let TestBenchT = WoT.produce({
         name: tbName,
     });
-    console.log('we are here aaaah ')
-    // inits:
     let tester: Tester = null;
-
-    // infos of testbench configurations:
+    TestBenchT.addProperty({
+        name : "testBenchTD",
+        schema : '{"type": "string"}',
+        writable : false
+    });
     TestBenchT.addProperty({
         name : "testConfig",
         schema : '{"type": "string"}',
         writable : true
     });
     TestBenchT.writeProperty("testConfig", testConfig);
-
+    TestBenchT.addProperty({
+        name : "testBenchStatus",
+        schema : '{"type": "string"}',
+        writable : false
+    });
     TestBenchT.addProperty({
         name : "thingUnderTestTD",
         schema : '{"type": "string"}',
         writable : true
     });
-
     TestBenchT.addProperty({
         name : "testData",
         schema : '{"type": "string"}',
         writable : true
+    });
+    TestBenchT.addProperty({
+        name : "testReport",
+        schema : '{ "type": "string"}',
+        writable : false
     });
 
     // update config file and variable, consume thing and add Tester:
@@ -86,13 +95,6 @@ srv.start().then(WoT=>{
             return TestBenchT.writeProperty('testData', tester.codeGen.getRequests(testConfig.TestDataLocation));
         }).then(() => true, () => false);
     });
-
-    TestBenchT.addProperty({
-        name : "testReport",
-        schema : '{ "type": "string"}',
-        writable : false
-    });
-
     // test a thing action:
     TestBenchT.addAction({
         name: "testThing",
@@ -116,7 +118,8 @@ srv.start().then(WoT=>{
         });
     });
 
-    // until here......... need to add one property for TuT Thing Description
+    // exposes thing description of testBench:
+    TestBenchT.writeProperty("testBenchTD", JSON.parse(TestBenchT.getThingDescription()));
 
 }).catch(err => { throw "Couldnt connect to one servient" });
 
