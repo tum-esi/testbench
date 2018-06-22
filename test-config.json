@@ -3,6 +3,6 @@
  "SchemaLocation": "Resources/InteractionSchemas/",
  "TestReportsLocation": "Reports/",
  "TestDataLocation": "Resources/fake-data.json",
- "Scenarios": 4,
+ "Scenarios": 3,
  "Repetitions": 2
 }

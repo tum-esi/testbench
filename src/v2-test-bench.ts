@@ -65,31 +65,26 @@ srv.start().then(WoT=>{
         outputSchema: '{ "type": "boolean" }'
     });
     TestBenchT.setActionHandler("initiate", () => {
-        console.log('starting initiation:::::::')
         var p1 = TestBenchT.readProperty("testConfig").then((newConf) => {
             testConfig = JSON.parse(JSON.stringify(newConf));
             fs.writeFileSync('./test-config.json', JSON.stringify(testConfig, null, ' '));
         });
-        return p1.then(() => {return TestBenchT.readProperty('thingUnderTestTD')}).then((tut) => {
-            tut = JSON.stringify(tut);
+        var p2 = p1.then(() => {return TestBenchT.readProperty('thingUnderTestTD')}).then((tut) => {
             if (tut != null) {
-                // ---------------------------------- CONVERTING !! TAKE NEW NODE WOT
+                tut = JSON.stringify(tut);
+                // ------------ CONVERTING !! TAKE NEW NODE WOT -----------------
                 let convertedTD: string = convertTDtoNodeWotTD040(tut);
                 let tutTd: Thing = TDParser.parseTDString(convertedTD);
                 let consumedTuT: WoT.ConsumedThing = WoT.consume(convertedTD);
                 tester = new Tester(testConfig, tutTd, consumedTuT);
-                return new Promise((resolve, reject) => {
-                    if (tester.initiate()) {
-                        // additionally update testData property with generated data:
-                        TestBenchT.writeProperty('testData', tester.codeGen.getRequests(testConfig.TestDataLocation)).then(() => resolve(true), () => reject(false));
-                    } else {
-                        reject(false);
-                    }
-                }).catch(err => {throw "Error"});
-            } else {
-                return new Promise((resolve, reject) => {reject(false);});
+                if (tester.initiate()) {
+                    return true;
+                }
             }
         }).catch(err => {throw "Error"});
+        return p2.then(() => {
+            return TestBenchT.writeProperty('testData', tester.codeGen.getRequests(testConfig.TestDataLocation));
+        }).then(() => true, () => false);
     });
 
     TestBenchT.addProperty({
