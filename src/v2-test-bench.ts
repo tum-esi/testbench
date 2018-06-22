@@ -104,16 +104,19 @@ srv.start().then(WoT=>{
     // testing a thing action handler, input boolean for logMode:
     // if input true, logMode is on
     TestBenchT.setActionHandler("testThing", function(input) {
-        return new Promise((resolve, reject) => {
+        var p1 = TestBenchT.readProperty("testData").then((data) => {
+            fs.writeFileSync(testConfig.TestDataLocation, JSON.stringify(data, null, ' '));
+        });
+        return p1.then(() => {
             console.log('\x1b[36m%s\x1b[0m', '* --------------------- START OF TESTTHING METHOD ---------------------')
             tester.testThing(testConfig.Repetitions, testConfig.Scenarios, input).then(testReport => {
                 testReport.printResults();
                 testReport.storeReport(testConfig.TestReportsLocation);
                 TestBenchT.writeProperty("testReport",testReport.getResults());
-                resolve(true);
+                return true;
             }).catch(() => {
                 console.log('\x1b[36m%s\x1b[0m', "* Something went wrong");
-                reject(false);
+                return false;
             });
         });
     });
