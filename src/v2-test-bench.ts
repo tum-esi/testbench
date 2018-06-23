@@ -33,25 +33,25 @@ srv.addClientFactory(new CoapClientFactory());
 srv.start().then(WoT=>{
     console.log('\x1b[36m%s\x1b[0m', '* TestBench servient started');
     let TestBenchT = WoT.produce({
-        name: tbName,
+        name: 'test-bench',
     });
     let tester: Tester = null;
-    TestBenchT.addProperty({
-        name : "testBenchTD",
-        schema : '{"type": "string"}',
-        writable : false
-    });
+    // TestBenchT.addProperty({
+    //     name : "testBenchTD",
+    //     schema : '{"type": "string"}',
+    //     writable : false
+    // });
     TestBenchT.addProperty({
         name : "testConfig",
         schema : '{"type": "string"}',
         writable : true
     });
     TestBenchT.writeProperty("testConfig", testConfig);
-    TestBenchT.addProperty({
-        name : "testBenchStatus",
-        schema : '{"type": "string"}',
-        writable : false
-    });
+    // TestBenchT.addProperty({
+    //     name : "testBenchStatus",
+    //     schema : '{"type": "string"}',
+    //     writable : false
+    // });
     TestBenchT.addProperty({
         name : "thingUnderTestTD",
         schema : '{"type": "string"}',
@@ -122,7 +122,7 @@ srv.start().then(WoT=>{
     });
 
     // exposes thing description of testBench:
-    TestBenchT.writeProperty("testBenchTD", JSON.parse(TestBenchT.getThingDescription()));
+    // TestBenchT.writeProperty("testBenchTD", JSON.parse(TestBenchT.getThingDescription()));
 
 }).catch(err => { throw "Couldnt connect to one servient" });
 

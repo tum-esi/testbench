@@ -4,5 +4,5 @@
  "TestReportsLocation": "Reports/",
  "TestDataLocation": "Resources/fake-data.json",
  "Scenarios": 3,
- "Repetitions": 2
+ "Repetitions": 1
 }
