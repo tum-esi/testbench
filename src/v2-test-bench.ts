@@ -27,31 +27,26 @@ let tbName: string = testConfig["TBname"];
 //creating the Test Bench as a servient. It will test the Thing as a client and interact with the tester as a Server
 let srv = new Servient();
 srv.addServer(new HttpServer());
-srv.addServer(new CoapServer());
+// srv.addServer(new CoapServer());
 srv.addClientFactory(new HttpClientFactory());
-srv.addClientFactory(new CoapClientFactory());
+// srv.addClientFactory(new CoapClientFactory());
 srv.start().then(WoT=>{
     console.log('\x1b[36m%s\x1b[0m', '* TestBench servient started');
     let TestBenchT = WoT.produce({
         name: 'test-bench',
     });
     let tester: Tester = null;
-    // TestBenchT.addProperty({
-    //     name : "testBenchTD",
-    //     schema : '{"type": "string"}',
-    //     writable : false
-    // });
     TestBenchT.addProperty({
         name : "testConfig",
         schema : '{"type": "string"}',
         writable : true
     });
     TestBenchT.writeProperty("testConfig", testConfig);
-    // TestBenchT.addProperty({
-    //     name : "testBenchStatus",
-    //     schema : '{"type": "string"}',
-    //     writable : false
-    // });
+    TestBenchT.addProperty({
+        name : "testBenchStatus",
+        schema : '{"type": "string"}',
+        writable : false
+    });
     TestBenchT.addProperty({
         name : "thingUnderTestTD",
         schema : '{"type": "string"}',
@@ -121,19 +116,4 @@ srv.start().then(WoT=>{
         });
     });
 
-    // exposes thing description of testBench:
-    // TestBenchT.writeProperty("testBenchTD", JSON.parse(TestBenchT.getThingDescription()));
-
 }).catch(err => { throw "Couldnt connect to one servient" });
-
-
-
-////////// code backup:
-
-// TestBenchT.setActionHandler("updateTestData", function(requestsUpdate: string) {
-//         fs.writeFileSync(testConfig.TestDataLocation, JSON.stringify(requestsUpdate, null, ' '));
-//         var p = TestBenchT.writeProperty('testData', requestsUpdate);
-//         return p.then(() => true, () => false);
-//     });
-
-//     
