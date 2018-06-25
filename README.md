@@ -37,16 +37,13 @@ ___
 ## TestBench example test of a Thing Description:
 TestBench is a Thing itself
 
-- inside testbench folder: compile typescript with: `tsc -p .`
-- start testbench with: `node dist/path-to-/v2-test-bench.js`
+0. Compile all typescript files inside testbench folder with: `tsc -p .`
 
-- use curl or postman to interact with TestBench:
+1. Start a test servient so TestBench can interact with it: testing-files/test_servient.ts shows an example test servient. test_servient.ts Thing Description `myTuT-complete.jsonld` from testbench repository must be sent using a PUT request to `thingUnderTestTD` property of testbench. Run `test_servient.ts` by executing `node dist/testing-files/test_servient.js` inside `testbench` folder. Run TestBench by executing `node dist/src/v2-test-bench.js` inside `testbench` folder.
 
-1. Start a test servient so TestBench can interact with it: testing-files/test_servient.ts shows an example test servient. test_servient.ts Thing Description `myTuT-complete.jsonld` from testbench repository must be sent using a PUT request to `thingUnderTestTD` property of testbench. Run `test_servient.ts` by executing `tsc -p .` inside `testbench` folder and `node dist/path-to-test_servient.js`. Run TestBench by executing `tsc -p .` inside `testbench` folder and `node dist/path-to-/v2-test-bench.js`
+2. Start `portman` software: [Postman](https://www.getpostman.com/)
 
-2. start `portman` software: [Postman](https://www.getpostman.com/)
-
-3. start to interact with TestBench:
+3. Start to interact with TestBench:
 
 4. Example postman requests which update test-config property, Thing unser Test Thing Description. Then initiate TestBench, modify json-schema-faker data which is used to test interactions of the consumed Thing Description, and execute the Thing Description testing procedure with scenario and repetition parameters from `test-config.json` file.
 
@@ -97,33 +94,4 @@ TestBench is a Thing itself
 
 - You can use your browser and the GET requests to inpect all properties during the procedure.
 
-- How to use screencast video is in the making.
-
-### Code developed using ubuntu 18.04 LTS with following system settings:
-
-install git:
-`sudo apt install git`
-
-install node:
-`sudo apt install curl`
-`curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -`
-`sudo apt-get install nodejs`
-
-`node --version`: v10.4.0
-
-ìnstall npm:
-`sudo apt install npm`
-
-`npm -v`: 6.1.0
-
-install typescript:
-`npm install -g typescript@2.8.3`
-
-`tsc -v`: Version 2.8.3
-
-
-#### Personal notes:
-remember commands:
-
-1. `tsc --init`
-2. `npm init`
+- How to use testbench screencast video is in the making.
