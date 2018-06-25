@@ -1,6 +1,6 @@
-import {Servient,ContentSerdes, ContentCodec} from '@node-wot/core';
-import {HttpClientFactory,HttpServer} from '@node-wot/binding-http';
-import {Thing} from '@node-wot/td-tools';
+import {Servient,ContentSerdes, ContentCodec} from 'node-wot/packages/core';
+import {HttpClientFactory,HttpServer} from 'node-wot/packages/binding-http';
+import {Thing} from 'node-wot/packages/td-tools';
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
 let srv = new Servient();

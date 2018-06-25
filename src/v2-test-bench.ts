@@ -1,11 +1,11 @@
-import _ from '@node-wot/core/node_modules/wot-typescript-definitions';
-import {Servient} from '@node-wot/core';
-import {HttpClientFactory} from "@node-wot/binding-http";
-import {CoapClientFactory} from "@node-wot/binding-coap";
-import {HttpServer} from '@node-wot/binding-http';
-import {CoapServer} from "@node-wot/binding-coap";
-import {Thing} from '@node-wot/td-tools';
-import * as TDParser from '@node-wot/td-tools';
+import _ from 'node-wot/packages/core/node_modules/wot-typescript-definitions';
+import {Servient} from 'node-wot/packages/core';
+import {HttpClientFactory} from "node-wot/packages/binding-http";
+import {CoapClientFactory} from "node-wot/packages/binding-coap";
+import {HttpServer} from 'node-wot/packages/binding-http';
+import {CoapServer} from "node-wot/packages/binding-coap";
+import {Thing} from 'node-wot/packages/td-tools';
+import * as TDParser from 'node-wot/packages/td-tools';
 import fs = require('fs');
 import { Tester } from './Tester'
 import {convertTDtoNodeWotTD040} from './convertTDs';

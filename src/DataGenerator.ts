@@ -1,4 +1,4 @@
-import ThingDescription, { Interaction } from '@node-wot/td-tools/src/thing-description';
+import ThingDescription, { Interaction } from 'node-wot/packages/td-tools/src/thing-description';
 import fs = require('fs');
 var jsf = require('json-schema-faker');
 

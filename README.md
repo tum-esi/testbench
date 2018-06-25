@@ -1,32 +1,23 @@
 ## TestBench Documentation:
 ___
 
-### Prerequisites:
-- download [testbench](https://github.com/jplaui/testbench) from github using git clone 
-- switch into testbench folder and execute: `sudo npm install --global`
+### Installation uder ubuntu 18.04:
 
-- download [node-wot](https://github.com/thingweb/node-wot)
-- follow install instructions in README.md
-- make sure to run the optional `sudo npm run link`
+- install git: `sudo apt install -y git`
+- install node: `sudo apt-get install -y nodejs` (node --version v8.10.0)
+- install npm: `sudo apt install -y npm` (npm --version 3.5.2)
+- install typescript: `npm install -g typescript`
+- install lerna: `npm install -g lerna`
 
-### Dependencies & Configurations:
+Clone testbench repository from [https://github.com/jplaui/testbench](https://github.com/jplaui/testbench)
 
-- go into testbench folder
-- specify node-wot path in tsconfig:
-- set "paths": to `{ "@node-wot/*": ["path-to-node_modules/@node-wot/*"] }`
+- Jump into testbench folder and execute: `npm install`
+- Jump into `node_modules` folder and clone node-wot repository [https://github.com/thingweb/node-wot](https://github.com/thingweb/node-wot) inside the `node_modules` folder.
+- Jump into `node-wot` folder and execute: `npm install` and `npm run bootstrap` and `npm run build`
 
-Example of paths configuration: (see tsconfig.json inside this repo):
-
-`"paths": {
-        "@node-wot/*": ["/usr/lib/node_modules/@node-wot/*"]
-    } `
-
-### Running the testbench:
-
-- inside testbench folder: compile typescript with: `tsc -p .`
-- start testbench with: `node dist/path-to-/v2-test-bench.js`
-
-- use curl or postman to interact with TestBench:
+- Return back into testbench folder and execute: `tsc -p .`
+- Now you are able tu run the testbench inside the testbench folder with: `node dist/src/v2-test-bench.js`
+- Interact with the testbench using `curl` or `portman` or others:
 
 **postman**:
 
