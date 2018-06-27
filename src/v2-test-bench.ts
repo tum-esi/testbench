@@ -68,7 +68,7 @@ srv.start().then(WoT=>{
         name: "initiate",
         outputSchema: '{ "type": "boolean" }'
     });
-    TestBenchT.setActionHandler("initiate", () => {
+    TestBenchT.setActionHandler("initiate", (input: boolean) => {
         var p1 = TestBenchT.readProperty("testConfig").then((newConf) => {
             testConfig = JSON.parse(JSON.stringify(newConf));
             fs.writeFileSync('./test-config.json', JSON.stringify(testConfig, null, ' '));
@@ -81,7 +81,7 @@ srv.start().then(WoT=>{
                 let tutTd: Thing = TDParser.parseTDString(convertedTD);
                 let consumedTuT: WoT.ConsumedThing = WoT.consume(convertedTD);
                 tester = new Tester(testConfig, tutTd, consumedTuT);
-                if (tester.initiate()) {
+                if (tester.initiate(input)) {
                     return true;
                 }
             }
@@ -98,7 +98,7 @@ srv.start().then(WoT=>{
     });
     // testing a thing action handler, input boolean for logMode:
     // if input true, logMode is on
-    TestBenchT.setActionHandler("testThing", function(input) {
+    TestBenchT.setActionHandler("testThing", function(input: boolean) {
         var p1 = TestBenchT.readProperty("testData").then((data) => {
             fs.writeFileSync(testConfig.TestDataLocation, JSON.stringify(data, null, ' '));
         });

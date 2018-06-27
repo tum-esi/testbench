@@ -9,14 +9,14 @@ ___
 - install typescript: `npm install -g typescript`
 - install lerna: `npm install -g lerna`
 
-Clone testbench repository from [https://github.com/jplaui/testbench](https://github.com/jplaui/testbench)
+Clone testbench repository from [https://github.com/jplaui/testbench](https://github.com/jplaui/testbench): `git clone https://github.com/jplaui/testbench.git`
 
-- Jump into testbench folder and execute: `npm install`
-- Jump into `node_modules` folder and clone node-wot repository [https://github.com/thingweb/node-wot](https://github.com/thingweb/node-wot) inside the `node_modules` folder.
+- Jump into `testbench` folder and execute: `npm install`
+- Jump into `node_modules` folder and clone node-wot repository [https://github.com/thingweb/node-wot](https://github.com/thingweb/node-wot) inside the `node_modules` folder with `git clone https://github.com/thingweb/node-wot.git`.
 - Jump into `node-wot` folder and execute: `npm install` and `run bootstrap` and `sudo npm run build`
 
 - Return back into testbench folder and execute: `tsc -p .`
-- Now you are able tu run the testbench inside the testbench folder with: `node dist/src/v2-test-bench.js`
+- Now you are able tu run the testbench inside the testbench folder with: `node dist/v2-test-bench.js`
 - Interact with the testbench using `curl` or `portman` or others:
 
 **postman**:
@@ -26,11 +26,11 @@ Clone testbench repository from [https://github.com/jplaui/testbench](https://gi
 | content-type      | application/json | 
 | body      |  config json data   | 
 | data-type | raw |
-| url | http://your-address:8090/thing_test_bench/properties/testConfig | 
+| url | http://your-address:8080/thing_test_bench/properties/testConfig | 
 
 **curl**:
 
-`curl -X POST -H "Content-Type: application/json" -d '{configuration-data}' http://your-address:8090/thing_test_bench/properties/testConfig`
+`curl -X POST -H "Content-Type: application/json" -d '{configuration-data}' http://your-address:8080/thing_test_bench/properties/testConfig`
 
 ___
 
@@ -39,13 +39,11 @@ TestBench is a Thing itself
 
 0. Compile all typescript files inside testbench folder with: `tsc -p .`
 
-1. Start a test servient so TestBench can interact with it: testing-files/test_servient.ts shows an example test servient. test_servient.ts Thing Description `myTuT-complete.jsonld` from testbench repository must be sent using a PUT request to `thingUnderTestTD` property of testbench. Run `test_servient.ts` by executing `node dist/testing-files/test_servient.js` inside `testbench` folder. Run TestBench by executing `node dist/src/v2-test-bench.js` inside `testbench` folder.
+1. Start a test servient so TestBench can interact with it: testing-files/test_servient.js shows an example test servient. test_servient.js Thing Description `myTuT-complete.jsonld` from testbench repository must be sent using a PUT request to `thingUnderTestTD` property of testbench. Run `test_servient.js` by executing `node testing-files/test_servient.js` inside `testbench` folder. Run TestBench by executing `node dist/v2-test-bench.js` inside `testbench` folder.
 
 2. Start `portman` software: [Postman](https://www.getpostman.com/)
 
 3. Start to interact with TestBench:
-
-4. Example postman requests which update test-config property, Thing unser Test Thing Description. Then initiate TestBench, modify json-schema-faker data which is used to test interactions of the consumed Thing Description, and execute the Thing Description testing procedure with scenario and repetition parameters from `test-config.json` file.
 
 - **First**: Send Put request to testbench with Thing Description you like to test.
 
@@ -59,12 +57,12 @@ TestBench is a Thing itself
 
 - **Then**: Update test config property if you like with PUT request.
 
-- **Then**: Call initialization of TestBench where TestBench reads new configurations, consumes the provided Thing Desctiption of Thing under Test and exposes generated `testData` which is send during testing procedure as a property of TestBench.
+- **Then**: Call initialization of TestBench where TestBench reads new configurations, consumes the provided Thing Desctiption of Thing under Test and exposes generated `testData` which is send during testing procedure as a property of TestBench. Body set to `"true"` activates logging to console.
 
 | **POST** | TestBench initiation |
 | ------------- |:-------------:|
 | content-type      | application/json | 
-| body      |  empty   | 
+| body      |  boolean   | 
 | data-type | raw |
 | url | http://your-address:8090/thing_test_bench/actions/initiate |
 | return value: | boolean if successful |
@@ -80,7 +78,7 @@ TestBench is a Thing itself
 | url | http://your-address:8090/thing_test_bench/actions/updateRequests |
 | return value: | no return value |
 
-- **Third**: Executes testing procedure on consumed Thing. Exposes test-report as a property afterwards. Body set to `"true"` activates logging to console.
+- **Third**: Reads in testData property and executes testing procedure on consumed Thing. Exposes test-report as a property afterwards. Body set to `"true"` activates logging to console.
 
 | **POST** | TestBench execute action testThing |
 | ------------- |:-------------:|
@@ -95,3 +93,11 @@ TestBench is a Thing itself
 - You can use your browser and the GET requests to inpect all properties during the procedure.
 
 - How to use testbench screencast video is in the making.
+
+
+## Missing features which will be added in soon future:
+
+- observable properties testing
+- events testing
+- adapting to protocol bindings (TestBench as well as test_servient have hard coded HTTP protocol bingings)
+

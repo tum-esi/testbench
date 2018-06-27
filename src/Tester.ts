@@ -40,29 +40,29 @@ export class Tester {
     // Currently: Does basic initiations for the codeGenerator, testReport and generates the JSON Schemas from the TD
     // End Goal: Fetching the thing under test
     // This can be called by using the Initiate action of the test bench
-    public initiate():boolean {
-        console.log('\x1b[36m%s\x1b[0m', "* Initiation has started")
+    public initiate(logMode: boolean):boolean {
+        if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Initiation has started");
         //Generating JSON Schemas for input and output Data of each interaction. Go into the function to find explanations
         try {
-            console.log('\x1b[36m%s\x1b[0m', '* Starting schema generation')
+            if (logMode) console.log('\x1b[36m%s\x1b[0m', '* Starting schema generation');
             TdFunctions.generateSchemas(this.tutTd, this.testConfig.SchemaLocation);
-            console.log('\x1b[36m%s\x1b[0m', '* Done with generate schema')
+            if (logMode) console.log('\x1b[36m%s\x1b[0m', '* Done with generate schema');
         } catch (Error) {
-            throw "Schema Generation Error" + Error
+            if (logMode) console.log("Schema Generation Error" + Error);
         }
 
         //initiliazing this class doesnt do much
         try {
-            console.log('\x1b[36m%s\x1b[0m', '* Starting code generation')
-            this.codeGen = new CodeGenerator(this.tutTd, this.testConfig)
-            console.log('\x1b[36m%s\x1b[0m', '* done with code generation')
+            if (logMode) console.log('\x1b[36m%s\x1b[0m', '* Starting code generation');
+            this.codeGen = new CodeGenerator(this.tutTd, this.testConfig);
+            if (logMode) console.log('\x1b[36m%s\x1b[0m', '* done with code generation');
         } catch (Error) {
-            throw "CodeGenerator Initialization Error" + Error
+            if (logMode) console.log("CodeGenerator Initialization Error" + Error);
         }
         //The test report gets initialized and the first cycle and scenarios are added
         //This means that single tests are possible to be seen in the test report
         this.testReport = new TestReport();
-        console.log('\x1b[36m%s\x1b[0m', "* Initialization finished")
+        if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Initialization finished");
         return true;
     }
 
