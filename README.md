@@ -1,5 +1,8 @@
-## TestBench-v1.1 Documentation:
-## This TestBench Version is compatible with [eclipse/thingweb.node-wot](https://github.com/eclipse/thingweb.node-wot) and [WoT-TD-Specification](https://w3c.github.io/wot-thing-description/) W3C Editor's Draft 22 June 2018 
+## TestBench-v1.1 Documentation bundang-v1.1:
+
+#### This Testbench version is compatible with a Thing prepared for Bundang Plugfest.
+
+#### test-bench-V1.1.ts uses [eclipse/thingweb.node-wot](https://github.com/eclipse/thingweb.node-wot) and [WoT-TD-Specification](https://w3c.github.io/wot-thing-description/) W3C Editor's Draft 22 June 2018.
 ___
 
 ### Installation uder ubuntu 18.04:
