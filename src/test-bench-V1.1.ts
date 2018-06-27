@@ -55,7 +55,7 @@ srv.start().then(WoT => {
             testConfig = JSON.parse(JSON.stringify(newConf));
             fs.writeFileSync('./default-config.json', JSON.stringify(testConfig, null, ' '));
 
-            TestBenchT.properties["thingUnderTestTD"].get().then((tutTD) => {
+            return TestBenchT.properties["thingUnderTestTD"].get().then((tutTD) => {
                 tutTD = JSON.stringify(tutTD);
                 if (tutTD != "") {
                     let tutT: Thing = TDParser.parseTD(tutTD);
@@ -63,14 +63,14 @@ srv.start().then(WoT => {
                     tester = new Tester(testConfig, tutT, consumedTuT);
                     let returnCheck = tester.initiate(logMode)
                     if (returnCheck == 0) {
-                        TestBenchT.properties["testData"].set(tester.codeGen.requests).then(() => {
+                        return TestBenchT.properties["testData"].set(tester.codeGen.requests).then(() => {
                             return "Initiation was successful."
                         }).catch(() => {
                             console.log('\x1b[36m%s\x1b[0m', "* :::::ERROR::::: Init: Set testData property failed");
                             return "Initiation failed";
                         });
                     } else if (returnCheck == 1) {
-                        TestBenchT.properties["testData"].set(tester.codeGen.requests).then(() => {
+                        return TestBenchT.properties["testData"].set(tester.codeGen.requests).then(() => {
                             return "Initiation was successful, bu no interactions were found."
                         }).catch(() => {
                             console.log('\x1b[36m%s\x1b[0m', "* :::::ERROR::::: Init: Set testData property failed");
