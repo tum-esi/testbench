@@ -7,13 +7,23 @@ ___
 
 ### Installation uder ubuntu 18.04:
 
-- install git: `sudo apt install -y git`
+- install git: `sudo apt install -y git`(git --version 2.17.1)
 - install node: `sudo apt-get install -y nodejs` (node --version v8.10.0)
 - install npm: `sudo apt install -y npm` (npm --version 3.5.2)
-- install typescript: `npm install -g typescript`
-- install lerna: `npm install -g lerna`
+- install typescript: `npm install -g typescript` (tsc -version 2.8.3)
+- install lerna: `npm install -g lerna` (lerna -version 2.11.0)
 
-Clone testbench repository from [https://github.com/jplaui/testbench](https://github.com/jplaui/testbench) `git clone https://github.com/jplaui/testbench-V1.1.git`
+Clone testbench repository from [https://github.com/jplaui/testbench](https://github.com/jplaui/testbench): 
+
+- `git clone https://github.com/jplaui/testbench.git`
+
+Get bundang-v1.1 branch of repository locally:
+
+- git fetch origin
+- git checkout -b bundang-v1.1 origin/bundang-v1.1
+- check with `git branch -a`. your local clone should contain and switched to branch bundang-v1.1 now.   
+
+Installation of TestBench 
 
 - Jump into `testbench` folder and execute: `npm install`
 - Jump into `node_modules` folder and clone node-wot repository [https://github.com/thingweb/node-wot](https://github.com/thingweb/node-wot) inside the `node_modules` folder with `git clone https://github.com/eclipse/thingweb.node-wot.git`.
