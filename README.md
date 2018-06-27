@@ -13,7 +13,7 @@ Clone testbench repository from [https://github.com/jplaui/testbench](https://gi
 
 - Jump into testbench folder and execute: `npm install`
 - Jump into `node_modules` folder and clone node-wot repository [https://github.com/thingweb/node-wot](https://github.com/thingweb/node-wot) inside the `node_modules` folder.
-- Jump into `node-wot` folder and execute: `npm install` and `npm run bootstrap` and `npm run build`
+- Jump into `node-wot` folder and execute: `npm install` and `run bootstrap` and `sudo npm run build`
 
 - Return back into testbench folder and execute: `tsc -p .`
 - Now you are able tu run the testbench inside the testbench folder with: `node dist/src/v2-test-bench.js`

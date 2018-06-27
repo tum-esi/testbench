@@ -1,6 +1,6 @@
-import {Servient,ContentSerdes, ContentCodec} from 'node-wot/packages/core';
-import {HttpClientFactory,HttpServer} from 'node-wot/packages/binding-http';
-import {Thing} from 'node-wot/packages/td-tools';
+var Servient = require('node-wot/packages/core').Servient;
+var HttpServer = require('node-wot/packages/binding-http').HttpServer;
+var HttpClientFactory = require('node-wot/packages/binding-http').HttpClientFactory;
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
 let srv = new Servient();
@@ -109,7 +109,7 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
     // add server functionality:
 
     // input: number, output: string_
-    thing.setActionHandler("setCounter", (input: number) => {
+    thing.setActionHandler("setCounter", (input) => {
         console.log("* ACTION HANDLER FUNCTION for setCounter");
         console.log("* ", input);
         thing.writeProperty("counter", input);
@@ -129,7 +129,7 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
           });
     });
     // input: string, output: string
-    thing.setActionHandler("setDisplay", (input: string) => {
+    thing.setActionHandler("setDisplay", (input) => {
         console.log("* ACTION HANDLER FUNCTION for setDisplay");
         console.log("* ", input);
         // var xmlHttp = new XMLHttpRequest();
@@ -148,7 +148,7 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
             resolve(examplePropertyValue);
           });
     });
-    thing.setActionHandler("setTestObject", (input: string) => {
+    thing.setActionHandler("setTestObject", (input) => {
         console.log("* ACTION HANDLER FUNCTION for setTestObject");
         console.log("* ", input);
         thing.writeProperty("testObject", input);
@@ -163,7 +163,7 @@ srv.start().then(WoT=>{ // you dont have to use WoT here, it is just what the co
            setTimeout(resolve.bind(null, v), t);
        });
     }
-    thing.setActionHandler("setTestArray", (input: string) => {
+    thing.setActionHandler("setTestArray", (input) => {
         console.log("* ACTION HANDLER FUNCTION for setTestArray");
         console.log("* ", input);
         thing.writeProperty("testArray", input);
