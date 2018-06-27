@@ -40,7 +40,7 @@ Installation of TestBench
 | content-type      | application/json | 
 | body      |  config json data   | 
 | data-type | raw |
-| url | http://your-address:8080/testbench-name/properties/testConfig | 
+| url | http://your-address:8080/test-bench-V1.1/properties/testConfig | 
 
 **curl**:
 
@@ -66,7 +66,7 @@ TestBench is a Thing itself
 | content-type      | application/json | 
 | body      |  Thing Description jsonld   | 
 | data-type | raw |
-| url | http://your-address:8080/testbench-name/properties/thingUnderTestTD |
+| url | http://your-address:8080/test-bench-V1.1/properties/thingUnderTestTD |
 | return value: | no return value |
 
 - **Then**: Update test config property if you like with PUT request.
@@ -78,7 +78,7 @@ TestBench is a Thing itself
 | content-type      | application/json | 
 | body      |  "true"   | 
 | data-type | raw |
-| url | http://your-address:8090/testbench-name/actions/initiate |
+| url | http://your-address:8090/test-bench-V1.1/actions/initiate |
 | return value: | boolean if successful |
 
 
@@ -89,7 +89,7 @@ TestBench is a Thing itself
 | content-type      | application/json | 
 | body      |  test data  | 
 | data-type | raw |
-| url | http://your-address:8090/testbench-name/actions/updateRequests |
+| url | http://your-address:8090/test-bench-V1.1/actions/updateRequests |
 | return value: | no return value |
 
 - **Third**: Reads testData property and executes testing procedure on consumed Thing. Exposes test-report as a property afterwards. Body set to `"true"` activates logging to console.
@@ -99,7 +99,7 @@ TestBench is a Thing itself
 | content-type      | application/json | 
 | body      |  "true"   | 
 | data-type | raw |
-| url | http://your-address:8090/testbench-name/actions/testThing | 
+| url | http://your-address:8090/test-bench-V1.1/actions/testThing | 
 | return value: | boolean if successful |
 
 ***
