@@ -125,7 +125,7 @@ function writeSchema(name, dataSchema, schemaLocationR, interaction) {
     fs.writeFileSync(writeLoc, schema);
 }
 // generates schemas from all interactions
-export function generateSchemas(td: Thing, schemaLocation: string, logMode: boolean): void {
+export function generateSchemas(td: Thing, schemaLocation: string, logMode: boolean): number {
     let schemaLocationReq = schemaLocation + 'Requests/';
     let schemaLocationResp = schemaLocation + 'Responses/';
     let reqSchemaCount : number = 0;
@@ -179,6 +179,11 @@ export function generateSchemas(td: Thing, schemaLocation: string, logMode: bool
         }
     }
     if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* ", reqSchemaCount + " request schemas and " + resSchemaCount + " response schemas have been created");
+    if ((reqSchemaCount == 0) && (resSchemaCount == 0)) {
+        if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* !!! WARNING !!! NO INTERACTIONS FOUND");
+        return 1;
+    }
+    return 0;
 }
 
 // --------------------------- UTILITY FUNCTIONS -------------------------------------

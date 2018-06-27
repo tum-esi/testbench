@@ -48,7 +48,7 @@ srv.start().then(WoT => {
     // update config file, gets tutTD if not "", consume tutTD, adds Tester, set generated data to testData:
     TestBenchT.addAction("initiate", {
         input: { type: "boolean"},  // true sets logMode to active
-        output: { type: "boolean" }
+        output: { type: "string" }
     });
     TestBenchT.setActionHandler("initiate", (logMode: boolean) => {
         return TestBenchT.properties["testConfig"].get().then((newConf) => {
@@ -61,26 +61,34 @@ srv.start().then(WoT => {
                     let tutT: Thing = TDParser.parseTD(tutTD);
                     let consumedTuT: wot.ConsumedThing = WoT.consume(tutTD);
                     tester = new Tester(testConfig, tutT, consumedTuT);
-                    if (tester.initiate(logMode)) {
+                    let returnCheck = tester.initiate(logMode)
+                    if (returnCheck == 0) {
                         TestBenchT.properties["testData"].set(tester.codeGen.requests).then(() => {
-                            return true
+                            return "Initiation was successful."
                         }).catch(() => {
-                            console.log('\x1b[36m%s\x1b[0m', "* Init: Set testData property failed");
-                            return false
+                            console.log('\x1b[36m%s\x1b[0m', "* :::::ERROR::::: Init: Set testData property failed");
+                            return "Initiation failed";
+                        });
+                    } else if (returnCheck == 1) {
+                        TestBenchT.properties["testData"].set(tester.codeGen.requests).then(() => {
+                            return "Initiation was successful, bu no interactions were found."
+                        }).catch(() => {
+                            console.log('\x1b[36m%s\x1b[0m', "* :::::ERROR::::: Init: Set testData property failed");
+                            return "Initiation failed";
                         });
                     } else {
-                        return false;
+                        return "Initiation failed";
                     }
                 } else {
-                    return false;
+                    return "Initiation failed, Thing under Test is an empty string.";
                 }
             }).catch(() => {
-                console.log('\x1b[36m%s\x1b[0m', "* Init: Get tutTD property failed");
-                return false;
+                console.log('\x1b[36m%s\x1b[0m', "* :::::ERROR::::: Init: Get tutTD property failed");
+                return "Initiation failed";
             });
         }).catch(() => {
-            console.log('\x1b[36m%s\x1b[0m', "* Init: Get config property failed");
-            return false;
+            console.log('\x1b[36m%s\x1b[0m', "* :::::ERROR::::: Init: Get config property failed");
+            return "Initiation failed";
         });
 
     });
@@ -99,13 +107,13 @@ srv.start().then(WoT => {
                 TestBenchT.properties["testReport"].set(testReport.getResults());
                 return true;
             }).catch(() => {
-                console.log('\x1b[36m%s\x1b[0m', "* TestThing method went wrong");
+                console.log('\x1b[36m%s\x1b[0m', "* :::::ERROR::::: TestThing method went wrong");
                 return false;
             });
         }).catch(() => {
-            console.log('\x1b[36m%s\x1b[0m', "* TestThing: Get test data property failed");
+            console.log('\x1b[36m%s\x1b[0m', "* :::::ERROR::::: TestThing: Get test data property failed");
             return false;
         });
     });
 
-}).catch(err => { throw "Servient startup failed" });
+}).catch(err => { console.log('\x1b[36m%s\x1b[0m', "* :::::ERROR::::: Servient startup failed"); });

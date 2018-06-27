@@ -31,10 +31,11 @@ export class Tester {
     }
 
     // generates Schemas, generates fake data, adds TestReport instance
-    public initiate(logMode: boolean): boolean {
+    public initiate(logMode: boolean): number {
         if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Initiation has started");
+        let check = 0;
         try {
-            Utils.generateSchemas(this.tutTd, this.testConfig.SchemaLocation, logMode);
+            check = Utils.generateSchemas(this.tutTd, this.testConfig.SchemaLocation, logMode);
             if (logMode) console.log('\x1b[36m%s\x1b[0m', '* Finished schema generation.');
         } catch (Error) {
             if (logMode) console.log("Schema Generation Error" + Error);
@@ -49,7 +50,7 @@ export class Tester {
         //This means that single tests are possible to be seen in the test report
         this.testReport = new TestReport();
         if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Initialization finished");
-        return true;
+        return check;
     }
 
     // -----TODO thing of timers to cause event
