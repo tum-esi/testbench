@@ -15,12 +15,12 @@ ___
 
 Clone testbench repository from [https://github.com/jplaui/testbench](https://github.com/jplaui/testbench): 
 
-- `git clone https://github.com/jplaui/testbench.git`
+- execute: `git clone https://github.com/jplaui/testbench.git`
 
 Get bundang-v1.1 branch of repository locally:
 
-- git fetch origin
-- git checkout -b bundang-v1.1 origin/bundang-v1.1
+- inside `testbench` folder, execute: `git fetch origin`
+- afterwars execute: `git checkout -b bundang-v1.1 origin/bundang-v1.1`
 - check with `git branch -a`. your local clone should contain and switched to branch bundang-v1.1 now.   
 
 Installation of TestBench 
@@ -40,7 +40,7 @@ Installation of TestBench
 | content-type      | application/json | 
 | body      |  config json data   | 
 | data-type | raw |
-| url | http://your-address:8080/thing_test_bench/properties/testConfig | 
+| url | http://your-address:8080/testbench-name/properties/testConfig | 
 
 **curl**:
 
@@ -66,7 +66,7 @@ TestBench is a Thing itself
 | content-type      | application/json | 
 | body      |  Thing Description jsonld   | 
 | data-type | raw |
-| url | ttp://your-address:8080/v2-test-bench/properties/thingUnderTestTD |
+| url | http://your-address:8080/testbench-name/properties/thingUnderTestTD |
 | return value: | no return value |
 
 - **Then**: Update test config property if you like with PUT request.
@@ -78,7 +78,7 @@ TestBench is a Thing itself
 | content-type      | application/json | 
 | body      |  "true"   | 
 | data-type | raw |
-| url | http://your-address:8090/thing_test_bench/actions/initiate |
+| url | http://your-address:8090/testbench-name/actions/initiate |
 | return value: | boolean if successful |
 
 
@@ -87,9 +87,9 @@ TestBench is a Thing itself
 | **PUT** | TestBench update schema-faker request data |
 | ------------- |:-------------:|
 | content-type      | application/json | 
-| body      |  [[\{"interactionName":"testObject","interactionValue":\{"brightness":50,"status":"my change"\}\},\{"interactionName":"testObject","interactionValue":\{"brightness":41.447134566914734,"status":"ut aut"\}\}],[\{"interactionName":"testArray","interactionValue":[87987366.27759776,18277015.91254884,-25996637.898988828,-31082548.946999773]\},\{"interactionName":"testArray","interactionValue":[2907339.2741234154,-24383724.353494212]}],[\{"interactionName":"display","interactionValue":"eu ad laborum"\}, ... ], ... ]  | 
+| body      |  test data  | 
 | data-type | raw |
-| url | http://your-address:8090/thing_test_bench/actions/updateRequests |
+| url | http://your-address:8090/testbench-name/actions/updateRequests |
 | return value: | no return value |
 
 - **Third**: Reads testData property and executes testing procedure on consumed Thing. Exposes test-report as a property afterwards. Body set to `"true"` activates logging to console.
@@ -99,7 +99,7 @@ TestBench is a Thing itself
 | content-type      | application/json | 
 | body      |  "true"   | 
 | data-type | raw |
-| url | http://your-address:8090/thing_test_bench/actions/testThing | 
+| url | http://your-address:8090/testbench-name/actions/testThing | 
 | return value: | boolean if successful |
 
 ***
