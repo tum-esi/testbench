@@ -12,6 +12,7 @@ export interface testConfig {
     SchemaLocation?: string;
     TestReportsLocation?: string;
     TestDataLocation?: string;
+    ActionTimeout?: number;
     Scenarios?: number;
     Repetitions?: number;
 }

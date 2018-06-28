@@ -98,9 +98,8 @@ export class Tester {
             //invoking the action
             try {
                 if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Invoking action " + actionName + " with data:", JSON.stringify(toSend, null, ' '));
-                
                 // Apply a timeout of 5 seconds to doSomething
-                let invokeAction = Utils.promiseTimeout(3000, self.tut.actions[actionName].run(toSend));
+                let invokeAction = Utils.promiseTimeout(self.testConfig.ActionTimeout, self.tut.actions[actionName].run(toSend));
                 invokeAction.then((res: any) => {
                     if (interaction.hasOwnProperty('output')) { //the action doesnt have to answer something back
                         let answer = res;
