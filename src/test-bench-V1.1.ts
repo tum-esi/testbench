@@ -11,6 +11,7 @@ import fs = require('fs');
 //getting the test config and extraction anything possible
 let testConfig: testConfig = JSON.parse(fs.readFileSync('./default-config.json', "utf8"));
 let tbName: string = testConfig["TBname"];
+let tutName: string = "";
 
 //creating the Test Bench as a servient. It will test the Thing as a client and interact with the tester as a Server
 let srv = new Servient();
@@ -59,9 +60,10 @@ srv.start().then(WoT => {
                 tutTD = JSON.stringify(tutTD);
                 if (tutTD != "") {
                     let tutT: Thing = TDParser.parseTD(tutTD);
+                    tutName = tutT.name;
                     let consumedTuT: wot.ConsumedThing = WoT.consume(tutTD);
                     tester = new Tester(testConfig, tutT, consumedTuT);
-                    let returnCheck = tester.initiate(logMode)
+                    let returnCheck = tester.initiate(logMode);
                     if (returnCheck == 0) {
                         return TestBenchT.properties["testData"].set(tester.codeGen.requests).then(() => {
                             return "Initiation was successful."
@@ -90,7 +92,6 @@ srv.start().then(WoT => {
             console.log('\x1b[36m%s\x1b[0m', "* :::::ERROR::::: Init: Get config property failed");
             return "Initiation failed";
         });
-
     });
     // Tests the tut. If input true, logMode is on.
     TestBenchT.addAction("testThing", {
@@ -103,9 +104,8 @@ srv.start().then(WoT => {
             console.log('\x1b[36m%s\x1b[0m', '* ------ START OF TESTTHING METHOD ------');
             return tester.testThing(testConfig.Repetitions, testConfig.Scenarios, logMode).then(testReport => {
                 testReport.printResults();
-                testReport.storeReport(testConfig.TestReportsLocation);
-                TestBenchT.properties["testReport"].set(testReport.getResults());
-                return true;
+                testReport.storeReport(testConfig.TestReportsLocation, tutName);
+                return TestBenchT.properties["testReport"].set(testReport.getResults()).then(() => true, () => false);
             }).catch(() => {
                 console.log('\x1b[36m%s\x1b[0m', "* :::::ERROR::::: TestThing method went wrong");
                 return false;
@@ -115,5 +115,4 @@ srv.start().then(WoT => {
             return false;
         });
     });
-
 }).catch(err => { console.log('\x1b[36m%s\x1b[0m', "* :::::ERROR::::: Servient startup failed"); });

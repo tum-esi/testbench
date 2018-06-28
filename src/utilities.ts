@@ -100,7 +100,7 @@ function extractSchema(fragment: wot.PropertyFragment | wot.EventFragment) {
     if (fragment.type == 'object') {
         if (fragment.hasOwnProperty('properties')) {
             if (fragment.hasOwnProperty('required')) {
-                return '"type": "object","properties":'+JSON.stringify(fragment.properties)+'},"required":'+fragment.required;
+                return '"type": "object","properties":'+JSON.stringify(fragment.properties)+',"required":'+JSON.stringify(fragment.required);
             } else {
                 return '"type": "object","properties":'+JSON.stringify(fragment.properties);
             }
@@ -130,8 +130,9 @@ export function generateSchemas(td: Thing, schemaLocation: string, logMode: bool
     let schemaLocationResp = schemaLocation + 'Responses/';
     let reqSchemaCount : number = 0;
     let resSchemaCount : number = 0;
-    mkdirp(schemaLocationReq);
-    mkdirp(schemaLocationResp);
+    mkdirp.sync(schemaLocationReq);
+    mkdirp.sync(schemaLocationResp);
+
     // property schemas:
     for (var key in td.properties) {
         if (td.properties.hasOwnProperty(key)) {           
