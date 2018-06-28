@@ -98,7 +98,10 @@ export class Tester {
             //invoking the action
             try {
                 if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Invoking action " + actionName + " with data:", JSON.stringify(toSend, null, ' '));
-                self.tut.actions[actionName].run(toSend).then((res: any) => {
+                
+                // Apply a timeout of 5 seconds to doSomething
+                let invokeAction = Utils.promiseTimeout(3000, self.tut.actions[actionName].run(toSend));
+                invokeAction.then((res: any) => {
                     if (interaction.hasOwnProperty('output')) { //the action doesnt have to answer something back
                         let answer = res;
                         if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Answer is:", JSON.stringify(answer, null, ' '));
@@ -127,8 +130,10 @@ export class Tester {
                         self.testReport.addMessage(testCycle, testScenario, actionName, true, toSend, JSON.parse("\"nothing\""), 101, "no return value needed");
                         resolve(true);
                     }
-
-                })
+                }).catch((error) => {
+                    self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 999, "Invoke Action Error: " + error);
+                    resolve(true);
+                });
             } catch (Error) { // in case there is a problem with the invoke of the action
                 if (logMode) console.log("* Response receiving for  " + actionName + "is unsuccesful, continuing with other scenarios");
                 self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, JSON.parse("\"nothing\""), 10, "Problem invoking the action" + Error);
@@ -311,7 +316,7 @@ export class Tester {
                 if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ------------- Test Scenario nb", testScenario, " has finished -------------")
                 resolve();
             }).catch((error:Error) => {
-                if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* Test Scenario nb", testScenario, " has finished with an error")
+                if (logMode) console.log('\x1b[36m%s%s%s%s\x1b[0m', "* Test Scenario nb", testScenario, " has finished with an error:", error)
                 reject(error);
             });
         });
