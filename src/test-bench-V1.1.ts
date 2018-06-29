@@ -15,7 +15,7 @@ let tutName: string = "";
 
 //creating the Test Bench as a servient. It will test the Thing as a client and interact with the tester as a Server
 let srv = new Servient();
-srv.addServer(new HttpServer());
+srv.addServer(new HttpServer(testConfig.HttpPort));
 // srv.addServer(new CoapServer());
 srv.addClientFactory(new HttpClientFactory());
 // srv.addClientFactory(new CoapClientFactory());

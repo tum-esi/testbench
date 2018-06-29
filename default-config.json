@@ -1,5 +1,6 @@
 {
  "TBname": "test-bench-V1.1",
+ "HttpPort": 8980,
  "SchemaLocation": "Resources/InteractionSchemas/",
  "TestReportsLocation": "Reports/",
  "TestDataLocation": "Resources/fake-data.json",
