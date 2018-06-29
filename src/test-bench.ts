@@ -16,17 +16,20 @@ export interface testConfig {
     SchemaLocation?: string;
     TestReportsLocation?: string;
     TestDataLocation?: string;
+    ActionTimeout?: number;
+    HttpPort?: number;
     Scenarios?: number;
     Repetitions?: number;
 }
 
 //getting the test config and extraction anything possible
-let testConfig: testConfig = JSON.parse(fs.readFileSync('./test-config.json', "utf8"));
+let testConfig: testConfig = JSON.parse(fs.readFileSync('./default-config.json', "utf8"));
 let tbName: string = testConfig["TBname"];
+let tutName: string = "";
 
 //creating the Test Bench as a servient. It will test the Thing as a client and interact with the tester as a Server
 let srv = new Servient();
-srv.addServer(new HttpServer());
+srv.addServer(new HttpServer(testConfig.HttpPort));
 // srv.addServer(new CoapServer());
 srv.addClientFactory(new HttpClientFactory());
 // srv.addClientFactory(new CoapClientFactory());
@@ -71,18 +74,33 @@ srv.start().then(WoT=>{
     TestBenchT.setActionHandler("initiate", (input: boolean) => {
         var p1 = TestBenchT.readProperty("testConfig").then((newConf) => {
             testConfig = JSON.parse(JSON.stringify(newConf));
-            fs.writeFileSync('./test-config.json', JSON.stringify(testConfig, null, ' '));
+            fs.writeFileSync('./default-config.json', JSON.stringify(testConfig, null, ' '));
         });
         var p2 = p1.then(() => {return TestBenchT.readProperty('thingUnderTestTD')}).then((tut) => {
             if (tut != null) {
                 tut = JSON.stringify(tut);
-                // ------------ CONVERTING !! TAKE NEW NODE WOT -----------------
-                let convertedTD: string = convertTDtoNodeWotTD040(tut);
-                let tutTd: Thing = TDParser.parseTDString(convertedTD);
-                let consumedTuT: WoT.ConsumedThing = WoT.consume(convertedTD);
-                tester = new Tester(testConfig, tutTd, consumedTuT);
-                if (tester.initiate(input)) {
-                    return true;
+                // conversion check
+                if (tut.includes("interaction")) {
+                    let tutTd: Thing = TDParser.parseTDString(tut);
+                    tutName = tutTd.name;
+
+                    // consum thing:
+                    let consumedTuT: WoT.ConsumedThing = WoT.consume(tut);
+                    tester = new Tester(testConfig, tutTd, consumedTuT);
+                    if (tester.initiate(input)) {
+                        return true;
+                    }
+                } else {
+                    let convertedTD: string = convertTDtoNodeWotTD040(tut);
+                    let tutTd: Thing = TDParser.parseTDString(convertedTD);
+                    tutName = tutTd.name;
+
+                    // consum thing:
+                    let consumedTuT: WoT.ConsumedThing = WoT.consume(convertedTD);
+                    tester = new Tester(testConfig, tutTd, consumedTuT);
+                    if (tester.initiate(input)) {
+                        return true;
+                    }
                 }
             }
         }).catch(err => {throw "Error"});
@@ -106,7 +124,7 @@ srv.start().then(WoT=>{
             console.log('\x1b[36m%s\x1b[0m', '* --------------------- START OF TESTTHING METHOD ---------------------')
             tester.testThing(testConfig.Repetitions, testConfig.Scenarios, input).then(testReport => {
                 testReport.printResults();
-                testReport.storeReport(testConfig.TestReportsLocation);
+                testReport.storeReport(testConfig.TestReportsLocation, tutName);
                 TestBenchT.writeProperty("testReport",testReport.getResults());
                 return true;
             }).catch(() => {

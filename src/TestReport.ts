@@ -1,5 +1,6 @@
 import fs = require('fs');
 import  {Tester} from "./Tester"
+var mkdirp = require("mkdirp");
 
 interface message {
     name?: string;
@@ -23,7 +24,11 @@ export class TestReport {
         this.maxTestScenario = 0;
     }
     public getResults(): Array<any> { //basic getter
-        return this.results;
+        let returnResults = this.results;
+        this.results = [];
+        this.testCycleCount = -1;
+        this.testScenarioCount = -1;
+        return returnResults;
     }
 
     //at each new test cycle this should be called
@@ -98,15 +103,33 @@ export class TestReport {
             console.log();
         }
     }
-    public storeReport(location: string) {
-        var mkdirp = require("mkdirp");
+    public storeReport(location: string, tutName: string) {
         try {
             mkdirp(location)
-            fs.writeFileSync(location + "testReport.json", JSON.stringify(this.results,null,4));
-            console.log("Report stored in " + location);
+            var files = fs.readdirSync(location); // returns string list
+            if (files.length > 0) {
+                let maxReportCount = 0;
+
+                // find max number of stored tut-reports:
+                for (var i in files) {
+                    let splitFile = files[i].split('-');
+                    if (splitFile[1] == tutName) {
+                        if (Number(splitFile[0]) > maxReportCount) {
+                            maxReportCount = Number(splitFile[0]);
+                        }
+                    }
+                }
+                maxReportCount++;
+                fs.writeFileSync(location+maxReportCount.toString()+"-"+tutName+"-testReport.json", JSON.stringify(this.results,null,4));
+                console.log("Report stored in "+location+maxReportCount.toString()+"-"+tutName+"-testReport.json");
+            } else {
+                fs.writeFileSync(location + "1-"+tutName+"-testReport.json", JSON.stringify(this.results,null,4));
+                console.log("Report stored in "+location+"1-"+tutName+"-testReport.json");
+            }
         } catch (error) {
             console.log("Report couldnt be stored");
         }
+
 
     }
 }

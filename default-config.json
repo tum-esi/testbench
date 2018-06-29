@@ -3,6 +3,8 @@
  "SchemaLocation": "Resources/InteractionSchemas/",
  "TestReportsLocation": "Reports/",
  "TestDataLocation": "Resources/fake-data.json",
+ "ActionTimeout": 6000,
+ "HttpPort": 8980,
  "Scenarios": 3,
  "Repetitions": 2
 }

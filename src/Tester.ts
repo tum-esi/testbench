@@ -20,7 +20,7 @@ import * as TdFunctions from './tdFunctions'
 import { CodeGenerator } from './DataGenerator'
 import { TestReport } from './TestReport'
 import * as SchemaValidator from './SchemaValidator'
-import { testConfig } from './v2-test-bench'
+import { testConfig } from './test-bench'
 import timers = require("timers")
 
 export class Tester {
@@ -94,7 +94,7 @@ export class Tester {
             } catch (Error) {
                 if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Cannot create message for " + actionName + ", look at the previous message to identify the problem");
                 self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, JSON.parse("\"nothing\""), 12, "Cannot create message: " + Error);
-                resolve(false);
+                resolve(true);
             }
             //validating request against a schema. Validator returns an array that describes the error. This array is empty when there is no error
             //a first thinking would say that it shouldnt be necessary but since the requests are user written, there can be errors there as well.
@@ -103,7 +103,7 @@ export class Tester {
                 if (errors.length > 0) { //meaning that there is a validation error
                     if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Created request is not valid for " + actionName + "\nMessage is " + toSend + "\nError is " + errors);
                     self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, JSON.parse("\"nothing\""), 13, "Created message has bad format: " + JSON.stringify(errors));
-                    resolve(false);
+                    resolve(true);
                 } else {
                     if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Created request is valid for: " + actionName);
                 }
@@ -111,7 +111,8 @@ export class Tester {
             //invoking the action
             try {
                 if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Invoking action " + actionName + " with data:", JSON.stringify(toSend, null, ' '));
-                self.tut.invokeAction(actionName, toSend).then((res: any) => {
+                let invokeAction = TdFunctions.promiseTimeout(self.testConfig.ActionTimeout, self.tut.invokeAction(actionName, toSend));
+                invokeAction.then((res: any) => {
                     let curAction: TD.Interaction = tdHelpers.findInteractionByName(self.tutTd, actionName);
                     if (curAction.hasOwnProperty("outputSchema")) { //the action doesnt have to answer something back
                         answer = res;
@@ -123,14 +124,14 @@ export class Tester {
                             // if (logMode) logger.error("Response is not in JSON format");
                             if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Response is not in JSON format");
                             self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 15, "Response is not in JSON format: " + error);
-                            resolve(false);
+                            resolve(true);
                         }
                         //validating the response against its schema, same as before
                         let errorsRes: Array<any> = SchemaValidator.validateResponse(actionName, answer, self.testConfig.SchemaLocation, 'Action');
                         if (errorsRes.length > 0) { //meaning that there is a validation error
                             if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is not valid for: " + actionName);
                             self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 16, "Received response is not valid, " + JSON.stringify(errorsRes));
-                            resolve(false);
+                            resolve(true);
                         } else {
                             if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is valid for: " + actionName);
                         }
@@ -143,12 +144,14 @@ export class Tester {
                         self.testReport.addMessage(testCycle, testScenario, actionName, true, toSend, JSON.parse("\"nothing\""), 101, "no return value needed");
                         resolve(true);
                     }
-
-                })
+                }).catch((error) => {
+                    self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 999, "Invoke Action Error: " + error);
+                    resolve(true);
+                });
             } catch (Error) { // in case there is a problem with the invoke of the action
                 if (logMode) console.log("* Response receiving for  " + actionName + "is unsuccesful, continuing with other scenarios");
                 self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, JSON.parse("\"nothing\""), 10, "Problem invoking the action" + Error);
-                resolve(false);
+                resolve(true);
             }
         });
     }
@@ -174,7 +177,7 @@ export class Tester {
             } catch (error) {
                 if (logMode) console.log('\x1b[36m%s\x1b[0m', "* The property " + propertyName + " doesn't exist in the TD");
                 self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""), JSON.parse("\"nothing\""), 33, "The property doesn't exist in the TD");
-                resolve(false);
+                resolve(true);
             }
             //getting the property value
             let curPropertyData: any = self.tut.readProperty(propertyName).then((res: any) => {
@@ -186,7 +189,7 @@ export class Tester {
                 if (errorsProp.length > 0) { //meaning that there is a validation error
                     if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Received response is not valid for: " + propertyName, errorsProp);
                     self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""), data, 35, "Received response is not valid, " + JSON.stringify(errorsProp));
-                    resolve(false);
+                    resolve(true);
                 } else {
                     if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is valid for: " + propertyName);
                 }
@@ -208,7 +211,7 @@ export class Tester {
                     } catch (Error) {
                         if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Cannot create message for " + propertyName + ", look at the previous message to identify the problem");
                         self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend, JSON.parse("\"nothing\""), 40, "Cannot create message: " + Error);
-                        resolve(false);
+                        resolve(true);
                     }
 
                     //validating request against a schema, same as the action. Since the requests are written by the user there can be errors
@@ -217,7 +220,7 @@ export class Tester {
                     if (errors.length > 0) { //meaning that there is a validation error
                         if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Created request is not valid for " + propertyName + "\nMessage is " + toSend + "\nError is " + errors);
                         self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend, JSON.parse("\"nothing\""), 41, "Created message has bad format: " + JSON.stringify(errors));
-                        resolve(false);
+                        resolve(true);
                     } else {
                         if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Created request is valid for: " + propertyName);
                     }
@@ -237,7 +240,7 @@ export class Tester {
                                 if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Received second response is not valid for: " + propertyName, errorsProp2);
                                 //here for the received, two response values are put
                                 self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend, JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify(data2) + "]"), 45, "Received second response is not valid, " + JSON.stringify(errorsProp2));
-                                resolve(false);
+                                resolve(true);
                             } else { //if there is no validation error we can test if the value we've gotten is the same as the one we wrote
                                 if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received second response is valid for: " + propertyName);
                                 if (JSON.stringify(data2) == JSON.stringify(toSend)) {
@@ -250,24 +253,24 @@ export class Tester {
                                     //maybe the value changed between two requests...
                                     if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Property test of " + propertyName + " is succesful: write works, fetch not matching");
                                     self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend, JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify(data2) + "]"), 46, "The second get didn't match the write");
-                                    resolve(false);
+                                    resolve(true);
                                 }
                             }
                         }).catch((error: any) => { //problem in the node-wot level
                             if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Problem second time fetching property " + propertyName + "in the second get");
                             self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""), JSON.parse("\"nothing\""), 31, "Couldnt fetch property in the second get" + error);
-                            reject(false);
+                            resolve(true);
                         });
                     }).catch((error: any) => {
                         if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Couldn't set the property: " + propertyName);
                         self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend, JSON.parse("\"nothing\""), 32, "Problem setting property" + Error);
-                        resolve(false);
+                        resolve(true);
                     });
                 }
             }).catch((error: any) => { //problem in the node-wot level
                 if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Problem fetching first time property: " + propertyName);
                 self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""), JSON.parse("\"nothing\""), 30, "Couldnt fetch property");
-                reject(false);
+                resolve(true);
             });
         });
     }
