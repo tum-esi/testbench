@@ -59,55 +59,25 @@ TestBench is a Thing itself
 
 3. Start to interact with TestBench:
 
-- **First**: Send Put request to testbench with Thing Description you like to test.
+- **First update TuT TD (mandatory)**: Send Put request to testbench with Thing Description you like to test.
 
-| **PUT** | TestBench update TuT Property |
-| ------------- |:-------------:|
-| content-type      | application/json | 
-| body      |  Thing Description jsonld   | 
-| data-type | raw |
-| url | http://your-address:8080/test-bench-V1.1/properties/thingUnderTestTD |
-| return value: | no return value |
+- **Then update configurations (optional)**: Update test config property if you like with PUT request.
 
-- **Then**: Update test config property if you like with PUT request.
+- **Then initialize (mandatory)**: Call initialization of TestBench where TestBench reads new configurations, consumes the provided Thing Desctiption of Thing under Test and exposes generated `testData` which is send during testing procedure as a property of TestBench. Body set to `"true"` activates logging to console.
 
-- **Then**: Call initialization of TestBench where TestBench reads new configurations, consumes the provided Thing Desctiption of Thing under Test and exposes generated `testData` which is send during testing procedure as a property of TestBench. Body set to `"true"` activates logging to console.
+- **Then update test data (optional)**: Changes requests fake data. Execute only if desired.
 
-| **POST** | TestBench initiation |
-| ------------- |:-------------:|
-| content-type      | application/json | 
-| body      |  "true"   | 
-| data-type | raw |
-| url | http://your-address:8090/test-bench-V1.1/actions/initiate |
-| return value: | boolean if successful |
-
-
-- **Then**: Changes requests fake data. Execute only if desired.
-
-| **PUT** | TestBench update schema-faker request data |
-| ------------- |:-------------:|
-| content-type      | application/json | 
-| body      |  test data  | 
-| data-type | raw |
-| url | http://your-address:8090/test-bench-V1.1/actions/updateRequests |
-| return value: | no return value |
-
-- **Third**: Reads testData property and executes testing procedure on consumed Thing. Exposes test-report as a property afterwards. Body set to `"true"` activates logging to console.
-
-| **POST** | TestBench execute action testThing |
-| ------------- |:-------------:|
-| content-type      | application/json | 
-| body      |  "true"   | 
-| data-type | raw |
-| url | http://your-address:8090/test-bench-V1.1/actions/testThing | 
-| return value: | boolean if successful |
+- **Third test TD (mandatory)**: Reads testData property and executes testing procedure on consumed Thing. Exposes test-report as a property afterwards. Body set to `"true"` activates logging to console.
 
 ***
 
+- This link provides all possible postman interaction examples [https://documenter.getpostman.com/view/4378601/RWEmHGBq](https://documenter.getpostman.com/view/4378601/RWEmHGBq).
+
+- How to use testbench screencast video can be found here [https://youtu.be/BDMbXZ2O7KI](https://youtu.be/BDMbXZ2O7KI).
+
 - You can use your browser and the GET requests to inpect all properties during the procedure.
 
-- How to use testbench screencast video is in the making.
-
+***
 
 ## Missing features which will be added in soon future:
 
