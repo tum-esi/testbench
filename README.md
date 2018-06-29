@@ -1,4 +1,5 @@
 ## TestBench Documentation:
+#### Compatible with Thing Description versions: [5.April-18](https://www.w3.org/TR/2018/WD-wot-thing-description-20180405/), W3C Editor's Draft 22 June 2018, and should also work with W3C Editor's Draft 26 June 2018 (last one not tested).  
 ___
 
 ### Installation uder ubuntu 18.04:
@@ -90,9 +91,11 @@ TestBench is a Thing itself
 
 ***
 
-- You can use your browser and the GET requests to inpect all properties during the procedure.
+- This link provides all possible postman interaction examples [https://documenter.getpostman.com/view/4378601/RWEmHGBq](https://documenter.getpostman.com/view/4378601/RWEmHGBq).
 
-- How to use testbench screencast video is in the making.
+- How to use testbench screencast video can be found here [https://youtu.be/BDMbXZ2O7KI](https://youtu.be/BDMbXZ2O7KI).
+
+- You can use your browser and the GET requests to inpect all properties during the procedure.
 
 
 ## Missing features which will be added in soon future:
