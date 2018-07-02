@@ -26,7 +26,7 @@ Get bundang-v1.1 branch of repository locally:
 Installation of TestBench 
 
 - Jump into `testbench` folder and execute: `npm install`
-- Jump into `node_modules` folder and clone node-wot repository [https://github.com/thingweb/node-wot](https://github.com/thingweb/node-wot) inside the `node_modules` folder with `git clone https://github.com/eclipse/thingweb.node-wot.git`.
+- Jump into `node_modules` folder and clone node-wot repository [https://github.com/eclipse/thingweb.node-wot](https://github.com/eclipse/thingweb.node-wot) inside the `node_modules` folder with `git clone https://github.com/eclipse/thingweb.node-wot.git`.
 - Jump into `thingweb.node-wot` folder and execute: `npm install` and `npm run bootstrap` and `sudo npm run build`
 
 - Return back into testbench folder and execute: `tsc -p .`
