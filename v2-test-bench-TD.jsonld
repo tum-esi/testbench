@@ -1,1 +1,190 @@
-{"@context":["https://w3c.github.io/wot/w3c-wot-td-context.jsonld"],"@type":["Thing"],"name":"test-bench","security":[{"description":"node-wot development Servient, no security"}],"interaction":[{"name":"testConfig","@type":["Property"],"schema":{"type":"string"},"writable":true,"observable":false,"form":[{"href":"http://address:8080/test-bench/properties/testConfig","mediaType":"application/json"},{"href":"http://2003:6a:670d:2d64:4dd5:e582:5e1a:cfa7:8080/test-bench/properties/testConfig","mediaType":"application/json"},{"href":"http://ipv6-address:8080/test-bench/properties/testConfig","mediaType":"application/json"}]},{"name":"testBenchStatus","@type":["Property"],"schema":{"type":"string"},"writable":false,"observable":false,"form":[{"href":"http://address:8080/test-bench/properties/testBenchStatus","mediaType":"application/json"},{"href":"http://2003:6a:670d:2d64:4dd5:e582:5e1a:cfa7:8080/test-bench/properties/testBenchStatus","mediaType":"application/json"},{"href":"http://ipv6-address:8080/test-bench/properties/testBenchStatus","mediaType":"application/json"}]},{"name":"thingUnderTestTD","@type":["Property"],"schema":{"type":"string"},"writable":true,"observable":false,"form":[{"href":"http://address:8080/test-bench/properties/thingUnderTestTD","mediaType":"application/json"},{"href":"http://2003:6a:670d:2d64:4dd5:e582:5e1a:cfa7:8080/test-bench/properties/thingUnderTestTD","mediaType":"application/json"},{"href":"http://ipv6-address:8080/test-bench/properties/thingUnderTestTD","mediaType":"application/json"}]},{"name":"testData","@type":["Property"],"schema":{"type":"string"},"writable":true,"observable":false,"form":[{"href":"http://address:8080/test-bench/properties/testData","mediaType":"application/json"},{"href":"http://2003:6a:670d:2d64:4dd5:e582:5e1a:cfa7:8080/test-bench/properties/testData","mediaType":"application/json"},{"href":"http://ipv6-address:8080/test-bench/properties/testData","mediaType":"application/json"}]},{"name":"testReport","@type":["Property"],"schema":{"type":"string"},"writable":false,"observable":false,"form":[{"href":"http://address:8080/test-bench/properties/testReport","mediaType":"application/json"},{"href":"http://2003:6a:670d:2d64:4dd5:e582:5e1a:cfa7:8080/test-bench/properties/testReport","mediaType":"application/json"},{"href":"http://ipv6-address:8080/test-bench/properties/testReport","mediaType":"application/json"}]},{"name":"initiate","@type":["Action"],"outputSchema":{"type":"boolean"},"form":[{"href":"http://address:8080/test-bench/actions/initiate","mediaType":"application/json"},{"href":"http://2003:6a:670d:2d64:4dd5:e582:5e1a:cfa7:8080/test-bench/actions/initiate","mediaType":"application/json"},{"href":"http://ipv6-address:8080/test-bench/actions/initiate","mediaType":"application/json"}]},{"name":"testThing","@type":["Action"],"inputSchema":{"type":"boolean"},"outputSchema":{"type":"boolean"},"form":[{"href":"http://address:8080/test-bench/actions/testThing","mediaType":"application/json"},{"href":"http://2003:6a:670d:2d64:4dd5:e582:5e1a:cfa7:8080/test-bench/actions/testThing","mediaType":"application/json"},{"href":"http://ipv6-address:8080/test-bench/actions/testThing","mediaType":"application/json"}]}]}
+{
+    "@context": [
+        "https://w3c.github.io/wot/w3c-wot-td-context.jsonld"
+    ],
+    "@type": [
+        "Thing"
+    ],
+    "name": "test-bench",
+    "security": [
+        {
+            "description": "node-wot development Servient, no security"
+        }
+    ],
+    "interaction": [
+        {
+            "name": "testConfig",
+            "@type": [
+                "Property"
+            ],
+            "schema": {
+                "type": "string"
+            },
+            "writable": true,
+            "observable": false,
+            "form": [
+                {
+                    "href": "http://address:8080/test-bench/properties/testConfig",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://2003:6a:670d:2d64:4dd5:e582:5e1a:cfa7:8080/test-bench/properties/testConfig",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://ipv6-address:8080/test-bench/properties/testConfig",
+                    "mediaType": "application/json"
+                }
+            ]
+        },
+        {
+            "name": "testBenchStatus",
+            "@type": [
+                "Property"
+            ],
+            "schema": {
+                "type": "string"
+            },
+            "writable": false,
+            "observable": false,
+            "form": [
+                {
+                    "href": "http://address:8080/test-bench/properties/testBenchStatus",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://2003:6a:670d:2d64:4dd5:e582:5e1a:cfa7:8080/test-bench/properties/testBenchStatus",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://ipv6-address:8080/test-bench/properties/testBenchStatus",
+                    "mediaType": "application/json"
+                }
+            ]
+        },
+        {
+            "name": "thingUnderTestTD",
+            "@type": [
+                "Property"
+            ],
+            "schema": {
+                "type": "string"
+            },
+            "writable": true,
+            "observable": false,
+            "form": [
+                {
+                    "href": "http://address:8080/test-bench/properties/thingUnderTestTD",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://2003:6a:670d:2d64:4dd5:e582:5e1a:cfa7:8080/test-bench/properties/thingUnderTestTD",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://ipv6-address:8080/test-bench/properties/thingUnderTestTD",
+                    "mediaType": "application/json"
+                }
+            ]
+        },
+        {
+            "name": "testData",
+            "@type": [
+                "Property"
+            ],
+            "schema": {
+                "type": "string"
+            },
+            "writable": true,
+            "observable": false,
+            "form": [
+                {
+                    "href": "http://address:8080/test-bench/properties/testData",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://2003:6a:670d:2d64:4dd5:e582:5e1a:cfa7:8080/test-bench/properties/testData",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://ipv6-address:8080/test-bench/properties/testData",
+                    "mediaType": "application/json"
+                }
+            ]
+        },
+        {
+            "name": "testReport",
+            "@type": [
+                "Property"
+            ],
+            "schema": {
+                "type": "string"
+            },
+            "writable": false,
+            "observable": false,
+            "form": [
+                {
+                    "href": "http://address:8080/test-bench/properties/testReport",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://2003:6a:670d:2d64:4dd5:e582:5e1a:cfa7:8080/test-bench/properties/testReport",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://ipv6-address:8080/test-bench/properties/testReport",
+                    "mediaType": "application/json"
+                }
+            ]
+        },
+        {
+            "name": "initiate",
+            "@type": [
+                "Action"
+            ],
+            "outputSchema": {
+                "type": "boolean"
+            },
+            "form": [
+                {
+                    "href": "http://address:8080/test-bench/actions/initiate",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://2003:6a:670d:2d64:4dd5:e582:5e1a:cfa7:8080/test-bench/actions/initiate",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://ipv6-address:8080/test-bench/actions/initiate",
+                    "mediaType": "application/json"
+                }
+            ]
+        },
+        {
+            "name": "testThing",
+            "@type": [
+                "Action"
+            ],
+            "inputSchema": {
+                "type": "boolean"
+            },
+            "outputSchema": {
+                "type": "boolean"
+            },
+            "form": [
+                {
+                    "href": "http://address:8080/test-bench/actions/testThing",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://2003:6a:670d:2d64:4dd5:e582:5e1a:cfa7:8080/test-bench/actions/testThing",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://ipv6-address:8080/test-bench/actions/testThing",
+                    "mediaType": "application/json"
+                }
+            ]
+        }
+    ]
+}

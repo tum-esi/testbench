@@ -3,8 +3,10 @@ Reports
 Resources
 dist/*
 !/dist/README.md
-.gitignore
-package-lock.json
+**/package-lock.json
+
+# IDE configurations
+/.vscode/
 
 # Logs
 logs
