@@ -1,10 +1,17 @@
 {
- "TBname": "v2-test-bench",
+ "TBname": "wot-test-bench",
+ "HttpPort": 8980,
  "SchemaLocation": "Resources/InteractionSchemas/",
  "TestReportsLocation": "Reports/",
  "TestDataLocation": "Resources/fake-data.json",
+<<<<<<< HEAD:default-config.json
  "ActionTimeout": 6000,
  "HttpPort": 8980,
  "Scenarios": 3,
  "Repetitions": 2
+=======
+ "ActionTimeout": 4000,
+ "Scenarios": 2,
+ "Repetitions": 1
+>>>>>>> 8302086:default-config.json
 }
