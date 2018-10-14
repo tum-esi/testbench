@@ -13,12 +13,7 @@ import {Thing} from 'thingweb.node-wot/packages/td-tools';
 import * as wot from 'thingweb.node-wot/packages/core/node_modules/wot-typescript-definitions';
 import * as Utils from './utilities'
 import { TestReport } from './TestReport'
-<<<<<<< HEAD
-import * as SchemaValidator from './SchemaValidator'
-import { testConfig } from './test-bench'
-=======
 import { testConfig } from './utilities'
->>>>>>> 8302086
 import timers = require("timers")
 
 export class Tester {
@@ -103,19 +98,11 @@ export class Tester {
             //invoking the action
             try {
                 if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Invoking action " + actionName + " with data:", JSON.stringify(toSend, null, ' '));
-<<<<<<< HEAD
-                let invokeAction = TdFunctions.promiseTimeout(self.testConfig.ActionTimeout, self.tut.invokeAction(actionName, toSend));
-                invokeAction.then((res: any) => {
-                    let curAction: TD.Interaction = tdHelpers.findInteractionByName(self.tutTd, actionName);
-                    if (curAction.hasOwnProperty("outputSchema")) { //the action doesnt have to answer something back
-                        answer = res;
-=======
                 // Apply a timeout of 5 seconds to doSomething
                 let invokeAction = Utils.promiseTimeout(self.testConfig.ActionTimeout, self.tut.actions[actionName].run(toSend));
                 invokeAction.then((res: any) => {
                     if (interaction.hasOwnProperty('output')) { //the action doesnt have to answer something back
                         let answer = res;
->>>>>>> 8302086
                         if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Answer is:", JSON.stringify(answer, null, ' '));
                         try {
                             let temp: JSON = answer;
@@ -166,21 +153,7 @@ export class Tester {
     public testProperty(testCycle: number, propertyName: string, interaction: wot.PropertyFragment, testScenario: number, interactionIndex:number, logMode: boolean): Promise<any> {
         var self = this;
         return new Promise(function (resolve, reject) {
-<<<<<<< HEAD
-            let isWritable: boolean; //is the property we are testing now writable
-            try {
-                let curProperty: TD.Interaction = tdHelpers.findInteractionByName(self.tutTd, propertyName);
-                isWritable = curProperty.writable;
-                if (logMode) console.log('\x1b[36m%s%s\x1b[0m', '* Checking if property is writable:', isWritable);
-
-            } catch (error) {
-                if (logMode) console.log('\x1b[36m%s\x1b[0m', "* The property " + propertyName + " doesn't exist in the TD");
-                self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""), JSON.parse("\"nothing\""), 33, "The property doesn't exist in the TD");
-                resolve(true);
-            }
-=======
             let isWritable: boolean = interaction.writable;
->>>>>>> 8302086
             //getting the property value
             if (logMode) console.log('\x1b[36m%s\x1b[0m', "* First Read Property");
             if (logMode && isWritable) console.log('\x1b[36m%s\x1b[0m', "* Property is writable");
@@ -264,11 +237,7 @@ export class Tester {
                         }).catch((error: any) => { //problem in the node-wot level
                             if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Problem second time fetching property " + propertyName + "in the second get");
                             self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""), JSON.parse("\"nothing\""), 31, "Couldnt fetch property in the second get" + error);
-<<<<<<< HEAD
-                            resolve(true);
-=======
                             reject(true);
->>>>>>> 8302086
                         });
                     }).catch((error: any) => {
                         if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Couldn't set the property: " + propertyName);
@@ -279,11 +248,7 @@ export class Tester {
             }).catch((error: any) => { //problem in the node-wot level
                 if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Problem fetching first time property: " + propertyName);
                 self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""), JSON.parse("\"nothing\""), 30, "Couldnt fetch property");
-<<<<<<< HEAD
-                resolve(true);
-=======
                 reject(true);
->>>>>>> 8302086
             });
         });
     }
