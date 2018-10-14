@@ -1,0 +1,399 @@
+{
+    "name": "TestServient",
+    "description": "Test servient that can be used as a servient to be tested with the WoT Test Bench",
+    "@context": "http://www.w3.org/ns/td",
+    "@type": "Thing",
+    "security": [
+        {
+            "scheme": "nosec"
+        }
+    ],
+    "properties": {
+        "display": {
+            "type": "string",
+            "writable": true,
+            "observable": true,
+            "forms": [
+                {
+                    "href": "http://192.168.178.144:8081/TestServient/properties/display",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400::df75]:8081/TestServient/properties/display",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400:502e:119a:294a:31b6]:8081/TestServient/properties/display",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://192.168.178.5:8081/TestServient/properties/display",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400::8de4]:8081/TestServient/properties/display",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400:abf8:b9c8:4232:35d9]:8081/TestServient/properties/display",
+                    "mediaType": "application/json"
+                }
+            ]
+        },
+        "counter": {
+            "type": "number",
+            "writable": true,
+            "observable": true,
+            "forms": [
+                {
+                    "href": "http://192.168.178.144:8081/TestServient/properties/counter",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400::df75]:8081/TestServient/properties/counter",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400:502e:119a:294a:31b6]:8081/TestServient/properties/counter",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://192.168.178.5:8081/TestServient/properties/counter",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400::8de4]:8081/TestServient/properties/counter",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400:abf8:b9c8:4232:35d9]:8081/TestServient/properties/counter",
+                    "mediaType": "application/json"
+                }
+            ]
+        },
+        "temperature": {
+            "type": "number",
+            "writable": false,
+            "observable": true,
+            "forms": [
+                {
+                    "href": "http://192.168.178.144:8081/TestServient/properties/temperature",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400::df75]:8081/TestServient/properties/temperature",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400:502e:119a:294a:31b6]:8081/TestServient/properties/temperature",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://192.168.178.5:8081/TestServient/properties/temperature",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400::8de4]:8081/TestServient/properties/temperature",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400:abf8:b9c8:4232:35d9]:8081/TestServient/properties/temperature",
+                    "mediaType": "application/json"
+                }
+            ]
+        },
+        "testObject": {
+            "type": "object",
+            "properties": {
+                "brightness": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                },
+                "status": {
+                    "type": "string"
+                }
+            },
+            "writable": true,
+            "observable": false,
+            "forms": [
+                {
+                    "href": "http://192.168.178.144:8081/TestServient/properties/testObject",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400::df75]:8081/TestServient/properties/testObject",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400:502e:119a:294a:31b6]:8081/TestServient/properties/testObject",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://192.168.178.5:8081/TestServient/properties/testObject",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400::8de4]:8081/TestServient/properties/testObject",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400:abf8:b9c8:4232:35d9]:8081/TestServient/properties/testObject",
+                    "mediaType": "application/json"
+                }
+            ]
+        },
+        "testArray": {
+            "type": "array",
+            "items": {
+                "type": "number"
+            },
+            "writable": true,
+            "observable": false,
+            "forms": [
+                {
+                    "href": "http://192.168.178.144:8081/TestServient/properties/testArray",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400::df75]:8081/TestServient/properties/testArray",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400:502e:119a:294a:31b6]:8081/TestServient/properties/testArray",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://192.168.178.5:8081/TestServient/properties/testArray",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400::8de4]:8081/TestServient/properties/testArray",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400:abf8:b9c8:4232:35d9]:8081/TestServient/properties/testArray",
+                    "mediaType": "application/json"
+                }
+            ]
+        }
+    },
+    "actions": {
+        "setCounter": {
+            "input": {
+                "type": "number"
+            },
+            "forms": [
+                {
+                    "href": "http://192.168.178.144:8081/TestServient/actions/setCounter",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400::df75]:8081/TestServient/actions/setCounter",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400:502e:119a:294a:31b6]:8081/TestServient/actions/setCounter",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://192.168.178.5:8081/TestServient/actions/setCounter",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400::8de4]:8081/TestServient/actions/setCounter",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400:abf8:b9c8:4232:35d9]:8081/TestServient/actions/setCounter",
+                    "mediaType": "application/json"
+                }
+            ]
+        },
+        "getTemperature": {
+            "output": {
+                "type": "number"
+            },
+            "forms": [
+                {
+                    "href": "http://192.168.178.144:8081/TestServient/actions/getTemperature",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400::df75]:8081/TestServient/actions/getTemperature",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400:502e:119a:294a:31b6]:8081/TestServient/actions/getTemperature",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://192.168.178.5:8081/TestServient/actions/getTemperature",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400::8de4]:8081/TestServient/actions/getTemperature",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400:abf8:b9c8:4232:35d9]:8081/TestServient/actions/getTemperature",
+                    "mediaType": "application/json"
+                }
+            ]
+        },
+        "setDisplay": {
+            "input": {
+                "type": "string"
+            },
+            "output": {
+                "type": "string"
+            },
+            "forms": [
+                {
+                    "href": "http://192.168.178.144:8081/TestServient/actions/setDisplay",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400::df75]:8081/TestServient/actions/setDisplay",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400:502e:119a:294a:31b6]:8081/TestServient/actions/setDisplay",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://192.168.178.5:8081/TestServient/actions/setDisplay",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400::8de4]:8081/TestServient/actions/setDisplay",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400:abf8:b9c8:4232:35d9]:8081/TestServient/actions/setDisplay",
+                    "mediaType": "application/json"
+                }
+            ]
+        },
+        "setTestObject": {
+            "input": {
+                "type": "object",
+                "properties": {
+                    "brightness": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                    },
+                    "status": {
+                        "type": "string"
+                    }
+                }
+            },
+            "forms": [
+                {
+                    "href": "http://192.168.178.144:8081/TestServient/actions/setTestObject",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400::df75]:8081/TestServient/actions/setTestObject",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400:502e:119a:294a:31b6]:8081/TestServient/actions/setTestObject",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://192.168.178.5:8081/TestServient/actions/setTestObject",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400::8de4]:8081/TestServient/actions/setTestObject",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400:abf8:b9c8:4232:35d9]:8081/TestServient/actions/setTestObject",
+                    "mediaType": "application/json"
+                }
+            ]
+        },
+        "setTestArray": {
+            "input": {
+                "type": "array",
+                "items": {
+                    "type": "number"
+                }
+            },
+            "output": {
+                "type": "array",
+                "items": {
+                    "type": "number"
+                }
+            },
+            "forms": [
+                {
+                    "href": "http://192.168.178.144:8081/TestServient/actions/setTestArray",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400::df75]:8081/TestServient/actions/setTestArray",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400:502e:119a:294a:31b6]:8081/TestServient/actions/setTestArray",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://192.168.178.5:8081/TestServient/actions/setTestArray",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400::8de4]:8081/TestServient/actions/setTestArray",
+                    "mediaType": "application/json"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400:abf8:b9c8:4232:35d9]:8081/TestServient/actions/setTestArray",
+                    "mediaType": "application/json"
+                }
+            ]
+        }
+    },
+    "events": {
+        "onChange": {
+            "type": "number",
+            "forms": [
+                {
+                    "href": "http://192.168.178.144:8081/TestServient/events/onChange",
+                    "mediaType": "application/json",
+                    "subProtocol": "LongPoll"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400::df75]:8081/TestServient/events/onChange",
+                    "mediaType": "application/json",
+                    "subProtocol": "LongPoll"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400:502e:119a:294a:31b6]:8081/TestServient/events/onChange",
+                    "mediaType": "application/json",
+                    "subProtocol": "LongPoll"
+                },
+                {
+                    "href": "http://192.168.178.5:8081/TestServient/events/onChange",
+                    "mediaType": "application/json",
+                    "subProtocol": "LongPoll"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400::8de4]:8081/TestServient/events/onChange",
+                    "mediaType": "application/json",
+                    "subProtocol": "LongPoll"
+                },
+                {
+                    "href": "http://[2a02:8106:216:5400:abf8:b9c8:4232:35d9]:8081/TestServient/events/onChange",
+                    "mediaType": "application/json",
+                    "subProtocol": "LongPoll"
+                }
+            ]
+        }
+    },
+    "links": [],
+    "id": "urn:uuid:560290c8-6490-4a58-99ca-eea9bc8c25d2"
+}

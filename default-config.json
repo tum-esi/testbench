@@ -1,5 +1,5 @@
 {
- "TBname": "test-bench-V1.1",
+ "TBname": "wot-test-bench",
  "HttpPort": 8980,
  "SchemaLocation": "Resources/InteractionSchemas/",
  "TestReportsLocation": "Reports/",

@@ -49,9 +49,8 @@ srv.start().then(WoT => {
     // update config file, gets tutTD if not "", consume tutTD, adds Tester, set generated data to testData:
     TestBenchT.addAction("initiate", {
         input: { type: "boolean"},  // true sets logMode to active
-        output: { type: "string" }
-    });
-    TestBenchT.setActionHandler("initiate", (logMode: boolean) => {
+        output: { type: "string" }},
+        (logMode: boolean) => {
         return TestBenchT.properties["testConfig"].get().then((newConf) => {
             testConfig = JSON.parse(JSON.stringify(newConf));
             fs.writeFileSync('./default-config.json', JSON.stringify(testConfig, null, ' '));
@@ -97,8 +96,8 @@ srv.start().then(WoT => {
     TestBenchT.addAction("testThing", {
         input: { type: "boolean" },
         output: { type: "boolean" }
-    });
-    TestBenchT.setActionHandler("testThing", function(logMode: boolean) {
+    },
+    (logMode: boolean) => {
         return TestBenchT.properties["testData"].get().then((data) => {
             fs.writeFileSync(testConfig.TestDataLocation, JSON.stringify(data, null, ' '));
             console.log('\x1b[36m%s\x1b[0m', '* ------ START OF TESTTHING METHOD ------');
@@ -115,4 +114,6 @@ srv.start().then(WoT => {
             return false;
         });
     });
+
+    TestBenchT.expose().then( () => { console.info(TestBenchT.name + " ready"); } );
 }).catch(err => { console.log('\x1b[36m%s\x1b[0m', "* :::::ERROR::::: Servient startup failed"); });
