@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-## TestBench Documentation:
-#### Compatible with Thing Description versions: [5.April-18](https://www.w3.org/TR/2018/WD-wot-thing-description-20180405/), W3C Editor's Draft 22 June 2018, and should also work with W3C Editor's Draft 26 June 2018 (last one not tested).  
-=======
 # Web of Things Test Bench
 
 Tests a WoT Thing by executing interactions automatically, based on its Thing Description.
@@ -14,7 +10,6 @@ A Thing Description should represent capabilities of a device. This implies that
 TD Version Used: TPAC Lyon 2018, 18 October
 
 <!-- #### Compatible with Thing Description versions: [5.April-18](https://www.w3.org/TR/2018/WD-wot-thing-description-20180405/), W3C Editor's Draft 22 June 2018, and should also work with W3C Editor's Draft 26 June 2018 (last one not tested).   -->
->>>>>>> 8302086
 ___
 
 ## Installation 
