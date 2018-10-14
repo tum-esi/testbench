@@ -51,11 +51,11 @@ srv.start().then(WoT => {
         input: { type: "boolean"},  // true sets logMode to active
         output: { type: "string" }},
         (logMode: boolean) => {
-        return TestBenchT.properties["testConfig"].get().then((newConf) => {
+        return TestBenchT.properties.testConfig.read().then((newConf) => {
             testConfig = JSON.parse(JSON.stringify(newConf));
             fs.writeFileSync('./default-config.json', JSON.stringify(testConfig, null, ' '));
 
-            return TestBenchT.properties["thingUnderTestTD"].get().then((tutTD) => {
+            return TestBenchT.properties.thingUnderTestTD.read().then((tutTD) => {
                 tutTD = JSON.stringify(tutTD);
                 if (tutTD != "") {
                     let tutT: Thing = TDParser.parseTD(tutTD);
@@ -64,14 +64,14 @@ srv.start().then(WoT => {
                     tester = new Tester(testConfig, tutT, consumedTuT);
                     let returnCheck = tester.initiate(logMode);
                     if (returnCheck == 0) {
-                        return TestBenchT.properties["testData"].set(tester.codeGen.requests).then(() => {
+                        return TestBenchT.properties.testData.write(tester.codeGen.requests).then(() => {
                             return "Initiation was successful."
                         }).catch(() => {
                             console.log('\x1b[36m%s\x1b[0m', "* :::::ERROR::::: Init: Set testData property failed");
                             return "Initiation failed";
                         });
                     } else if (returnCheck == 1) {
-                        return TestBenchT.properties["testData"].set(tester.codeGen.requests).then(() => {
+                        return TestBenchT.properties.testData.write(tester.codeGen.requests).then(() => {
                             return "Initiation was successful, bu no interactions were found."
                         }).catch(() => {
                             console.log('\x1b[36m%s\x1b[0m', "* :::::ERROR::::: Init: Set testData property failed");
@@ -98,13 +98,13 @@ srv.start().then(WoT => {
         output: { type: "boolean" }
     },
     (logMode: boolean) => {
-        return TestBenchT.properties["testData"].get().then((data) => {
+        return TestBenchT.properties.testData.read().then((data) => {
             fs.writeFileSync(testConfig.TestDataLocation, JSON.stringify(data, null, ' '));
             console.log('\x1b[36m%s\x1b[0m', '* ------ START OF TESTTHING METHOD ------');
             return tester.testThing(testConfig.Repetitions, testConfig.Scenarios, logMode).then(testReport => {
                 testReport.printResults();
                 testReport.storeReport(testConfig.TestReportsLocation, tutName);
-                return TestBenchT.properties["testReport"].set(testReport.getResults()).then(() => true, () => false);
+                return TestBenchT.properties.testReport.write(testReport.getResults()).then(() => true, () => false);
             }).catch(() => {
                 console.log('\x1b[36m%s\x1b[0m', "* :::::ERROR::::: TestThing method went wrong");
                 return false;

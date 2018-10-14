@@ -109,20 +109,13 @@ ___
 ***
 
 - This link provides all possible postman interaction examples [https://documenter.getpostman.com/view/4378601/RWEmHGBq](https://documenter.getpostman.com/view/4378601/RWEmHGBq).
-<<<<<<< HEAD
 
 - How to use testbench screencast video can be found here [https://youtu.be/BDMbXZ2O7KI](https://youtu.be/BDMbXZ2O7KI).
-
-- You can use your browser and the GET requests to inpect all properties during the procedure.
-=======
-
-- How to use testbench screencast video can be found here [https://youtu.be/BDMbXZ2O7KI](https://youtu.be/BDMbXZ2O7KI).
->>>>>>> 8302086
 
 - You can use your browser and the GET requests to inspect all properties during the procedure.
 
 
-## Missing features which will be added in soon future:
+## To-Do
  
 - observable properties testing
 - events testing
