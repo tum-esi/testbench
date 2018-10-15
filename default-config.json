@@ -1,5 +1,5 @@
 {
- "TBname": "v2-test-bench",
+ "TBname": "test-bench",
  "SchemaLocation": "Resources/InteractionSchemas/",
  "TestReportsLocation": "Reports/",
  "TestDataLocation": "Resources/fake-data.json",

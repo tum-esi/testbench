@@ -1,6 +1,6 @@
-import  ThingDescription from 'node-wot/packages/td-tools/src/thing-description';
-import Interaction from 'node-wot/packages/td-tools/src/thing-description';
-import * as TDParser from 'node-wot/packages/td-tools/src/td-parser';
+import ThingDescription from 'thingweb.node-wot/packages/td-tools/src/thing-description';
+import Interaction from 'thingweb.node-wot/packages/td-tools/src/thing-description';
+import * as TDParser from 'thingweb.node-wot/packages/td-tools/src/td-parser';
 import fs = require('fs');
 var mkdirp = require("mkdirp");
 

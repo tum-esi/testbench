@@ -1,11 +1,11 @@
-import _ from 'node-wot/packages/core/node_modules/wot-typescript-definitions';
-import {Servient} from 'node-wot/packages/core';
-import {HttpClientFactory} from "node-wot/packages/binding-http";
-import {CoapClientFactory} from "node-wot/packages/binding-coap";
-import {HttpServer} from 'node-wot/packages/binding-http';
-import {CoapServer} from "node-wot/packages/binding-coap";
-import {Thing} from 'node-wot/packages/td-tools';
-import * as TDParser from 'node-wot/packages/td-tools';
+import _ from 'thingweb.node-wot/packages/core/node_modules/wot-typescript-definitions';
+import { Servient } from 'thingweb.node-wot/packages/core';
+import { HttpClientFactory } from "thingweb.node-wot/packages/binding-http";
+import { CoapClientFactory } from "thingweb.node-wot/packages/binding-coap";
+import { HttpServer } from 'thingweb.node-wot/packages/binding-http';
+import { CoapServer } from "thingweb.node-wot/packages/binding-coap";
+import { Thing } from 'thingweb.node-wot/packages/td-tools';
+import * as TDParser from 'thingweb.node-wot/packages/td-tools';
 import fs = require('fs');
 import { Tester } from './Tester'
 import {convertTDtoNodeWotTD040} from './convertTDs';
@@ -115,7 +115,7 @@ srv.start().then(WoT=>{
         outputSchema: '{ "type": "boolean" }'
     });
     // testing a thing action handler, input boolean for logMode:
-    // if input true, logMode is on
+    // if input true, logMode is onconsole.log(JSON.stringify(TestBenchT));
     TestBenchT.setActionHandler("testThing", function(input: boolean) {
         var p1 = TestBenchT.readProperty("testData").then((data) => {
             fs.writeFileSync(testConfig.TestDataLocation, JSON.stringify(data, null, ' '));

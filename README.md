@@ -17,7 +17,7 @@ Clone testbench repository from [https://github.com/jplaui/testbench](https://gi
 - Jump into `node-wot` folder and execute: `npm install` and `run bootstrap` and `sudo npm run build`
 
 - Return back into testbench folder and execute: `tsc -p .`
-- Now you are able tu run the testbench inside the testbench folder with: `node dist/v2-test-bench.js`
+- Now you are able tu run the testbench inside the testbench folder with: `node dist/test-bench.js`
 - Interact with the testbench using `curl` or `portman` or others:
 
 **postman**:

@@ -11,11 +11,11 @@ After the test a test report can be generated and analyzed to get more meaning o
 
 import fs = require('fs');
 // import _ from 'wot-typescript-definitions';// global W3C WoT Scripting API definitions
-import Servient from 'node-wot/packages/core';
-import {Thing} from 'node-wot/packages/td-tools';
-import * as TD from 'node-wot/packages/td-tools';
-import * as TDParser from 'node-wot/packages/td-tools';
-import * as tdHelpers from 'node-wot/packages/td-tools'
+import Servient from 'thingweb.node-wot/packages/core';
+import { Thing } from 'thingweb.node-wot/packages/td-tools';
+import * as TD from 'thingweb.node-wot/packages/td-tools';
+import * as TDParser from 'thingweb.node-wot/packages/td-tools';
+import * as tdHelpers from 'thingweb.node-wot/packages/td-tools'
 import * as TdFunctions from './tdFunctions'
 import { CodeGenerator } from './DataGenerator'
 import { TestReport } from './TestReport'
