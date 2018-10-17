@@ -27,7 +27,7 @@ Clone testbench repository from [https://github.com/jplaui/testbench](https://gi
 - Switch into `node_modules` folder and clone node-wot repository [https://github.com/eclipse/thingweb.node-wot](https://github.com/eclipse/thingweb.node-wot) inside the `node_modules` folder with `git clone https://github.com/eclipse/thingweb.node-wot.git`.
 - Switch into `thingweb.node-wot/` folder and execute: `npm install` and `npm run build`
 
-- Return back into testbench directory and execute: `tsc -p .`
+- Return back into testbench directory and execute: `tsc -p .` Don't forget the dot at the end
 - Now you are able to run the testbench inside the testbench directory with: `node dist/wot-test-bench.js`
 - Interact with the testbench using REST clients such as `cURL`, `Postman` etc.
 
@@ -52,7 +52,8 @@ ___
 
 
 1. Start a servient that has a TD so that TestBench can interact with it.
-    1.  `testing-files/test_servient.js` shows an example test servient. Run `test_servient.js` by executing `node testing-files/test_servient.js` inside `testbench` directory.
+    1.  `testing-files/faultyThing.js` shows an example test servient with ONLY BAD implementations. Run `faultyThing.js` by executing `node testing-files/faultyThing.js` inside `testbench` directory.
+    2.  `testing-files/perfectThing.js` shows an example test servient with ONLY GOOD implementations. Run `perfectThing.js` by executing `node testing-files/perfectThing.js` inside `testbench` directory.
    
 2. Run the TestBench by executing `node dist/wot-test-bench.js` inside the `testbench` directory.
     1. Before doing so, you can configure the test bench by changing the `default-config.json` file.
@@ -60,7 +61,7 @@ ___
 3. Start `Postman` software: [Postman](https://www.getpostman.com/)
 
 4. Send the TD of the Thing you want to test by writing into the `thingUnderTestTD` property
-    1. `test_servient.js` has a TD named `myTuT-complete.jsonld` in the testing-files directory.  
+    1. `faultyThing.js` has a TD named `faultThingTD.jsonld` in the testing-files directory. Warning!: This TD will change based on your network so make sure to update it.
 
 
 | **PUT** | TestBench update TuT Property |

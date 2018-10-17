@@ -12,7 +12,7 @@ srv.start().then(WoT => {
 
     let thing = WoT.produce({
         name: "TestServient",
-        description: "Test servient that can be used as a servient to be tested with the WoT Test Bench"
+        description: "Test servient that can be used as a servient to be tested with the WoT Test Bench. All interactions have errors explicetely coded"
     });
 
     thing.addProperty("display", {
@@ -21,24 +21,17 @@ srv.start().then(WoT => {
         observable: true
     }, "initialization string");
 
-    thing.addProperty("counter", {
+    thing.addProperty("wrongWritable", {
         type: 'number',
         writable: true,
         observable: true
-    }, 0);
+    }, 15);
 
-    thing.setPropertyReadHandler("counter", () => {
-        console.log("* HANDLER FUNCTION for counter");
-        return new Promise((resolve, reject) => {
-            resolve(13);
-        });
-    });
-
-    thing.addProperty("temperature", {
+    thing.addProperty("wrongDataType", {
         type: 'number',
         writable: false,
         observable: true
-    }, 25);
+    }, "this is not a number");
 
     thing.addProperty("testObject", {
         type: 'object',
@@ -73,7 +66,7 @@ srv.start().then(WoT => {
     }, (input) => {
         console.log("* ACTION HANDLER FUNCTION for setCounter");
         console.log("* ", input);
-        return thing.properties["counter"].set(input).then(() => {
+        return thing.properties["counter"].write(input).then(() => {
             console.log('* Set counter successful');
             return
         }).catch(() => {
@@ -88,7 +81,7 @@ srv.start().then(WoT => {
         }
     }, () => {
         console.log("* ACTION HANDLER FUNCTION for getTemp");
-        return thing.properties["temperature"].get().then((temp) => {
+        return thing.properties["temperature"].read().then((temp) => {
             console.log('* getTemperature successful');
             return temp;
         }).catch(() => {
@@ -109,7 +102,7 @@ srv.start().then(WoT => {
         console.log("* ACTION HANDLER FUNCTION for setDisplay");
         console.log("* ", input);
         return new Promise((resolve, reject) => {
-            resolve("rDisplay set");
+            resolve("Display set");
         });
     });
 
@@ -130,7 +123,7 @@ srv.start().then(WoT => {
     }, (input) => {
         console.log("* ACTION HANDLER FUNCTION for setTestObject");
         console.log("* ", input);
-        return thing.properties["testObject"].set(input).then(() => input, () => false);
+        return thing.properties["testObject"].write(input).then(() => input, () => false);
     });
 
     thing.addAction("setTestArray", {
@@ -149,7 +142,7 @@ srv.start().then(WoT => {
     }, (input) => {
         console.log("* ACTION HANDLER FUNCTION for setTestArray");
         console.log("* ", input);
-        return thing.properties["testArray"].set(input).then(() => {
+        return thing.properties["testArray"].write(input).then(() => {
             var promise1 = new Promise(function (resolve, reject) {
                 setTimeout(resolve, 5000, input);
             });

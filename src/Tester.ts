@@ -99,7 +99,7 @@ export class Tester {
             try {
                 if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Invoking action " + actionName + " with data:", JSON.stringify(toSend, null, ' '));
                 // Apply a timeout of 5 seconds to doSomething
-                let invokeAction = Utils.promiseTimeout(self.testConfig.ActionTimeout, self.tut.actions[actionName].run(toSend));
+                let invokeAction = Utils.promiseTimeout(self.testConfig.ActionTimeout, self.tut.actions[actionName].invoke(toSend));
                 invokeAction.then((res: any) => {
                     if (interaction.hasOwnProperty('output')) { //the action doesnt have to answer something back
                         let answer = res;
@@ -158,7 +158,7 @@ export class Tester {
             if (logMode) console.log('\x1b[36m%s\x1b[0m', "* First Read Property");
             if (logMode && isWritable) console.log('\x1b[36m%s\x1b[0m', "* Property is writable");
             if (logMode && !isWritable) console.log('\x1b[36m%s\x1b[0m', "* Property not writable");
-            let curPropertyData: any = self.tut.properties[propertyName].get().then((res: any) => {
+            let curPropertyData: any = self.tut.properties[propertyName].read().then((res: any) => {
                 let data: JSON = res;
                 if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* DATA AFTER FIRST READ PROPERTY:", JSON.stringify(data, null, ' '));
                 //validating the property value with its Schemas
@@ -205,9 +205,9 @@ export class Tester {
 
                     //setting the property, aka writing into it
                     if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Writing to property " + propertyName + " with data:", JSON.stringify(toSend, null, ' '));
-                    self.tut.properties[propertyName].set(toSend).then(() => {
+                    self.tut.properties[propertyName].write(toSend).then(() => {
                         //now reading and hoping to get the same value
-                        let curPropertyData2: any = self.tut.properties[propertyName].get().then((res2: any) => {
+                        let curPropertyData2: any = self.tut.properties[propertyName].read().then((res2: any) => {
                             let data2: JSON = res2;
                             if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* For the second one, gotten propery data is:", JSON.stringify(data2, null, ' '));
                             //validating the gotten value (this shouldnt be necessary since the first time was correct but it is here nonetheless)
