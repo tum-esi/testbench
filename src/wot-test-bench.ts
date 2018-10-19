@@ -11,6 +11,16 @@ import {
     FileClientFactory
 } from 'thingweb.node-wot/packages/binding-file';
 import {
+    MqttClientFactory
+} from 'thingweb.node-wot/packages/binding-mqtt';
+import {
+    CoapClientFactory
+} from 'thingweb.node-wot/packages/binding-coap';
+import {
+    CoapsClientFactory
+} from 'thingweb.node-wot/packages/binding-coap';
+
+import {
     HttpServer
 } from 'thingweb.node-wot/packages/binding-http';
 import {
@@ -42,8 +52,10 @@ srv.addServer(httpServer);
 srv.addClientFactory(new FileClientFactory());
 srv.addClientFactory(new HttpClientFactory(testConfig.http));
 srv.addClientFactory(new HttpsClientFactory(testConfig.http));
+srv.addClientFactory(new CoapClientFactory());
+srv.addClientFactory(new CoapsClientFactory());
+srv.addClientFactory(new MqttClientFactory());
 
-// srv.addServer(new CoapServer());
 
 srv.start().then(WoT => {
     console.log('\x1b[36m%s\x1b[0m', '* TestBench servient started');
