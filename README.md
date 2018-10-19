@@ -129,8 +129,15 @@ ___
 
 
 ## To-Do
- 
-- observable properties testing
-- events testing
-- supporting other protocols such as CoAP and MQTT
 
+In the order of priority, the following need to be implemented
+ 
+
+1. Simple Report Creation
+2. Event Testing (in order of priority)
+    1. Testing whether you can subscribe to events
+    2. Testing whether you can unsubscribe from events
+    3. Testing whether the JSON delivered by event match the JSON Schema
+3. Observable Property Testing: Need to define the objectives
+4. Coap and MQTT server
+   

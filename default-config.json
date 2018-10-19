@@ -10,7 +10,5 @@
     "ActionTimeout": 4000,
     "Scenarios": 2,
     "Repetitions": 1,
-    "credentials": {},
-    "coap": {},
-    "_mqtt": {}
+    "credentials": {}
 }
