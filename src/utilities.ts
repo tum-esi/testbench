@@ -9,13 +9,17 @@ var jsf = require('json-schema-faker');
 // a test config file is always configured like this
 export interface testConfig {
     TBname?: string;
-    HttpPort?: number;
+    http?: {
+        port?: number
+        allowSelfSigned: boolean;
+    };
     SchemaLocation?: string;
     TestReportsLocation?: string;
     TestDataLocation?: string;
     ActionTimeout?: number;
     Scenarios?: number;
     Repetitions?: number;
+    credentials?: any;
 }
 
 // -------------------------- FAKE DATA GENERATION ---------------------------------

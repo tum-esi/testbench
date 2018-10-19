@@ -247,6 +247,7 @@ export class Tester {
                 }
             }).catch((error: any) => { //problem in the node-wot level
                 if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Problem fetching first time property: " + propertyName);
+                console.log("ERROR is: ", error)
                 self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""), JSON.parse("\"nothing\""), 30, "Couldnt fetch property");
                 reject(true);
             });

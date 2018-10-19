@@ -22,18 +22,30 @@ srv.start().then(WoT => {
     }, "initialization string");
 
     thing.addProperty("wrongWritable", {
+        description:"property that says writable but isn't",
         type: 'number',
         writable: true,
         observable: true
     }, 15);
 
-    thing.addProperty("wrongDataType", {
+    thing.setPropertyWriteHandler("wrongWritable",()=>{
+        return new Promise(function (resolve, reject) {
+            console.log("Writing the old value");
+            thing.properties["wrongWritable"].write(15);
+            resolve(15);
+        });
+        // return thing.properties["wrongWritable"].write(15).then(() => 15, () => false);
+    })
+
+    thing.addProperty("wrongDataTypeNumber", {
+        description:"property that returns a different data type than the one described",
         type: 'number',
         writable: false,
         observable: true
     }, "this is not a number");
 
-    thing.addProperty("testObject", {
+    thing.addProperty("wrongDataTypeObject", {
+        description: "property that doesn't return a key that is required",
         type: 'object',
         properties: {
             "brightness": {
@@ -45,10 +57,10 @@ srv.start().then(WoT => {
                 type: "string"
             }
         },
+        required:["brightness","status"],
         writable: true
     }, {
-        "brightness": 99.99,
-        "status": "exampleString"
+        "brightness": 99.99
     });
 
     thing.addProperty("testArray", {
@@ -126,7 +138,8 @@ srv.start().then(WoT => {
         return thing.properties["testObject"].write(input).then(() => input, () => false);
     });
 
-    thing.addAction("setTestArray", {
+    thing.addAction("longTakingAction", {
+        "description":"Action that can fail because of taking longer than usual (5s)",
         input: {
             type: "array",
             items: {
@@ -140,14 +153,11 @@ srv.start().then(WoT => {
             }
         }
     }, (input) => {
-        console.log("* ACTION HANDLER FUNCTION for setTestArray");
-        console.log("* ", input);
-        return thing.properties["testArray"].write(input).then(() => {
+        console.log("* ACTION HANDLER FUNCTION for longTakingAction");
             var promise1 = new Promise(function (resolve, reject) {
                 setTimeout(resolve, 5000, input);
             });
             return promise1;
-        });
     });
 
     thing.addEvent("onChange", {

@@ -1,10 +1,15 @@
 {
  "TBname": "wot-test-bench",
- "HttpPort": 8980,
+ "http": {
+  "port": 8980,
+  "allowSelfSigned": true
+ },
  "SchemaLocation": "Resources/InteractionSchemas/",
  "TestReportsLocation": "Reports/",
  "TestDataLocation": "Resources/fake-data.json",
  "ActionTimeout": 4000,
  "Scenarios": 2,
- "Repetitions": 1
+ "Repetitions": 1,
+ "credentials": {
+ }
 }
