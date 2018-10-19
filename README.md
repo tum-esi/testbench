@@ -73,7 +73,18 @@ ___
 | return value: | no return value |
 
 5. (Optional) Update the test configuration by writing to the `testConfig` property.
-    1. This is not optional if you have to add security configuration. You should resend the test configuration with the credentials filled according to the Thing you want to test.
+    1. This is not optional if you have to add security configuration. You should resend the test configuration with the credentials filled according to the Thing you want to test, like in the following example:
+```
+    "credentials": {
+        THING_ID1: {
+            "token": TOKEN
+        },
+        THING_ID2: {
+            "username": USERNAME,
+            "password": PASSWORD
+        }
+    }
+```
 
 6. Call initialization sequence of the TestBench by invoking the `initiate` action. This is where TestBench reads new configurations, consumes the provided TD of Thing under Test and exposes generated `testData` which is sent during testing procedure as a property of TestBench. Input data `"true"` activates logging to console which can show detailed error logs.
 

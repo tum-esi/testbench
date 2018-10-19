@@ -72,17 +72,17 @@ srv.start().then(WoT => {
         writable: false
     });
 
-    TestBenchT.addAction("fastTest", {
-            input: {
-                type: "string"
-            },
-            output: {
-                type: "object"
-            }
-        },
-        (tutTD: string) => {
-            return TestBenchT.properties.testConfig.read().then((newConf) => {});
-        });
+    // TestBenchT.addAction("fastTest", {
+    //         input: {
+    //             type: "string"
+    //         },
+    //         output: {
+    //             type: "object"
+    //         }
+    //     },
+    //     (tutTD: string) => {
+    //         return TestBenchT.properties.testConfig.read().then((newConf) => {});
+    //     });
 
     // update config file, gets tutTD if not "", consume tutTD, adds Tester, set generated data to testData:
     TestBenchT.addAction("initiate", {
