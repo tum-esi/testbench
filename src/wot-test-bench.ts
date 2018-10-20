@@ -61,40 +61,65 @@ srv.start().then(WoT => {
     console.log('\x1b[36m%s\x1b[0m', '* TestBench servient started');
     let TestBenchT = WoT.produce({
         name: tbName,
+        description: "WoT Test Bench tests a Thing by getting its TD and executing all of its interactions with data generated in runtime. For simple use, invoke the fastTest action with the TD of your Thing as input data"
     });
     let tester: Tester = null;
     TestBenchT.addProperty("testConfig", {
         type: "string",
-        writable: true
+        writable: true,
+        description: "(Optional) Writing to this property configures the Test Bench. TDs with security schemes require this property to contain the security credentials"
     }, testConfig);
     TestBenchT.addProperty("testBenchStatus", {
         type: "string",
-        writable: false
+        writable: false,
+        description: "(not finished) Shows the status of the test bench whether it is currently testing a device or not"
     }, "");
     TestBenchT.addProperty("thingUnderTestTD", {
         type: "string",
-        writable: true
+        writable: true,
+        description: "Write to this property in order to give the TD of your Thing to test. Not necessary for fastTest"
     }, "");
     TestBenchT.addProperty("testData", {
         type: "string",
-        writable: true
+        writable: true,
+        description: "(Optional) This property contains all the data that will be sent by the Test Bench to the Thing under Test. You can also write in custom data"
     });
     TestBenchT.addProperty("testReport", {
         type: "string",
-        writable: false
+        writable: false,
+        description:"Contains all of the outputs of the testing. Not necessary for fastTest"
     });
 
-    // TestBenchT.addAction("fastTest", {
-    //         input: {
-    //             type: "string"
-    //         },
-    //         output: {
-    //             type: "object"
-    //         }
-    //     },
-    //     (tutTD: string) => {
-    //         return TestBenchT.properties.testConfig.read().then((newConf) => {});
-    //     });
+    TestBenchT.addAction("fastTest", {
+            input: {
+                type: "string"
+            },
+            output: {
+                type: "string"
+            },
+            description: "Send a TD as input data and it will return a test report once the test has finished"
+        },
+        (thingTD: string) => {
+            //get the input
+            return TestBenchT.properties.thingUnderTestTD.write(thingTD).then(()=>{
+                //write it into tutTD prop
+                //call initiate
+                return TestBenchT.actions.initiate.invoke(false).then(()=>{
+                    //call testThing
+                    return TestBenchT.actions.testThing.invoke(false).then(()=>{
+                        //call testThing
+                        return TestBenchT.actions.testThing.invoke(false).then(()=>{
+                            //read report
+                            //return the simplified version
+                            return TestBenchT.properties.testReport.read();
+                        });
+                    })
+                });
+            });
+
+
+
+        });
 
     // update config file, gets tutTD if not "", consume tutTD, adds Tester, set generated data to testData:
     TestBenchT.addAction("initiate", {
@@ -103,7 +128,8 @@ srv.start().then(WoT => {
             }, // true sets logMode to active
             output: {
                 type: "string"
-            }
+            },
+        description:"By invoking this action, the test bench consumes the thing under test, generates data to be sent. Not necessary for fastTest"
         },
         (logMode: boolean) => {
             return TestBenchT.properties.testConfig.read().then((newConf) => {
@@ -155,7 +181,8 @@ srv.start().then(WoT => {
             },
             output: {
                 type: "boolean"
-            }
+            },
+            description:"By invoking this action the testing starts and produces a test report that can be read. Not necessary for fastTest"
         },
         (logMode: boolean) => {
             return TestBenchT.properties.testData.read().then((data) => {
