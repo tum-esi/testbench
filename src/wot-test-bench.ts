@@ -110,8 +110,8 @@ srv.start().then(WoT => {
                         //call testThing
                         return TestBenchT.actions.testThing.invoke(false).then(()=>{
                             //read report
-                            //return the simplified version
                             return TestBenchT.properties.testReport.read();
+                            //return the simplified version
                         });
                     })
                 });

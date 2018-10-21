@@ -99,40 +99,78 @@ export class Tester {
             try {
                 if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Invoking action " + actionName + " with data:", JSON.stringify(toSend, null, ' '));
                 // Apply a timeout of 5 seconds to doSomething
-                let invokeAction = Utils.promiseTimeout(self.testConfig.ActionTimeout, self.tut.actions[actionName].invoke(toSend));
-                invokeAction.then((res: any) => {
-                    if (interaction.hasOwnProperty('output')) { //the action doesnt have to answer something back
-                        let answer = res;
-                        if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Answer is:", JSON.stringify(answer, null, ' '));
-                        try {
-                            let temp: JSON = answer;
-                        } catch (error) {
-                            if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Response is not in JSON format");
-                            self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 15, "Response is not in JSON format: " + error);
+                // TO DO: no repeat the same thing twice
+                if(toSend!=null){
+                    let invokeAction = Utils.promiseTimeout(self.testConfig.ActionTimeout, self.tut.actions[actionName].invoke(toSend));
+                    invokeAction.then((res: any) => {
+                        if (interaction.hasOwnProperty('output')) { //the action doesnt have to answer something back
+                            let answer = res;
+                            if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Answer is:", JSON.stringify(answer, null, ' '));
+                            try {
+                                let temp: JSON = answer;
+                            } catch (error) {
+                                if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Response is not in JSON format");
+                                self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 15, "Response is not in JSON format: " + error);
+                                resolve(true);
+                            }
+                            //validating the response against its schema, same as before
+                            let errorsRes: Array<any> = Utils.validateResponse(actionName, answer, self.testConfig.SchemaLocation, 'Action');
+                            if (errorsRes.length > 0) { //meaning that there is a validation error
+                                if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is not valid for: " + actionName);
+                                self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 16, "Received response is not valid, " + JSON.stringify(errorsRes));
+                                resolve(true);
+                            } else {
+                                if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is valid for: " + actionName);
+                            }
+                            //if nothing is wrong, putting a good result
+                            if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* ", actionName + " is succesful");
+                            self.testReport.addMessage(testCycle, testScenario, actionName, true, toSend, answer, 100, "");
+                            resolve(true);
+                        } else { // in case there is no answer needed it is a succesful test as well
+                            if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* ", actionName + " is succesful without return value");
+                            self.testReport.addMessage(testCycle, testScenario, actionName, true, toSend, JSON.parse("\"nothing\""), 101, "no return value needed");
                             resolve(true);
                         }
-                        //validating the response against its schema, same as before
-                        let errorsRes: Array<any> = Utils.validateResponse(actionName, answer, self.testConfig.SchemaLocation, 'Action');
-                        if (errorsRes.length > 0) { //meaning that there is a validation error
-                            if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is not valid for: " + actionName);
-                            self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 16, "Received response is not valid, " + JSON.stringify(errorsRes));
+                    }).catch((error) => {
+                        self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 999, "Invoke Action Error: " + error);
+                        resolve(true);
+                    });
+                } else {
+                    let invokeAction = Utils.promiseTimeout(self.testConfig.ActionTimeout, self.tut.actions[actionName].invoke());
+                    invokeAction.then((res: any) => {
+                        if (interaction.hasOwnProperty('output')) { //the action doesnt have to answer something back
+                            let answer = res;
+                            if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Answer is:", JSON.stringify(answer, null, ' '));
+                            try {
+                                let temp: JSON = answer;
+                            } catch (error) {
+                                if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Response is not in JSON format");
+                                self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 15, "Response is not in JSON format: " + error);
+                                resolve(true);
+                            }
+                            //validating the response against its schema, same as before
+                            let errorsRes: Array<any> = Utils.validateResponse(actionName, answer, self.testConfig.SchemaLocation, 'Action');
+                            if (errorsRes.length > 0) { //meaning that there is a validation error
+                                if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is not valid for: " + actionName);
+                                self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 16, "Received response is not valid, " + JSON.stringify(errorsRes));
+                                resolve(true);
+                            } else {
+                                if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is valid for: " + actionName);
+                            }
+                            //if nothing is wrong, putting a good result
+                            if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* ", actionName + " is succesful");
+                            self.testReport.addMessage(testCycle, testScenario, actionName, true, toSend, answer, 100, "");
                             resolve(true);
-                        } else {
-                            if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is valid for: " + actionName);
+                        } else { // in case there is no answer needed it is a succesful test as well
+                            if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* ", actionName + " is succesful without return value");
+                            self.testReport.addMessage(testCycle, testScenario, actionName, true, toSend, JSON.parse("\"nothing\""), 101, "no return value needed");
+                            resolve(true);
                         }
-                        //if nothing is wrong, putting a good result
-                        if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* ", actionName + " is succesful");
-                        self.testReport.addMessage(testCycle, testScenario, actionName, true, toSend, answer, 100, "");
+                    }).catch((error) => {
+                        self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 999, "Invoke Action Error: " + error);
                         resolve(true);
-                    } else { // in case there is no answer needed it is a succesful test as well
-                        if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* ", actionName + " is succesful without return value");
-                        self.testReport.addMessage(testCycle, testScenario, actionName, true, toSend, JSON.parse("\"nothing\""), 101, "no return value needed");
-                        resolve(true);
-                    }
-                }).catch((error) => {
-                    self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 999, "Invoke Action Error: " + error);
-                    resolve(true);
-                });
+                    });
+                }
             } catch (Error) { // in case there is a problem with the invoke of the action
                 if (logMode) console.log("* Response receiving for  " + actionName + "is unsuccesful, continuing with other scenarios");
                 self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, JSON.parse("\"nothing\""), 10, "Problem invoking the action" + Error);

@@ -103,26 +103,34 @@ export function validateResponse(responseName: string, response: JSON, schemaLoc
 
 // extracts json schema from property
 function extractSchema(fragment: wot.PropertyFragment | wot.EventFragment) {
+    let extractedSchema;
     if (fragment.type == 'object') {
         if (fragment.hasOwnProperty('properties')) {
             if (fragment.hasOwnProperty('required')) {
-                return '"type": "object","properties":'+JSON.stringify(fragment.properties)+',"required":'+JSON.stringify(fragment.required);
+                extractedSchema= '"type": "object","properties":'+JSON.stringify(fragment.properties)+',"required":'+JSON.stringify(fragment.required);
             } else {
-                return '"type": "object","properties":'+JSON.stringify(fragment.properties);
+                extractedSchema= '"type": "object","properties":'+JSON.stringify(fragment.properties);
             }
         } else {
-            return '"type": "object"';
+            extractedSchema= '"type": "object"';
         }
     } else if (fragment.type == 'array'){
         if (fragment.hasOwnProperty('items')) {
-            return '"type": "array","items":'+JSON.stringify(fragment.items);
+            extractedSchema= '"type": "array","items":'+JSON.stringify(fragment.items);
         } else {
-            return '"type": "array"';
+            extractedSchema= '"type": "array"';
         }
     } else {
         // handle other schemas:
-        return '"type":"'+fragment.type+'"';
+        extractedSchema= '"type":"'+fragment.type+'"';
     }
+    if (fragment.hasOwnProperty('enum') && fragment.hasOwnProperty('type')){
+        extractedSchema += ',"enum":"'+fragment.enum;+'"';
+    }
+    if (fragment.hasOwnProperty('enum') && !fragment.hasOwnProperty('type')) {
+        extractedSchema = '"enum":"' + fragment.enum; +'"';
+    }
+    return extractedSchema;
 }
 // writes extracted schema to file
 function writeSchema(name, dataSchema, schemaLocationR, interaction) {
