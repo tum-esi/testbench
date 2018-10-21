@@ -65,7 +65,7 @@ export class TestReport {
     }
 
     public printResults(): void {
-        console.log("Results of the last test are given in the following table");
+        console.log("Results of the last test with Errors/TotalTests");
         process.stdout.write("Test Scenario Number > ");
         for (var i = 0; i <= this.maxTestScenario; i++) {
             process.stdout.write("TS" + i + "\t");

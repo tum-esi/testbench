@@ -8,6 +8,7 @@ It is possible to define multiple test scenarios with each having different requ
 After the test a test report can be generated and analyzed to get more meaning of the results.
 !!! tut means Thing Under Test
 */
+<<<<<<< HEAD
 
 import fs = require('fs');
 // import _ from 'wot-typescript-definitions';// global W3C WoT Scripting API definitions
@@ -18,56 +19,55 @@ import * as TDParser from 'thingweb.node-wot/packages/td-tools';
 import * as tdHelpers from 'thingweb.node-wot/packages/td-tools'
 import * as TdFunctions from './tdFunctions'
 import { CodeGenerator } from './DataGenerator'
+=======
+import {Servient} from 'thingweb.node-wot/packages/core';
+import {Thing} from 'thingweb.node-wot/packages/td-tools';
+import * as wot from 'thingweb.node-wot/packages/core/node_modules/wot-typescript-definitions';
+import * as Utils from './utilities'
+>>>>>>> lyon
 import { TestReport } from './TestReport'
-import * as SchemaValidator from './SchemaValidator'
-import { testConfig } from './test-bench'
+import { testConfig } from './utilities'
 import timers = require("timers")
 
 export class Tester {
     private tutTd: Thing; //the TD that belongs to the Thing under Test
     private testConfig: testConfig; //the file that describes various locations of the files that are needed. Must be configured by the user
-    public codeGen: CodeGenerator; //this will generate the requests to be sent to the tut
+    public codeGen: Utils.CodeGenerator; //this will generate the requests to be sent to the tut
     public testReport: TestReport; //after the testing, this will contain the bare results
-    private tut: WoT.ConsumedThing; // the thing under test
+    private tut: wot.ConsumedThing; // the thing under test
 
     //this is a basic constructor, it is planned to change to incorporate more things into the initiate function
-    constructor(tC: testConfig, tutTd: Thing, tut: WoT.ConsumedThing) {
+    constructor(tC: testConfig, tutTd: Thing, tut: wot.ConsumedThing) {
         this.testConfig = tC;
         this.tutTd = tutTd;
         this.tut = tut;
     }
 
-    // Currently: Does basic initiations for the codeGenerator, testReport and generates the JSON Schemas from the TD
-    // End Goal: Fetching the thing under test
-    // This can be called by using the Initiate action of the test bench
-    public initiate(logMode: boolean):boolean {
+    // generates Schemas, generates fake data, adds TestReport instance
+    public initiate(logMode: boolean): number {
         if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Initiation has started");
-        //Generating JSON Schemas for input and output Data of each interaction. Go into the function to find explanations
+        let check = 0;
         try {
-            if (logMode) console.log('\x1b[36m%s\x1b[0m', '* Starting schema generation');
-            TdFunctions.generateSchemas(this.tutTd, this.testConfig.SchemaLocation);
-            if (logMode) console.log('\x1b[36m%s\x1b[0m', '* Done with generate schema');
+            check = Utils.generateSchemas(this.tutTd, this.testConfig.SchemaLocation, logMode);
+            if (logMode) console.log('\x1b[36m%s\x1b[0m', '* Finished schema generation.');
         } catch (Error) {
             if (logMode) console.log("Schema Generation Error" + Error);
         }
-
-        //initiliazing this class doesnt do much
         try {
-            if (logMode) console.log('\x1b[36m%s\x1b[0m', '* Starting code generation');
-            this.codeGen = new CodeGenerator(this.tutTd, this.testConfig);
-            if (logMode) console.log('\x1b[36m%s\x1b[0m', '* done with code generation');
+            this.codeGen = new Utils.CodeGenerator(this.tutTd, this.testConfig)
+            if (logMode) console.log('\x1b[36m%s\x1b[0m', '* Finished code generation');
         } catch (Error) {
-            if (logMode) console.log("CodeGenerator Initialization Error" + Error);
+            if (logMode) console.log("Utils.CodeGenerator Initialization Error" + Error);
         }
         //The test report gets initialized and the first cycle and scenarios are added
         //This means that single tests are possible to be seen in the test report
         this.testReport = new TestReport();
         if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Initialization finished");
-        return true;
+        return check;
     }
 
     // -----TODO thing of timers to cause event
-    public testEvent(testCycle: number, actionName: string, testScenario: number, interactionIndex:number,logMode: boolean): Promise<any> {
+    public testEvent(testCycle: number, actionName: string, interaction: wot.EventFragment, testScenario: number, interactionIndex: number,logMode: boolean): Promise<any> {
         // testing event function
 
         return new Promise(function (resolve, reject) {
@@ -82,7 +82,7 @@ export class Tester {
     testScenario number is related to the json file that contains the requests to be sent. In this file, in the array of interaction names,
     you can put different json values that will be sent to the thing
     */
-    public testAction(testCycle: number, actionName: string, testScenario: number, interactionIndex:number, logMode: boolean): Promise<any> {
+    public testAction(testCycle: number, actionName: string, interaction: wot.ActionFragment, testScenario: number, interactionIndex: number, logMode: boolean): Promise<any> {
         var self = this;
         return new Promise(function (resolve, reject) {
             let toSend: JSON;
@@ -99,7 +99,7 @@ export class Tester {
             //validating request against a schema. Validator returns an array that describes the error. This array is empty when there is no error
             //a first thinking would say that it shouldnt be necessary but since the requests are user written, there can be errors there as well.
             if (toSend != null) {
-                let errors: Array<any> = SchemaValidator.validateRequest(actionName, toSend, self.testConfig.SchemaLocation, "Action");
+                let errors: Array<any> = Utils.validateRequest(actionName, toSend, self.testConfig.SchemaLocation, "Action");
                 if (errors.length > 0) { //meaning that there is a validation error
                     if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Created request is not valid for " + actionName + "\nMessage is " + toSend + "\nError is " + errors);
                     self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, JSON.parse("\"nothing\""), 13, "Created message has bad format: " + JSON.stringify(errors));
@@ -111,43 +111,79 @@ export class Tester {
             //invoking the action
             try {
                 if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Invoking action " + actionName + " with data:", JSON.stringify(toSend, null, ' '));
-                let invokeAction = TdFunctions.promiseTimeout(self.testConfig.ActionTimeout, self.tut.invokeAction(actionName, toSend));
-                invokeAction.then((res: any) => {
-                    let curAction: TD.Interaction = tdHelpers.findInteractionByName(self.tutTd, actionName);
-                    if (curAction.hasOwnProperty("outputSchema")) { //the action doesnt have to answer something back
-                        answer = res;
-                        if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Answer is:", JSON.stringify(answer, null, ' '));
-                        //the actual parsing is done at the validation method so this is just an error check. SHOULD be removed later on
-                        try {
-                            let temp: JSON = answer;
-                        } catch (error) {
-                            // if (logMode) logger.error("Response is not in JSON format");
-                            if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Response is not in JSON format");
-                            self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 15, "Response is not in JSON format: " + error);
+                // Apply a timeout of 5 seconds to doSomething
+                // TO DO: no repeat the same thing twice
+                if(toSend!=null){
+                    let invokeAction = Utils.promiseTimeout(self.testConfig.ActionTimeout, self.tut.actions[actionName].invoke(toSend));
+                    invokeAction.then((res: any) => {
+                        if (interaction.hasOwnProperty('output')) { //the action doesnt have to answer something back
+                            let answer = res;
+                            if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Answer is:", JSON.stringify(answer, null, ' '));
+                            try {
+                                let temp: JSON = answer;
+                            } catch (error) {
+                                if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Response is not in JSON format");
+                                self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 15, "Response is not in JSON format: " + error);
+                                resolve(true);
+                            }
+                            //validating the response against its schema, same as before
+                            let errorsRes: Array<any> = Utils.validateResponse(actionName, answer, self.testConfig.SchemaLocation, 'Action');
+                            if (errorsRes.length > 0) { //meaning that there is a validation error
+                                if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is not valid for: " + actionName);
+                                self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 16, "Received response is not valid, " + JSON.stringify(errorsRes));
+                                resolve(true);
+                            } else {
+                                if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is valid for: " + actionName);
+                            }
+                            //if nothing is wrong, putting a good result
+                            if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* ", actionName + " is succesful");
+                            self.testReport.addMessage(testCycle, testScenario, actionName, true, toSend, answer, 100, "");
+                            resolve(true);
+                        } else { // in case there is no answer needed it is a succesful test as well
+                            if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* ", actionName + " is succesful without return value");
+                            self.testReport.addMessage(testCycle, testScenario, actionName, true, toSend, JSON.parse("\"nothing\""), 101, "no return value needed");
                             resolve(true);
                         }
-                        //validating the response against its schema, same as before
-                        let errorsRes: Array<any> = SchemaValidator.validateResponse(actionName, answer, self.testConfig.SchemaLocation, 'Action');
-                        if (errorsRes.length > 0) { //meaning that there is a validation error
-                            if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is not valid for: " + actionName);
-                            self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 16, "Received response is not valid, " + JSON.stringify(errorsRes));
+                    }).catch((error) => {
+                        self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 999, "Invoke Action Error: " + error);
+                        resolve(true);
+                    });
+                } else {
+                    let invokeAction = Utils.promiseTimeout(self.testConfig.ActionTimeout, self.tut.actions[actionName].invoke());
+                    invokeAction.then((res: any) => {
+                        if (interaction.hasOwnProperty('output')) { //the action doesnt have to answer something back
+                            let answer = res;
+                            if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Answer is:", JSON.stringify(answer, null, ' '));
+                            try {
+                                let temp: JSON = answer;
+                            } catch (error) {
+                                if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Response is not in JSON format");
+                                self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 15, "Response is not in JSON format: " + error);
+                                resolve(true);
+                            }
+                            //validating the response against its schema, same as before
+                            let errorsRes: Array<any> = Utils.validateResponse(actionName, answer, self.testConfig.SchemaLocation, 'Action');
+                            if (errorsRes.length > 0) { //meaning that there is a validation error
+                                if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is not valid for: " + actionName);
+                                self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 16, "Received response is not valid, " + JSON.stringify(errorsRes));
+                                resolve(true);
+                            } else {
+                                if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is valid for: " + actionName);
+                            }
+                            //if nothing is wrong, putting a good result
+                            if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* ", actionName + " is succesful");
+                            self.testReport.addMessage(testCycle, testScenario, actionName, true, toSend, answer, 100, "");
                             resolve(true);
-                        } else {
-                            if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is valid for: " + actionName);
+                        } else { // in case there is no answer needed it is a succesful test as well
+                            if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* ", actionName + " is succesful without return value");
+                            self.testReport.addMessage(testCycle, testScenario, actionName, true, toSend, JSON.parse("\"nothing\""), 101, "no return value needed");
+                            resolve(true);
                         }
-                        //if nothing is wrong, putting a good result
-                        if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* ", actionName + " is succesful");
-                        self.testReport.addMessage(testCycle, testScenario, actionName, true, toSend, answer, 100, "");
+                    }).catch((error) => {
+                        self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 999, "Invoke Action Error: " + error);
                         resolve(true);
-                    } else { // in case there is no answer needed it is a succesful test as well
-                        if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* ", actionName + " is succesful without return value");
-                        self.testReport.addMessage(testCycle, testScenario, actionName, true, toSend, JSON.parse("\"nothing\""), 101, "no return value needed");
-                        resolve(true);
-                    }
-                }).catch((error) => {
-                    self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 999, "Invoke Action Error: " + error);
-                    resolve(true);
-                });
+                    });
+                }
             } catch (Error) { // in case there is a problem with the invoke of the action
                 if (logMode) console.log("* Response receiving for  " + actionName + "is unsuccesful, continuing with other scenarios");
                 self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, JSON.parse("\"nothing\""), 10, "Problem invoking the action" + Error);
@@ -165,26 +201,19 @@ export class Tester {
     Then property values are fetched again. Here it is hoped that the value is the same as the written one but if the value changes in between it will
     be different. This is recorded as an error but has a specific error case number. This basically tests if the property is really writable
     */
-    public testProperty(testCycle: number, propertyName: string, testScenario: number, interactionIndex:number, logMode: boolean): Promise<any> {
+    public testProperty(testCycle: number, propertyName: string, interaction: wot.PropertyFragment, testScenario: number, interactionIndex:number, logMode: boolean): Promise<any> {
         var self = this;
         return new Promise(function (resolve, reject) {
-            let isWritable: boolean; //is the property we are testing now writable
-            try {
-                let curProperty: TD.Interaction = tdHelpers.findInteractionByName(self.tutTd, propertyName);
-                isWritable = curProperty.writable;
-                if (logMode) console.log('\x1b[36m%s%s\x1b[0m', '* Checking if property is writable:', isWritable);
-
-            } catch (error) {
-                if (logMode) console.log('\x1b[36m%s\x1b[0m', "* The property " + propertyName + " doesn't exist in the TD");
-                self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""), JSON.parse("\"nothing\""), 33, "The property doesn't exist in the TD");
-                resolve(true);
-            }
+            let isWritable: boolean = interaction.writable;
             //getting the property value
-            let curPropertyData: any = self.tut.readProperty(propertyName).then((res: any) => {
+            if (logMode) console.log('\x1b[36m%s\x1b[0m', "* First Read Property");
+            if (logMode && isWritable) console.log('\x1b[36m%s\x1b[0m', "* Property is writable");
+            if (logMode && !isWritable) console.log('\x1b[36m%s\x1b[0m', "* Property not writable");
+            let curPropertyData: any = self.tut.properties[propertyName].read().then((res: any) => {
                 let data: JSON = res;
                 if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* DATA AFTER FIRST READ PROPERTY:", JSON.stringify(data, null, ' '));
                 //validating the property value with its Schemas
-                let errorsProp: Array<any> = SchemaValidator.validateResponse(propertyName, data, self.testConfig.SchemaLocation, "Property");
+                let errorsProp: Array<any> = Utils.validateResponse(propertyName, data, self.testConfig.SchemaLocation, "Property");
 
                 if (errorsProp.length > 0) { //meaning that there is a validation error
                     if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Received response is not valid for: " + propertyName, errorsProp);
@@ -216,7 +245,7 @@ export class Tester {
 
                     //validating request against a schema, same as the action. Since the requests are written by the user there can be errors
                     //Pay attention that validateResponse is called because writing to a property is based on its outputData
-                    let errors: Array<any> = SchemaValidator.validateResponse(propertyName, toSend, self.testConfig.SchemaLocation, "Property");
+                    let errors: Array<any> = Utils.validateResponse(propertyName, toSend, self.testConfig.SchemaLocation, "Property");
                     if (errors.length > 0) { //meaning that there is a validation error
                         if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Created request is not valid for " + propertyName + "\nMessage is " + toSend + "\nError is " + errors);
                         self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend, JSON.parse("\"nothing\""), 41, "Created message has bad format: " + JSON.stringify(errors));
@@ -227,14 +256,14 @@ export class Tester {
 
                     //setting the property, aka writing into it
                     if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Writing to property " + propertyName + " with data:", JSON.stringify(toSend, null, ' '));
-                    self.tut.writeProperty(propertyName, toSend).then(() => {
+                    self.tut.properties[propertyName].write(toSend).then(() => {
                         //now reading and hoping to get the same value
-                        let curPropertyData2: any = self.tut.readProperty(propertyName).then((res2: any) => {
+                        let curPropertyData2: any = self.tut.properties[propertyName].read().then((res2: any) => {
                             let data2: JSON = res2;
                             if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* For the second one, gotten propery data is:", JSON.stringify(data2, null, ' '));
                             //validating the gotten value (this shouldnt be necessary since the first time was correct but it is here nonetheless)
 
-                            let errorsProp2: Array<any> = SchemaValidator.validateResponse(propertyName, data2, self.testConfig.SchemaLocation, "Property")
+                            let errorsProp2: Array<any> = Utils.validateResponse(propertyName, data2, self.testConfig.SchemaLocation, "Property")
 
                             if (errorsProp2.length > 0) { //meaning that there is a validation error
                                 if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Received second response is not valid for: " + propertyName, errorsProp2);
@@ -245,7 +274,7 @@ export class Tester {
                                 if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received second response is valid for: " + propertyName);
                                 if (JSON.stringify(data2) == JSON.stringify(toSend)) {
                                     // wohoo everything is fine
-                                    if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Property test of " + propertyName + " is succesful: write fetch successful");
+                                    if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Property test of " + propertyName + " is succesful: write works & second get property successful");
                                     if (logMode) console.log('\x1b[36m%s\x1b[0m', "* The value gotten after writing is the same for the property: " + propertyName);
                                     self.testReport.addMessage(testCycle, testScenario, propertyName, true, toSend, JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify(data2) + "]"), 201, "");
                                     resolve(true);
@@ -259,7 +288,7 @@ export class Tester {
                         }).catch((error: any) => { //problem in the node-wot level
                             if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Problem second time fetching property " + propertyName + "in the second get");
                             self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""), JSON.parse("\"nothing\""), 31, "Couldnt fetch property in the second get" + error);
-                            resolve(true);
+                            reject(true);
                         });
                     }).catch((error: any) => {
                         if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Couldn't set the property: " + propertyName);
@@ -269,45 +298,43 @@ export class Tester {
                 }
             }).catch((error: any) => { //problem in the node-wot level
                 if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Problem fetching first time property: " + propertyName);
+                console.log("ERROR is: ", error)
                 self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""), JSON.parse("\"nothing\""), 30, "Couldnt fetch property");
-                resolve(true);
+                reject(true);
             });
         });
     }
 
-    private testInteraction(testCycle: number, testScenario: number, interactionIndex:number , interaction: TD.Interaction, logMode: boolean): Promise<any> {
+    private testInteraction(testCycle: number, testScenario: number, interactionIndex: number , interactionName: string, logMode: boolean): Promise<any> {
         var self = this;
-        // console.log('\x1b[36m%s\x1b[0m', '* ******* TESTING INTERACTION:', interaction);
         return new Promise(function (resolve, reject) {
-            let pattern: string = String(interaction.pattern);
-            if (pattern == 'Property') {
-                let propName: string = interaction.name;
-                if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... Testing Property:", propName, ".................");
-                self.testProperty(testCycle, propName, testScenario, interactionIndex, logMode).then((curBool) => {
-                    if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... End Testing Property:", propName, ".................");
+            let interaction = Utils.getInteractionByName(self.tutTd, interactionName);
+            console.log('interaction pattern:', interaction[0], 'interaction:', interaction[1])
+            if (interaction[0] == 'Property') {
+                if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... Testing Property:", interactionName, ".................");
+                self.testProperty(testCycle, interactionName, interaction[1], testScenario, interactionIndex, logMode).then((curBool) => {
+                    if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... End Testing Property:", interactionName, ".................");
                     resolve(curBool);
                 }).catch((curBool) => {
-                    if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* Error in testing property ", propName, ", check previous messages")
+                    if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* Error in testing property ", interactionName, ", check previous messages")
                     reject(curBool);
                 });
-            } else if (pattern == 'Action') {
-                let actName: string = interaction.name;
-                if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... Testing Action:", actName, ".................");
-                self.testAction(testCycle, actName, testScenario, interactionIndex, logMode).then((curBool) => {
-                    if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... End Testing Action:", actName, ".................");
+            } else if (interaction[0] == 'Action') {
+                if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... Testing Action:", interactionName, ".................");
+                self.testAction(testCycle, interactionName, interaction[1], testScenario, interactionIndex, logMode).then((curBool) => {
+                    if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... End Testing Action:", interactionName, ".................");
                     resolve(curBool);
                 }).catch((curBool) => {
-                    if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* Error in testing action ", actName, ", check previous messages")
+                    if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* Error in testing action ", interactionName, ", check previous messages")
                     reject(curBool);
                 });
-            } else if (pattern == 'Event') {    
-                let eveName: string = interaction.name;
-                if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... Testing Event: ", eveName, ".................");
-                self.testEvent(testCycle, eveName, testScenario, interactionIndex, logMode).then((curBool) => {
-                    if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... End Testing Event: ", eveName, ".................");
+            } else if (interaction[0] == 'Event') {
+                if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... Testing Event: ", interactionName, ".................");
+                self.testEvent(testCycle, interactionName, interaction[1], testScenario, interactionIndex, logMode).then((curBool) => {
+                    if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... End Testing Event: ", interactionName, ".................");
                     resolve(curBool);
                 }).catch((curBool) => {
-                    if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* Error in testing event ", eveName, ", check previous messages")
+                    if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* Error in testing event ", interactionName, ", check previous messages")
                     reject(curBool);
                 });
             } else {
@@ -322,19 +349,17 @@ export class Tester {
         The return value needs to be changed and made into a Promise
     */
     public testScenario(testCycle: number, testScenario: number, logMode: boolean): Promise<any> {
-        let interactionsLength: number = this.tutTd.interaction.length; //how many interactions we have to test
-        let interactionList: Array<string> = [];
-        for (var i = 0; i < interactionsLength; i++) {
-            let curInter: TD.Interaction = this.tutTd.interaction[i];
-            interactionList.push(curInter.name);
-        }
-
         var self = this;
+        let interactionList: Array<string> = [];
+        for (var key in self.tutTd.properties) {interactionList.push(key)};
+        for (var key in self.tutTd.actions) {interactionList.push(key)};
+        for (var key in self.tutTd.events) {interactionList.push(key)};
+
         return new Promise(function (resolve, reject) {
             let promise: Promise<any> = Promise.resolve();
-            interactionList.forEach((interactionName,index) => {
+            interactionList.forEach((interactionName, index) => {
                 promise = promise.then(() => {
-                    return self.testInteraction(testCycle, testScenario, index, tdHelpers.findInteractionByName(self.tutTd, interactionName), logMode);
+                    return self.testInteraction(testCycle, testScenario, index, interactionName, logMode);
                 });
             });
             //in the end the return value indicates if at least one interaction failed
@@ -342,11 +367,10 @@ export class Tester {
                 if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ------------- Test Scenario nb", testScenario, " has finished -------------")
                 resolve();
             }).catch((error:Error) => {
-                if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* Test Scenario nb", testScenario, " has finished with an error")
+                if (logMode) console.log('\x1b[36m%s%s%s%s\x1b[0m', "* Test Scenario nb", testScenario, " has finished with an error:", error)
                 reject(error);
             });
         });
-
     }
 
     public testCycle(cycleNumber: number, scenarioNumber: number, logMode: boolean): Promise<any> {

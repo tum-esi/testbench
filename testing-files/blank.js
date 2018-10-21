@@ -1,5 +1,6 @@
 try {
-  var thing = WoT.produce({ name: "tempSensor" });
+  var thing = WoT.produce({ name: "tempSensor",
+description: "thing that implements event mechanism" });
   // manually add Interactions
   thing.addProperty({
     name: "temperature",
@@ -12,19 +13,19 @@ try {
     schema: '{ "type": "number" }'
     // use default values for the rest
   }).addAction({
-    name: "reset",
-    // no input, no output
+      name: "reset",
+      // no input, no output
+    },() => {
+      console.log("Resetting maximum");
+      thing.writeProperty("max", 0.0);
   }).addEvent({
     name: "onchange",
     schema: '{ "type": "number" }'
   });
-  // add server functionality
-  thing.setActionHandler("reset", () => {
-    console.log("Resetting maximum");
-    thing.writeProperty("max", 0.0);
+
+  thing.expose().then(() => {
+    console.info(thing.name + " ready");
   });
-  
-  thing.start();
   
   setInterval( async () => {
     let mock = Math.random()*100;
