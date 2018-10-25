@@ -1,4 +1,0 @@
-{
-	"name":"orientation",
-	"type": "object","properties":{"roll":{"type":"number"},"pitch":{"type":"number"},"yaw":{"type":"number"}}
-	}
