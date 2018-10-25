@@ -1,5 +1,6 @@
 {
- "TBname": "v2-test-bench",
+<<<<<<< HEAD
+ "TBname": "test-bench",
  "SchemaLocation": "Resources/InteractionSchemas/",
  "TestReportsLocation": "Reports/",
  "TestDataLocation": "Resources/fake-data.json",
@@ -7,4 +8,18 @@
  "HttpPort": 8980,
  "Scenarios": 3,
  "Repetitions": 2
+=======
+    "TBname": "wot-test-bench",
+    "http": {
+        "port": 8980,
+        "allowSelfSigned": true
+    },
+    "SchemaLocation": "Resources/InteractionSchemas/",
+    "TestReportsLocation": "Reports/",
+    "TestDataLocation": "Resources/fake-data.json",
+    "ActionTimeout": 4000,
+    "Scenarios": 2,
+    "Repetitions": 1,
+    "credentials": {}
+>>>>>>> lyon
 }
