@@ -274,12 +274,12 @@ export class Tester {
                             }
                         }).catch((error: any) => { //problem in the node-wot level
                             if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Problem second time fetching property " + propertyName + "in the second get");
-                            self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""), JSON.parse("\"nothing\""), 31, "Couldnt fetch property in the second get" + error);
+                            self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""), JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify("\"nothing\"") + "]"), 31, "Couldnt fetch property in the second get" + error);
                             reject(true);
                         });
                     }).catch((error: any) => {
                         if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Couldn't set the property: " + propertyName);
-                        self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend, JSON.parse("\"nothing\""), 32, "Problem setting property" + Error);
+                         self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend, JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify("\"nothing\"") + "]"), 32, "Problem setting property" + Error);
                         resolve(true);
                     });
                 }

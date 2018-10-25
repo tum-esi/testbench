@@ -120,15 +120,28 @@ function extractSchema(fragment: wot.PropertyFragment | wot.EventFragment) {
         } else {
             extractedSchema= '"type": "array"';
         }
-    } else {
+    } else if (fragment.type == 'number' || fragment.type == 'integer'){
+        if (fragment.hasOwnProperty('minimum')) {
+            extractedSchema = '"type": "' + fragment.type+'","minimum":'+fragment.minimum;
+        }
+        if (fragment.hasOwnProperty('maximum')) {
+            if (fragment.hasOwnProperty('minimum')){
+            extractedSchema += ',"maximum":' + fragment.maximum;
+            } else {
+                extractedSchema = '"type": "' + fragment.type + '","maximum":' + fragment.maximum;
+            }
+        } else {
+            extractedSchema = '"type":"' + fragment.type + '"';
+        }
+    }else {
         // handle other schemas:
         extractedSchema= '"type":"'+fragment.type+'"';
     }
     if (fragment.hasOwnProperty('enum') && fragment.hasOwnProperty('type')){
-        extractedSchema += ',"enum":"'+fragment.enum;+'"';
+        extractedSchema += ',"enum":' + JSON.stringify(fragment.enum)+'';
     }
     if (fragment.hasOwnProperty('enum') && !fragment.hasOwnProperty('type')) {
-        extractedSchema = '"enum":"' + fragment.enum; +'"';
+        extractedSchema = '"enum":' + JSON.stringify(fragment.enum) +'';
     }
     return extractedSchema;
 }
