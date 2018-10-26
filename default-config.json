@@ -1,15 +1,5 @@
 {
-<<<<<<< HEAD
- "TBname": "test-bench",
- "SchemaLocation": "Resources/InteractionSchemas/",
- "TestReportsLocation": "Reports/",
- "TestDataLocation": "Resources/fake-data.json",
- "ActionTimeout": 6000,
- "HttpPort": 8980,
- "Scenarios": 3,
- "Repetitions": 2
-=======
-    "TBname": "wot-test-bench",
+   "TBname": "wot-test-bench",
     "http": {
         "port": 8980,
         "allowSelfSigned": true
@@ -21,5 +11,4 @@
     "Scenarios": 2,
     "Repetitions": 1,
     "credentials": {}
->>>>>>> lyon
 }
