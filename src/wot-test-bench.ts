@@ -46,7 +46,7 @@ let srv = new Servient();
 // srv.addCredentials(testConfig.credentials);
 console.log(srv);
 
-let httpServer = (typeof testConfig.http.port === "number") ? new HttpServer(testConfig.http.port) : new HttpServer();
+let httpServer = (typeof testConfig.http.port === "number") ? new HttpServer(testConfig.http) : new HttpServer();
 srv.addServer(httpServer);
 
 srv.addClientFactory(new FileClientFactory());
