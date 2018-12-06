@@ -18,17 +18,11 @@ ___
 - install git: `sudo apt install -y git`
 - install node: `sudo apt-get install -y nodejs` (node --version v8.10.0)
 - install npm: `sudo apt install -y npm` (npm --version 3.5.2)
-- install typescript: `npm install -g typescript`
-- install lerna: `npm install -g lerna`
 
 Clone testbench repository from [https://github.com/jplaui/testbench](https://github.com/jplaui/testbench): `git clone https://github.com/jplaui/testbench.git`
 
-- Switch into `testbench` folder and execute: `npm install`
-- Switch into `node_modules` folder and clone node-wot repository [https://github.com/eclipse/thingweb.node-wot](https://github.com/eclipse/thingweb.node-wot) inside the `node_modules` folder with `git clone https://github.com/eclipse/thingweb.node-wot.git`.
-- Switch into `thingweb.node-wot/` folder and execute: `npm install` and `npm run build`
-
-- Return back into testbench directory and execute: `tsc -p .` Don't forget the dot at the end
-- Now you are able to run the testbench inside the testbench directory with: `node dist/wot-test-bench.js`
+- Switch into `testbench` folder and execute the `install.sh` script.
+- Now you are able to run the testbench inside the testbench directory with: `npm start`
 - Interact with the testbench using REST clients such as `cURL`, `Postman` etc.
 
 **TestBench is a WoT Thing itself, so you can interact with it like you interact with other WoT servients.**

@@ -1,12 +1,24 @@
 {
 	"name": "testbench",
 	"version": "1.0.0",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/jplaui/testbench.git"
+	},
 	"license": "MIT",
 	"dependencies": {
-		"jsonschema": "*",
+		"jsonschema": "^1.2.4",
 		"@types/node": "*",
-		"xmlhttprequest": "*",
+		"xmlhttprequest": "^1.8.0",
 		"json-schema-faker": "0.5.0-rc15",
-		"mkdirp": "*"
+		"mkdirp": "0.5.1"
+	},
+	"devDependencies": {
+		"typescript": "3.0.3"
+	},
+	"scripts": {
+		"postinstall": "cd node_modules && git clone https://github.com/eclipse/thingweb.node-wot.git && cd thingweb.node-wot && npm install && npm run build",
+		"build": "tsc",
+		"start": "node dist/wot-test-bench.js"
 	}
 }
