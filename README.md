@@ -3,29 +3,30 @@
 Tests a WoT Thing by executing interactions automatically, based on its Thing Description.
 
 A Thing Description should represent capabilities of a device. This implies that if a device support the interactions that a client can execute based on the device's TD, it doesn't comply to its own TD. Test bench tests whether:
-* every interaction written in the TD can be executed
-* writable properties are indeed writable
-* each interaction returns the described data type (DataSchema of TD Spec)
 
-TD Version Used: TPAC Lyon 2018, 18 October
+* Every interaction written in the TD can be executed
+* Writable properties are indeed writable
+* Each interaction returns the described data type (DataSchema of TD Spec)
 
-<!-- #### Compatible with Thing Description versions: [5.April-18](https://www.w3.org/TR/2018/WD-wot-thing-description-20180405/), W3C Editor's Draft 22 June 2018, and should also work with W3C Editor's Draft 26 June 2018 (last one not tested).   -->
+TD Version Used: Princeton Testfest 2019
 ___
 
 ## Installation 
-### Linux:
 
-- install git: `sudo apt install -y git`
-- install node: `sudo apt-get install -y nodejs` (node --version v8.10.0)
-- install npm: `sudo apt install -y npm` (npm --version 3.5.2)
+### Prerequisites:
 
-Clone testbench repository from [https://github.com/jplaui/testbench](https://github.com/jplaui/testbench): `git clone https://github.com/jplaui/testbench.git`
+* git: `sudo apt install -y git`
+* node.js: `sudo apt-get install -y nodejs` (node --version v8.10.0)
+* npm: `sudo apt install -y npm` (npm --version 3.5.2)
 
-- Switch into `testbench` folder and execute the `install.sh` script.
-- Now you are able to run the testbench inside the testbench directory with: `npm start`
-- Interact with the testbench using REST clients such as `cURL`, `Postman` etc.
+### Steps
 
-**TestBench is a WoT Thing itself, so you can interact with it like you interact with other WoT servients.**
+1. Download testbench from [its repository](git@github.com:tum-ei-esi/testbench.git) by `git clone git@github.com:tum-ei-esi/testbench.git`
+2. Switch into `testbench` folder
+3. Execute the `npm install`. This will install every required library, including `node-wot`
+4. Execute `npm run-script build`
+
+**TestBench is a WoT Thing itself with a TD, so you can interact with it like you interact with other WoT servients.**
 
 **Postman**:
 
@@ -44,12 +45,33 @@ ___
 
 ## Example Usage
 
+### Quick Method with Default Configuration
+
+0. Start a servient that has a TD so that TestBench can interact with it.
+    1.  `testing-files/faultyThing.js` shows an example test servient with ONLY BAD implementations. Run `faultyThing.js` by executing `node testing-files/faultyThing.js` inside `testbench` directory.
+    2.  `testing-files/perfectThing.js` shows an example test servient with ONLY GOOD implementations. Run `perfectThing.js` by executing `node testing-files/perfectThing.js` inside `testbench` directory.
+
+1. Run with: `npm start`
+2. Interact with the testbench using REST clients such as `cURL`, `Postman` etc.
+    1. Test a servient by sending its TD
+   
+| **POST** | Test Thing with given TD |
+| ------------- |:-------------:|
+| content-type      | application/json | 
+| body      |  Thing Description   | 
+| data-type | raw |
+| url | ttp://your-address:8980/wot-test-bench/actions/fastTest |
+| return value | JSON Array with results |
+
+
+
+### Method with all Customization Options
 
 1. Start a servient that has a TD so that TestBench can interact with it.
     1.  `testing-files/faultyThing.js` shows an example test servient with ONLY BAD implementations. Run `faultyThing.js` by executing `node testing-files/faultyThing.js` inside `testbench` directory.
     2.  `testing-files/perfectThing.js` shows an example test servient with ONLY GOOD implementations. Run `perfectThing.js` by executing `node testing-files/perfectThing.js` inside `testbench` directory.
    
-2. Run the TestBench by executing `node dist/wot-test-bench.js` inside the `testbench` directory.
+2. Run the TestBench by executing `npm start`.
     1. Before doing so, you can configure the test bench by changing the `default-config.json` file.
 
 3. Start `Postman` software: [Postman](https://www.getpostman.com/)
