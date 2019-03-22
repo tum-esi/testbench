@@ -26,23 +26,6 @@ ___
 3. Execute the `npm install`. This will install every required library, including `node-wot`
 4. Execute `npm run-script build`
 
-**TestBench is a WoT Thing itself with a TD, so you can interact with it like you interact with other WoT servients.**
-
-**Postman**:
-
-| **PUT** | TestBench config update |
-| ------------- |:-------------:|
-| content-type      | application/json | 
-| body      |  config json data   | 
-| data-type | raw |
-| url | http://your-address:8980/wot-test-bench/properties/testConfig | 
-
-**cURL**:
-
-`curl -X POST -H "Content-Type: application/json" -d '{configuration-data}' http://your-address:8080/wot-test-bench/properties/testConfig`
-
-___
-
 ## Example Usage
 
 ### Quick Method with Default Configuration
@@ -63,7 +46,22 @@ ___
 | url | ttp://your-address:8980/wot-test-bench/actions/fastTest |
 | return value | JSON Array with results |
 
+**TestBench is a WoT Thing itself with a TD, so you can interact with it like you interact with other WoT servients.**
 
+**Postman**:
+
+| **PUT** | TestBench config update |
+| ------------- |:-------------:|
+| content-type      | application/json | 
+| body      |  config json data   | 
+| data-type | raw |
+| url | http://your-address:8980/wot-test-bench/properties/testConfig | 
+
+**cURL**:
+
+`curl -X POST -H "Content-Type: application/json" -d '{configuration-data}' http://your-address:8080/wot-test-bench/properties/testConfig`
+
+___
 
 ### Method with all Customization Options
 
