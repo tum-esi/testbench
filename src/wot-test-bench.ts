@@ -60,7 +60,7 @@ srv.addClientFactory(new MqttClientFactory());
 srv.start().then(WoT => {
     console.log('\x1b[36m%s\x1b[0m', '* TestBench servient started');
     let TestBenchT = WoT.produce({
-        name: tbName,
+        title: tbName,
         description: "WoT Test Bench tests a Thing by getting its TD and executing all of its interactions with data generated in runtime. For simple use, invoke the fastTest action with the TD of your Thing as input data"
     });
     let tester: Tester = null;
@@ -139,7 +139,7 @@ srv.start().then(WoT => {
                         tutTD = JSON.stringify(tutTD);
                         if (tutTD != "") {
                             let tutT: Thing = TDParser.parseTD(tutTD);
-                            tutName = tutT.name;
+                            tutName = tutT.title;
                             let consumedTuT: wot.ConsumedThing = WoT.consume(tutTD);
                             tester = new Tester(testConfig, tutT, consumedTuT);
                             let returnCheck = tester.initiate(logMode);
@@ -205,7 +205,7 @@ srv.start().then(WoT => {
         });
 
     TestBenchT.expose().then(() => {
-        console.info(TestBenchT.name + " ready");
+        console.info(TestBenchT.title + " ready");
     });
 }).catch(err => {
     console.log('\x1b[36m%s\x1b[0m', "* :::::ERROR::::: Servient startup failed");
