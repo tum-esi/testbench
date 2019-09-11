@@ -1,7 +1,7 @@
-import * as TDParser from 'thingweb.node-wot/packages/td-tools/src/td-parser';
-import * as wot from 'thingweb.node-wot/packages/core/node_modules/wot-typescript-definitions';
-import { Thing } from 'thingweb.node-wot/packages/td-tools';
-import fs = require('fs');
+import * as TDParser from '@node-wot/td-tools';
+import * as wot from 'wot-typescript-definitions';
+import { Thing } from '@node-wot/td-tools';
+var fs = require('fs');
 var mkdirp = require("mkdirp");
 var Validator  = require('jsonschema').Validator;
 var jsf = require('json-schema-faker');
