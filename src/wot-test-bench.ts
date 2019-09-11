@@ -1,41 +1,17 @@
-import {
-    Servient
-} from 'thingweb.node-wot/packages/core';
-import {
-    HttpClientFactory
-} from 'thingweb.node-wot/packages/binding-http';
-import {
-    HttpsClientFactory
-} from 'thingweb.node-wot/packages/binding-http';
-import {
-    FileClientFactory
-} from 'thingweb.node-wot/packages/binding-file';
-import {
-    MqttClientFactory
-} from 'thingweb.node-wot/packages/binding-mqtt';
-import {
-    CoapClientFactory
-} from 'thingweb.node-wot/packages/binding-coap';
-import {
-    CoapsClientFactory
-} from 'thingweb.node-wot/packages/binding-coap';
-
-import {
-    HttpServer
-} from 'thingweb.node-wot/packages/binding-http';
-import {
-    Thing
-} from 'thingweb.node-wot/packages/td-tools';
-import * as wot from 
-	'thingweb.node-wot/packages/core/node_modules/wot-typescript-definitions';
-import * as TDParser from 'thingweb.node-wot/packages/td-tools';
-import {
-    Tester
-} from './Tester'
-import {
-    testConfig
-} from './utilities'
-import fs = require('fs');
+import * as wot from "wot-typescript-definitions"
+import { Servient } from "@node-wot/core"
+import { HttpServer } from "@node-wot/binding-http";
+import { HttpClientFactory } from "@node-wot/binding-http";
+import { HttpsClientFactory } from "@node-wot/binding-http";
+import { FileClientFactory } from "@node-wot/binding-file";
+import { MqttClientFactory } from "@node-wot/binding-mqtt";
+import { CoapClientFactory } from "@node-wot/binding-coap";
+import { CoapsClientFactory } from "@node-wot/binding-coap";
+import { Thing } from "@node-wot/td-tools";
+import * as TDParser from '@node-wot/td-tools';
+import { Tester } from './Tester'
+import { testConfig } from './utilities'
+var fs = require('fs');
 
 //getting the test config and extraction anything possible
 let testConfig: testConfig = 

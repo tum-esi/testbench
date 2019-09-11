@@ -1,6 +1,6 @@
-var Servient = require('thingweb.node-wot/packages/core').Servient;
-var HttpServer = require('thingweb.node-wot/packages/binding-http').HttpServer;
-var HttpClientFactory = require('thingweb.node-wot/packages/binding-http').HttpClientFactory;
+var Servient = require('@node-wot/core').Servient;
+var HttpServer = require('@node-wot/binding-http').HttpServer;
+var HttpClientFactory = require('@node-wot/binding-http').HttpClientFactory;
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
 let srv = new Servient();

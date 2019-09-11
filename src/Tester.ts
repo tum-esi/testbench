@@ -8,13 +8,13 @@ It is possible to define multiple test scenarios with each having different requ
 After the test a test report can be generated and analyzed to get more meaning of the results.
 !!! tut means Thing Under Test
 */
-import {Servient} from 'thingweb.node-wot/packages/core';
-import {Thing} from 'thingweb.node-wot/packages/td-tools';
-import * as wot from 'thingweb.node-wot/packages/core/node_modules/wot-typescript-definitions';
+import {Servient} from '@node-wot/core';
+import {Thing} from '@node-wot/td-tools';
+import * as wot from 'wot-typescript-definitions';
 import * as Utils from './utilities'
 import { TestReport } from './TestReport'
 import { testConfig } from './utilities'
-import timers = require("timers")
+var timers = require("timers")
 
 export class Tester {
     private tutTd: Thing; //the TD that belongs to the Thing under Test
