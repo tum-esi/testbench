@@ -1,10 +1,10 @@
 try {
     var thing = WoT.produce({
-        name: "slowThing",
+        title: "slowThing",
         description:"test servient that implements actions that take long time"
     });
     // manually add Interactions
-    thing.addAction({
+    thing.addAction("myLongAction",{
         name: "myLongAction",
         // no input, no output
     }, () => {
@@ -15,7 +15,7 @@ try {
         return promise1;
     });
 
-    thing.addAction({
+    thing.addAction("myLongerAction", {
         name: "myLongerAction",
         // no input, no output
     }, () => {
@@ -26,7 +26,8 @@ try {
         return promise1;
     });
 
-    thing.addAction({
+    thing.addAction(
+		"myLongestAction", {
         name: "myLongestAction",
         // no input, no output
     }, () => {
@@ -37,7 +38,8 @@ try {
         return promise1;
     });
 
-    thing.addAction({
+    thing.addAction(
+		"notReplyAction", {
         name: "notReplyAction",
         // no input, no output
     }, () => {
@@ -48,7 +50,7 @@ try {
         return promise1;
     });
 
-    thing.expose().then( () => { console.info(thing.name + " ready"); } );
+    thing.expose().then( () => { console.info(thing.title + " ready"); } );
 
 } catch (err) {
     console.log("Script error: " + err);

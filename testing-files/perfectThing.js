@@ -4,14 +4,15 @@ var HttpClientFactory = require('thingweb.node-wot/packages/binding-http').HttpC
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
 let srv = new Servient();
-srv.addServer(new HttpServer(8081));
+let httpSrvObj = {"port": 8081}
+srv.addServer(new HttpServer(httpSrvObj));
 srv.addClientFactory(new HttpClientFactory());
 srv.start().then(WoT => {
 
     console.log('* started servient');
 
     let thing = WoT.produce({
-        name: "TestServient",
+        title: "TestServient",
         description: "Test servient that can be used as a servient to be tested with the WoT Test Bench"
     });
 
@@ -152,7 +153,7 @@ srv.start().then(WoT => {
     });
 
     thing.expose().then(() => {
-        console.info(thing.name + " ready");
+        console.info(thing.title + " ready");
     });
 }).catch(err => {
     throw "Couldnt connect to servient"

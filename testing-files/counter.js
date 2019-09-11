@@ -19,11 +19,11 @@ const NAME_ACTION_DECREMENT = "decrement";
 const NAME_ACTION_RESET = "reset";
 
 let thing = WoT.produce({
-	name: "counter",
+	title: "counter",
 	description: "counter example Thing"
 });
 
-console.log("Created thing " + thing.name);
+console.log("Created thing " + thing.title);
 
 thing.addProperty(
 	NAME_PROPERTY_COUNT,
@@ -36,9 +36,9 @@ thing.addProperty(
 	},
 	0);
 
-thing.addAction(NAME_ACTION_INCREMENT);
-thing.setActionHandler(
+thing.addAction(
 	NAME_ACTION_INCREMENT,
+	{},
 	() => {
 		console.log("Incrementing");
 		return thing.properties[NAME_PROPERTY_COUNT].read().then( (count) => {
@@ -48,9 +48,9 @@ thing.setActionHandler(
 	}
 );
 
-thing.addAction(NAME_ACTION_DECREMENT);
-thing.setActionHandler(
+thing.addAction(
 	NAME_ACTION_DECREMENT,
+	{},
 	() => {
 		console.log("Decrementing");
 		return thing.properties[NAME_PROPERTY_COUNT].read().then( (count) => {
@@ -60,9 +60,9 @@ thing.setActionHandler(
 	}
 );
 
-thing.addAction(NAME_ACTION_RESET);
-thing.setActionHandler(
+thing.addAction(
 	NAME_ACTION_RESET,
+	{},
 	() => {
 		console.log("Resetting");
 		thing.properties[NAME_PROPERTY_COUNT].write(0);
@@ -73,5 +73,5 @@ thing.set("support", "none");
 console.info(thing.support);
 
 thing.expose().then(() => {
-	console.info(thing.name + " ready");
+	console.info(thing.title + " ready");
 });
