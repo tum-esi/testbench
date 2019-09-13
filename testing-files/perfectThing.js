@@ -1,12 +1,17 @@
 var Servient = require('@node-wot/core').Servient;
 var HttpServer = require('@node-wot/binding-http').HttpServer;
 var HttpClientFactory = require('@node-wot/binding-http').HttpClientFactory;
+var CoapServer = require('@node-wot/binding-coap').CoapServer;
+var CoapClientFactory = require('@node-wot/binding-coap').CoapClientFactory;
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
 let srv = new Servient();
 let httpSrvObj = {"port": 8081}
 srv.addServer(new HttpServer(httpSrvObj));
 srv.addClientFactory(new HttpClientFactory());
+let coapSrvObj = {"port": 8082}
+srv.addServer(new CoapServer(coapSrvObj));
+srv.addClientFactory(new CoapClientFactory());
 srv.start().then(WoT => {
 
     console.log('* started servient');

@@ -1,6 +1,8 @@
 try {
   var thing = WoT.produce({ title: "tempSensor",
-description: "thing that implements event mechanism" });
+description: "thing that implements event mechanism",
+"@context": ["https://www.w3.org/2019/wot/td/v1",
+                {"cov": "http://www.example.org/coap-binding#"}] });
   // manually add Interactions
   thing.addProperty({
     name: "temperature",

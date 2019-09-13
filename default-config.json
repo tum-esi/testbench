@@ -4,6 +4,9 @@
         "port": 8980,
         "allowSelfSigned": true
     },
+	"coap": {
+        "port": 8981
+    },
     "SchemaLocation": "Resources/InteractionSchemas/",
     "TestReportsLocation": "Reports/",
     "TestDataLocation": "Resources/fake-data.json",
