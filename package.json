@@ -16,7 +16,8 @@
 		"@types/node": "*",
 		"xmlhttprequest": "^1.8.0",
 		"json-schema-faker": "0.5.0-rc15",
-		"mkdirp": "0.5.1"
+		"mkdirp": "0.5.1",
+		"del":	"5.1.0"
 	},
 	"devDependencies": {
 		"typescript": "3.3.1"
@@ -25,6 +26,6 @@
 		"build": "tsc",
 		"buildAll": "npm install; tsc;",
 		"start": "node dist/wot-test-bench.js",
-		"clean": "rm -rf node_modules; rm -rf dist; rm -rf package-lock.json"
+		"clean": "node clean.js"
 	}
 }
