@@ -1,7 +1,9 @@
 try {
     var thing = WoT.produce({
         title: "slowThing",
-        description:"test servient that implements actions that take long time"
+        description:"test servient that implements actions that take long time",
+		"@context": ["https://www.w3.org/2019/wot/td/v1",
+                {"cov": "http://www.example.org/coap-binding#"}]
     });
     // manually add Interactions
     thing.addAction("myLongAction",{

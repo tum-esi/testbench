@@ -13,6 +13,9 @@ export interface testConfig {
         port?: number
         allowSelfSigned: boolean;
     };
+	coap?: {
+		port?: number
+	};
     SchemaLocation?: string;
     TestReportsLocation?: string;
     TestDataLocation?: string;

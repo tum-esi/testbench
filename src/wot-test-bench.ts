@@ -5,6 +5,7 @@ import { HttpClientFactory } from "@node-wot/binding-http";
 import { HttpsClientFactory } from "@node-wot/binding-http";
 import { FileClientFactory } from "@node-wot/binding-file";
 import { MqttClientFactory } from "@node-wot/binding-mqtt";
+import { CoapServer } from "@node-wot/binding-coap";
 import { CoapClientFactory } from "@node-wot/binding-coap";
 import { CoapsClientFactory } from "@node-wot/binding-coap";
 import { Thing } from "@node-wot/td-tools";
@@ -24,11 +25,12 @@ let tutName: string = "";
 let srv = new Servient();
 // srv.addCredentials(testConfig.credentials);
 console.log(srv);
-
 let httpServer = (typeof testConfig.http.port === "number") ? 
 			new HttpServer(testConfig.http) : new HttpServer();
+let coapServer = (typeof testConfig.coap.port === "number") ?                   
+            new CoapServer(testConfig.coap.port) : new CoapServer();
 srv.addServer(httpServer);
-
+srv.addServer(coapServer);
 srv.addClientFactory(new FileClientFactory());
 srv.addClientFactory(new HttpClientFactory(testConfig.http));
 srv.addClientFactory(new HttpsClientFactory(testConfig.http));
@@ -45,7 +47,9 @@ srv.start().then(WoT => {
 						"and executing all of its interactions with data" + 
 						"generated in runtime. For simple use, invoke the" +
 						"fastTest action with the TD of your Thing as" +
-						"input data"
+						"input data",
+		"@context": ["https://www.w3.org/2019/wot/td/v1",                       
+                {"cov": "http://www.example.org/coap-binding#"}]
     });
     let tester: Tester = null;
     TestBenchT.addProperty("testConfig", {

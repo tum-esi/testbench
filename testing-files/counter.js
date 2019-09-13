@@ -20,7 +20,9 @@ const NAME_ACTION_RESET = "reset";
 
 let thing = WoT.produce({
 	title: "counter",
-	description: "counter example Thing"
+	description: "counter example Thing",
+	"@context": ["https://www.w3.org/2019/wot/td/v1",
+                {"cov": "http://www.example.org/coap-binding#"}]
 });
 
 console.log("Created thing " + thing.title);
