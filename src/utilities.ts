@@ -3,9 +3,8 @@ import * as wot from 'wot-typescript-definitions';
 import { Thing } from '@node-wot/td-tools';
 var fs = require('fs');
 var mkdirp = require("mkdirp");
-var Validator  = require('jsonschema').Validator;
 var jsf = require('json-schema-faker');
-
+var ajValidator = require('ajv');
 // a test config file is always configured like this
 export interface testConfig {
     TBname?: string;
@@ -90,15 +89,17 @@ export class CodeGenerator {
 
 
 // ------------------------ SCHEMA VALIDATION -----------------------------------
-var v = new Validator();
+var ajV = new ajValidator({allErrors: true});
 export function validateRequest(requestName: string, request: JSON, schemaLoc: string, styp: string) : Array<any> {
-    let reqSchema : any = fs.readFileSync(schemaLoc+"Requests/"+requestName+'-'+styp+".json","utf8");
-    return v.validate(request, JSON.parse(reqSchema)).errors;
+	let reqSchema : any = fs.readFileSync(schemaLoc+"Requests/"+requestName+'-'+styp+".json","utf8");
+	var valid = ajV.validate(JSON.parse(reqSchema),request);
+	return ajV.errors;
 }
 
 export function validateResponse(responseName: string, response: JSON, schemaLoc: string, styp: string) : Array<any> {
-    let resSchema : any = fs.readFileSync(schemaLoc+"Responses/"+responseName+'-'+styp+".json","utf8");
-    return v.validate(response, JSON.parse(resSchema)).errors;
+	let resSchema : any = fs.readFileSync(schemaLoc+"Responses/"+responseName+'-'+styp+".json","utf8");
+	var valid = ajV.validate(JSON.parse(resSchema),response);
+	return ajV.errors;
 }
 
 
