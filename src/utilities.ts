@@ -89,17 +89,17 @@ export class CodeGenerator {
 
 
 // ------------------------ SCHEMA VALIDATION -----------------------------------
-var ajV = new ajValidator({allErrors: true});
+var ajv = new ajValidator({allErrors: true});
 export function validateRequest(requestName: string, request: JSON, schemaLoc: string, styp: string) : Array<any> {
 	let reqSchema : any = fs.readFileSync(schemaLoc+"Requests/"+requestName+'-'+styp+".json","utf8");
-	var valid = ajV.validate(JSON.parse(reqSchema),request);
-	return ajV.errors;
+	var valid = ajv.validate(JSON.parse(reqSchema),request);
+	return ajv.errors;
 }
 
 export function validateResponse(responseName: string, response: JSON, schemaLoc: string, styp: string) : Array<any> {
 	let resSchema : any = fs.readFileSync(schemaLoc+"Responses/"+responseName+'-'+styp+".json","utf8");
-	var valid = ajV.validate(JSON.parse(resSchema),response);
-	return ajV.errors;
+	var valid = ajv.validate(JSON.parse(resSchema),response);
+	return ajv.errors;
 }
 
 
