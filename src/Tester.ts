@@ -87,7 +87,7 @@ export class Tester {
             //a first thinking would say that it shouldnt be necessary but since the requests are user written, there can be errors there as well.
             if (toSend != null) {
                 let errors: Array<any> = Utils.validateRequest(actionName, toSend, self.testConfig.SchemaLocation, "Action");
-                if (errors.length > 0) { //meaning that there is a validation error
+                if (errors) { //meaning that there is a validation error
                     if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Created request is not valid for " + actionName + "\nMessage is " + toSend + "\nError is " + errors);
                     self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, JSON.parse("\"nothing\""), 13, "Created message has bad format: " + JSON.stringify(errors));
                     resolve(true);
@@ -115,7 +115,7 @@ export class Tester {
                             }
                             //validating the response against its schema, same as before
                             let errorsRes: Array<any> = Utils.validateResponse(actionName, answer, self.testConfig.SchemaLocation, 'Action');
-                            if (errorsRes.length > 0) { //meaning that there is a validation error
+                            if (errorsRes) { //meaning that there is a validation error
                                 if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is not valid for: " + actionName);
                                 self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 16, "Received response is not valid, " + JSON.stringify(errorsRes));
                                 resolve(true);
@@ -150,7 +150,7 @@ export class Tester {
                             }
                             //validating the response against its schema, same as before
                             let errorsRes: Array<any> = Utils.validateResponse(actionName, answer, self.testConfig.SchemaLocation, 'Action');
-                            if (errorsRes.length > 0) { //meaning that there is a validation error
+                            if (errorsRes) { //meaning that there is a validation error
                                 if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is not valid for: " + actionName);
                                 self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 16, "Received response is not valid, " + JSON.stringify(errorsRes));
                                 resolve(true);
@@ -201,8 +201,7 @@ export class Tester {
                 if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* DATA AFTER FIRST READ PROPERTY:", JSON.stringify(data, null, ' '));
                 //validating the property value with its Schemas
                 let errorsProp: Array<any> = Utils.validateResponse(propertyName, data, self.testConfig.SchemaLocation, "Property");
-
-                if (errorsProp.length > 0) { //meaning that there is a validation error
+                if (errorsProp) { //meaning that there is a validation error
                     if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Received response is not valid for: " + propertyName, errorsProp);
                     self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""), data, 35, "Received response is not valid, " + JSON.stringify(errorsProp));
                     resolve(true);
@@ -233,7 +232,7 @@ export class Tester {
                     //validating request against a schema, same as the action. Since the requests are written by the user there can be errors
                     //Pay attention that validateResponse is called because writing to a property is based on its outputData
                     let errors: Array<any> = Utils.validateResponse(propertyName, toSend, self.testConfig.SchemaLocation, "Property");
-                    if (errors.length > 0) { //meaning that there is a validation error
+                    if (errors) { //meaning that there is a validation error
                         if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Created request is not valid for " + propertyName + "\nMessage is " + toSend + "\nError is " + errors);
                         self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend, JSON.parse("\"nothing\""), 41, "Created message has bad format: " + JSON.stringify(errors));
                         resolve(true);
@@ -252,7 +251,7 @@ export class Tester {
 
                             let errorsProp2: Array<any> = Utils.validateResponse(propertyName, data2, self.testConfig.SchemaLocation, "Property")
 
-                            if (errorsProp2.length > 0) { //meaning that there is a validation error
+                            if (errorsProp2) { //meaning that there is a validation error
                                 if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Received second response is not valid for: " + propertyName, errorsProp2);
                                 //here for the received, two response values are put
                                 self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend, JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify(data2) + "]"), 45, "Received second response is not valid, " + JSON.stringify(errorsProp2));
