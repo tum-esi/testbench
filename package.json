@@ -26,6 +26,7 @@
 		"build": "tsc",
 		"buildAll": "npm install; tsc;",
 		"start": "node dist/wot-test-bench.js",
-		"clean": "node clean.js"
+		"clean": "node clean.js",
+		"test": "sh test.sh"
 	}
 }
