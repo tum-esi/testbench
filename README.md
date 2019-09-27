@@ -1,5 +1,7 @@
 # Web of Things Test Bench
 
+[![Build Status](https://travis-ci.org/tum-ei-esi/testbench.svg?branch=master)](https://travis-ci.org/tum-ei-esi/testbench)
+
 Tests a WoT Thing by executing interactions automatically, based on its Thing Description.
 
 A Thing Description should represent capabilities of a device. This implies that if a device support the interactions that a client can execute based on the device's TD, it doesn't comply to its own TD. Test bench tests whether:
