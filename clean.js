@@ -8,6 +8,12 @@ try {
 			if (fs.existsSync("dist")) {
 				del('dist');
 			}
+			if (fs.existsSync("Reports")) {
+				del('Reports');
+			}
+			if (fs.existsSync("Resources")) {
+				del('Resources');
+			}
 			if (fs.existsSync("node_modules")) {
 				del('node_modules');
 			}
