@@ -4,7 +4,15 @@ import { Thing } from '@node-wot/td-tools';
 var fs = require('fs');
 var mkdirp = require("mkdirp");
 var jsf = require('json-schema-faker');
+var util = require('util');
 var ajValidator = require('ajv');
+var logFile = fs.createWriteStream('debug.log', { flags: 'w' });
+var logStdout = process.stdout;
+
+console.log = function () {
+  logFile.write(util.format.apply(null, arguments) + '\n');
+  logStdout.write(util.format.apply(null, arguments) + '\n');
+}
 // a test config file is always configured like this
 export interface testConfig {
     TBname?: string;

@@ -10,13 +10,18 @@ import { CoapClientFactory } from "@node-wot/binding-coap";
 import { CoapsClientFactory } from "@node-wot/binding-coap";
 import { Thing } from "@node-wot/td-tools";
 import * as TDParser from '@node-wot/td-tools';
-import { Tester } from './Tester'
-import { testConfig } from './utilities'
-var fs = require('fs');
-
+import { Tester } from './Tester';
+import { testConfig } from './utilities';
+import { parseArgs, configPath, tdPaths } from './config';
+const fs = require('fs');
+var configFile = 'default-config.json';
+if(process.argv.length > 2){
+    parseArgs(tdPaths);
+	configFile = configPath;
+}
 //getting the test config and extraction anything possible
 let testConfig: testConfig = 
-		JSON.parse(fs.readFileSync('./default-config.json', "utf8"));
+		JSON.parse(fs.readFileSync(configFile, "utf8"));
 let tbName: string = testConfig["TBname"];
 let tutName: string = "";
 
