@@ -176,7 +176,7 @@ export function generateSchemas(td: Thing, schemaLocation: string, logMode: bool
     for (var key in td.properties) {
         if (td.properties.hasOwnProperty(key)) {           
             // checks if writable:
-            if (td.properties[key].writable) {
+            if (!(td.properties[key].readOnly)) {
                 // create request schema:
                 let dataSchema = extractSchema(td.properties[key]);
                 writeSchema(key, dataSchema, schemaLocationReq, 'Property');
