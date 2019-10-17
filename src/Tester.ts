@@ -7,7 +7,7 @@ After that you can choose to test a single interaction or a the whole Thing Desc
 It is possible to define multiple test scenarios with each having different requests to be sent
 After the test a test report can be generated and analyzed to get more meaning of the results.
 !!! tut means Thing Under Test
-*/
+ */
 import {Servient} from '@node-wot/core';
 import {Thing} from '@node-wot/td-tools';
 import * as wot from 'wot-typescript-definitions';
@@ -68,7 +68,7 @@ export class Tester {
 	logMode toggles between outputting every single step and error into the terminal. TRUE outputs to the terminal
 	testScenario number is related to the json file that contains the requests to be sent. In this file, in the array of interaction names,
 	you can put different json values that will be sent to the thing
-   */
+	 */
 	public testAction(testCycle: number, actionName: string, interaction: wot.ActionFragment, testScenario: number, interactionIndex: number, logMode: boolean): Promise<any> {
 		var self = this;
 		return new Promise(function (resolve, reject) {
@@ -179,15 +179,15 @@ export class Tester {
 		});
 	}
 
-    /*
-    This method tests the property given in the parameters
-    logMode toggles between outputting every single step and error into the terminal. TRUE outputs to the terminal
-    testScenario number is related to the json file that contains the requests to be sent. In this file, in the array of interaction names,
-    you can put different json values that will be sent to the thing
-    First the property values are fetched from the thing. Then if the property is writable, a value from the requests is written to the property
-    Then property values are fetched again. Here it is hoped that the value is the same as the written one but if the value changes in between it will
-    be different. This is recorded as an error but has a specific error case number. This basically tests if the property is really writable
-    */
+	/*
+		This method tests the property given in the parameters
+		logMode toggles between outputting every single step and error into the terminal. TRUE outputs to the terminal
+		testScenario number is related to the json file that contains the requests to be sent. In this file, in the array of interaction names,
+		you can put different json values that will be sent to the thing
+		First the property values are fetched from the thing. Then if the property is writable, a value from the requests is written to the property
+		Then property values are fetched again. Here it is hoped that the value is the same as the written one but if the value changes in between it will
+		be different. This is recorded as an error but has a specific error case number. This basically tests if the property is really writable
+	 */
 	public testProperty(testCycle: number, propertyName: string, interaction: wot.PropertyFragment, testScenario: number, interactionIndex:number, logMode: boolean): Promise<any> {
 		var self = this;
 		return new Promise(function (resolve, reject) {
@@ -273,8 +273,8 @@ export class Tester {
 							if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Received second response is not valid for: " + propertyName, errorsProp2);
 							//here for the received, two response values are put
 							self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend, 
-									JSON.parse("[" + JSON.stringify(data2) + "," + JSON.stringify(data2) + "]"), 45, 
-									"Received second response is not valid, " + JSON.stringify(errorsProp2));
+								JSON.parse("[" + JSON.stringify(data2) + "," + JSON.stringify(data2) + "]"), 45, 
+								"Received second response is not valid, " + JSON.stringify(errorsProp2));
 							resolve(true);
 						} else { //if there is no validation error we can test if the value we've gotten is the same as the one we wrote
 							if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received second response is valid for: " + propertyName);
@@ -350,11 +350,11 @@ export class Tester {
 			}
 		});
 	}
-    /*
-        This method tests all the messages with the values of one given scenario
-        Actions and Properties are all tested
-        The return value needs to be changed and made into a Promise
-    */
+	/*
+				This method tests all the messages with the values of one given scenario
+				Actions and Properties are all tested
+				The return value needs to be changed and made into a Promise
+	 */
 	public testScenario(testCycle: number, testScenario: number, logMode: boolean): Promise<any> {
 		var self = this;
 		let interactionList: Array<string> = [];
@@ -405,14 +405,14 @@ export class Tester {
 		});
 	}
 
-    /*
-    This is the action that is accessible from the Thing Description. 
-    Meaning that, after consumin the test bench, this action can be invoked to test the entirety of the Thing with many test scenarios and repetitions
-    There is only a simple, repetitive call to test Scenario with adding arrays into the test report in between
-    Also according to the repetition number specified in the test config, the same test can be done multiple times.
+	/*
+		This is the action that is accessible from the Thing Description. 
+		Meaning that, after consumin the test bench, this action can be invoked to test the entirety of the Thing with many test scenarios and repetitions
+		There is only a simple, repetitive call to test Scenario with adding arrays into the test report in between
+		Also according to the repetition number specified in the test config, the same test can be done multiple times.
 
-    It return the test report that has all the required functions to display the results
-    */
+		It return the test report that has all the required functions to display the results
+	 */
 
 	public testThing(repetition: number, scenarioNumber: number, logMode: boolean): Promise<TestReport> {
 		var self = this;
