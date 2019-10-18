@@ -6,10 +6,10 @@ var CoapClientFactory = require('@node-wot/binding-coap').CoapClientFactory;
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
 let srv = new Servient();
-let httpSrvObj = {"port": 8081}
+let httpSrvObj = {"port": 8083}
 srv.addServer(new HttpServer(httpSrvObj));
 srv.addClientFactory(new HttpClientFactory());
-let coapSrvObj = {"port": 8082}
+let coapSrvObj = {"port": 8084}
 srv.addServer(new CoapServer(coapSrvObj));
 srv.addClientFactory(new CoapClientFactory());
 srv.start().then(WoT => {
@@ -23,14 +23,12 @@ srv.start().then(WoT => {
 
     thing.addProperty("display", {
         type: 'string',
-        writable: true,
         observable: true
     }, "initialization string");
 
     thing.addProperty("wrongWritable", {
         description:"property that says writable but isn't",
         type: 'number',
-        writable: true,
         observable: true
     }, 15);
 
@@ -46,7 +44,7 @@ srv.start().then(WoT => {
     thing.addProperty("wrongDataTypeNumber", {
         description:"property that returns a different data type than the one described",
         type: 'number',
-        writable: false,
+        readOnly: true,
         observable: true
     }, "this is not a number");
 
@@ -63,8 +61,7 @@ srv.start().then(WoT => {
                 type: "string"
             }
         },
-        required:["brightness","status"],
-        writable: true
+        required:["brightness","status"]
     }, {
         "brightness": 99.99
     });
@@ -73,8 +70,7 @@ srv.start().then(WoT => {
         type: "array",
         items: {
             type: "number"
-        },
-        writable: true
+        }
     }, [12, 15, 10]);
 
     thing.addAction("setCounter", {

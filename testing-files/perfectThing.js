@@ -23,19 +23,17 @@ srv.start().then(WoT => {
 
     thing.addProperty("display", {
         type: 'string',
-        writable: true,
         observable: true
     }, "initialization string");
 
     thing.addProperty("counter", {
         type: 'number',
-        writable: true,
         observable: true
     }, 0);
 
     thing.addProperty("temperature", {
         type: 'number',
-        writable: false,
+        readOnly: true,
         observable: true
     }, 25);
 
@@ -50,8 +48,7 @@ srv.start().then(WoT => {
             "status": {
                 type: "string"
             }
-        },
-        writable: true
+        }
     }, {
         "brightness": 99.99,
         "status": "exampleString"
@@ -61,8 +58,7 @@ srv.start().then(WoT => {
         type: "array",
         items: {
             type: "number"
-        },
-        writable: true
+        }
     }, [12, 15, 10]);
 
     thing.addAction("setCounter", {
