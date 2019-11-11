@@ -149,7 +149,7 @@ srv.start().then(WoT => {
                         tutTD = JSON.stringify(tutTD);
                         if (tutTD != "") {
                             let tutT: Thing = TDParser.parseTD(tutTD);
-                            tutName = tutT.title;
+                            tutName = tutT.id;
                             let consumedTuT: wot.ConsumedThing = 
 														WoT.consume(tutTD);
                             tester = new Tester(testConfig, 
