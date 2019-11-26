@@ -3,7 +3,7 @@
 	"version": "1.0.0",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/tum-ei-esi/testbench.git"
+		"url": "https://github.com/tum-esi/testbench.git"
 	},
 	"license": "MIT",
 	"dependencies": {
