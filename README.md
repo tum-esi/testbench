@@ -45,7 +45,7 @@ ___
 | content-type      | application/json | 
 | body      |  Thing Description   | 
 | data-type | raw |
-| url | ttp://your-address:8980/wot-test-bench/actions/fastTest |
+| url | `http://your-address:8980/wot-test-bench/actions/fastTest` |
 | return value | JSON Array with results |
 
 **TestBench is a WoT Thing itself with a TD, so you can interact with it like you interact with other WoT servients.**
@@ -57,7 +57,7 @@ ___
 | content-type      | application/json | 
 | body      |  config json data   | 
 | data-type | raw |
-| url | http://your-address:8980/wot-test-bench/properties/testConfig | 
+| url | `http://your-address:8980/wot-test-bench/properties/testConfig` | 
 
 **cURL**:
 
@@ -85,7 +85,7 @@ ___
 | content-type      | application/json | 
 | body      |  Thing Description   | 
 | data-type | raw |
-| url | ttp://your-address:8980/wot-test-bench/properties/thingUnderTestTD |
+| url | `http://your-address:8980/wot-test-bench/properties/thingUnderTestTD` |
 | return value: | no return value |
 
 5. (Optional) Update the test configuration by writing to the `testConfig` property.
@@ -109,7 +109,7 @@ ___
 | content-type      | application/json | 
 | body      |  boolean   | 
 | data-type | raw |
-| url | http://your-address:8980/wot-test-bench/actions/initiate |
+| url | `http://your-address:8980/wot-test-bench/actions/initiate` |
 | return value: | boolean if successful |
 
 
@@ -120,7 +120,7 @@ ___
 | content-type      | application/json | 
 | body      |  [[\{"interactionName":"testObject","interactionValue":\{"brightness":50,"status":"my change"\}\},\{"interactionName":"testObject","interactionValue":\{"brightness":41.447134566914734,"status":"ut aut"\}\}],[\{"interactionName":"testArray","interactionValue":[87987366.27759776,18277015.91254884,-25996637.898988828,-31082548.946999773]\},\{"interactionName":"testArray","interactionValue":[2907339.2741234154,-24383724.353494212]}],[\{"interactionName":"display","interactionValue":"eu ad laborum"\}, ... ], ... ]  | 
 | data-type | raw |
-| url | http://your-address:8980/wot-test-bench/actions/updateRequests |
+| url | `http://your-address:8980/wot-test-bench/actions/updateRequests` |
 | return value: | no return value |
 
 8. Test the configured Thing by invoking `testThing` action. Test bench reads the testData property and executes testing procedure on consumed Thing. Then, it exposes a test report. Body set to `"true"` activates logging to console.
@@ -130,7 +130,7 @@ ___
 | content-type      | application/json | 
 | body      |  "true"   | 
 | data-type | raw |
-| url | http://your-address:8980/wot-test-bench/actions/testThing | 
+| url | `http://your-address:8980/wot-test-bench/actions/testThing` | 
 | return value: | boolean if successful |
 
 9. Read the test report by reading the testReport property.
