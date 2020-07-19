@@ -7,24 +7,24 @@
 	},
 	"license": "MIT",
 	"dependencies": {
-		"@node-wot/binding-coap": "0.6.2-SNAPSHOT.1",
-		"@node-wot/binding-file": "0.6.2-SNAPSHOT.1",
-		"@node-wot/binding-http": "0.6.2-SNAPSHOT.1",
-		"@node-wot/binding-mqtt": "0.6.2-SNAPSHOT.1",
-		"@node-wot/core": "0.6.2-SNAPSHOT.1",
+		"@node-wot/binding-coap": "v0.7.1",
+		"@node-wot/binding-file": "v0.7.1",
+		"@node-wot/binding-http": "v0.7.1",
+		"@node-wot/binding-mqtt": "v0.7.1",
+		"@node-wot/core": "v0.7.1",
 		"@types/node": "*",
 		"ajv": "6.10.2",
 		"chai-http": "^4.3.0",
 		"del": "5.1.0",
+		"inquirer": "^7.0.0",
 		"json-schema-faker": "0.5.0-rc15",
-		"mkdirp": "0.5.1",
-		"xmlhttprequest": "^1.8.0",
-		"inquirer": "^7.0.0"
+		"mkdirp": "1.0.4",
+		"xmlhttprequest": "^1.8.0"
 	},
 	"devDependencies": {
 		"mocha": "^6.2.0",
 		"chai": "^4.2.0",
-		"typescript": "3.3.1"
+		"typescript": "3.9.7"
 	},
 	"scripts": {
 		"build": "tsc",

@@ -101,7 +101,7 @@ export class Tester {
 				// Apply a timeout of 5 seconds to doSomething
 				// TO DO: no repeat the same thing twice
 				if(toSend!=null){
-					let invokeAction = Utils.promiseTimeout(self.testConfig.ActionTimeout, self.tut.actions[actionName].invoke(toSend));
+					let invokeAction = Utils.promiseTimeout(self.testConfig.ActionTimeout, self.tut.invokeAction(actionName, toSend));
 					invokeAction.then((res: any) => {
 						if (interaction.hasOwnProperty('output')) { //the action doesnt have to answer something back
 							let answer = res;
@@ -136,7 +136,7 @@ export class Tester {
 						resolve(true);
 					});
 				} else {
-					let invokeAction = Utils.promiseTimeout(self.testConfig.ActionTimeout, self.tut.actions[actionName].invoke());
+					let invokeAction = Utils.promiseTimeout(self.testConfig.ActionTimeout, self.tut.invokeAction(actionName));
 					invokeAction.then((res: any) => {
 						if (interaction.hasOwnProperty('output')) { //the action doesnt have to answer something back
 							let answer = res;
@@ -203,7 +203,7 @@ export class Tester {
 			if (logMode && isWritable) console.log('\x1b[36m%s\x1b[0m', "* Property is writable");
 			if (logMode && !isWritable) console.log('\x1b[36m%s\x1b[0m', "* Property not writable");
 			if (isReadable) {
-				let curPropertyData: any = self.tut.properties[propertyName].read().then((res: any) => {
+				let curPropertyData: any = self.tut.readProperty(propertyName).then((res: any) => {
 					data = res;
 					if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* DATA AFTER FIRST READ PROPERTY:", JSON.stringify(data, null, ' '));
 					//validating the property value with its Schemas
@@ -256,14 +256,14 @@ export class Tester {
 
 				//setting the property, aka writing into it
 				if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Writing to property " + propertyName + " with data:", JSON.stringify(toSend, null, ' '));
-				self.tut.properties[propertyName].write(toSend).then(() => {
+				self.tut.writeProperty(propertyName, toSend).then(() => {
 					if (!isReadable) {
 						if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Property test of " + propertyName + " is succesful: no read")
 						self.testReport.addMessage(testCycle, testScenario, propertyName, true, toSend, JSON.parse("\"nothing\""), 200, "");
 						resolve(true);
 					}
 					//now reading and hoping to get the same value
-					let curPropertyData2: any = self.tut.properties[propertyName].read().then((res2: any) => {
+					let curPropertyData2: any = self.tut.readProperty(propertyName).then((res2: any) => {
 						data2 = res2;
 						if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* For the second one, gotten propery data is:", JSON.stringify(data2, null, ' '));
 						//validating the gotten value (this shouldnt be necessary since the first time was correct but it is here nonetheless)
