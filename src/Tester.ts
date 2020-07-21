@@ -54,7 +54,7 @@ export class Tester {
 	}
 
 	// -----TODO thing of timers to cause event
-	public testEvent(testCycle: number, actionName: string, interaction: wot.EventFragment, testScenario: number, interactionIndex: number,logMode: boolean): Promise<any> {
+	public testEvent(testCycle: number, actionName: string, interaction: any, testScenario: number, interactionIndex: number,logMode: boolean): Promise<any> {
 		// testing event function
 
 		return new Promise(function (resolve, reject) {
@@ -69,7 +69,7 @@ export class Tester {
 	testScenario number is related to the json file that contains the requests to be sent. In this file, in the array of interaction names,
 	you can put different json values that will be sent to the thing
 	 */
-	public testAction(testCycle: number, actionName: string, interaction: wot.ActionFragment, testScenario: number, interactionIndex: number, logMode: boolean): Promise<any> {
+	public testAction(testCycle: number, actionName: string, interaction: any, testScenario: number, interactionIndex: number, logMode: boolean): Promise<any> {
 		var self = this;
 		return new Promise(function (resolve, reject) {
 			let toSend: JSON;
@@ -188,7 +188,7 @@ export class Tester {
 		Then property values are fetched again. Here it is hoped that the value is the same as the written one but if the value changes in between it will
 		be different. This is recorded as an error but has a specific error case number. This basically tests if the property is really writable
 	 */
-	public testProperty(testCycle: number, propertyName: string, interaction: wot.PropertyFragment, testScenario: number, interactionIndex:number, logMode: boolean): Promise<any> {
+	public testProperty(testCycle: number, propertyName: string, interaction: any, testScenario: number, interactionIndex:number, logMode: boolean): Promise<any> {
 		var self = this;
 		return new Promise(function (resolve, reject) {
 			let isWritable: boolean = !(interaction.readOnly);

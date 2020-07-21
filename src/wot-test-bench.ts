@@ -158,15 +158,14 @@ srv.start().then(WoT => {
                             /* fs.writeFileSync('./default-config.json', 
                                         JSON.stringify(testConfig, null, ' ')); */
                             srv.addCredentials(testConfig.credentials);
-                        return TestBenchT.readProperty("thingUnderTestTD").then((tutTD) => {
-                            tutTD = JSON.stringify(tutTD);
-                            if (tutTD != "") {
-                                let tutT: Thing = TDParser.parseTD(tutTD);
+                        return TestBenchT.readProperty("thingUnderTestTD").then(async (tutTD) => {
+                            let stringtutTD = JSON.stringify(tutTD);
+                            if (stringtutTD != "") {
+                                let tutT: Thing = TDParser.parseTD(stringtutTD);
                                 tutName = tutT.id;
-                                let consumedTuT: wot.ConsumedThing = WoT.consume(tutTD);
-                                tester = new Tester(testConfig,
-                                    tutT,
-                                    consumedTuT);
+                                // TODO Potentially tutT can be used instead of tutTD here (then stringtutTD would not be needed)
+                                let consumedTuT: wot.ConsumedThing = await WoT.consume(tutTD);
+                                tester = new Tester(testConfig, tutT, consumedTuT);
                                 let returnCheck = tester.initiate(logMode);
                                 if (returnCheck == 0) {
                                     return TestBenchT.writeProperty("testData", tester.codeGen.requests).then(() => {
@@ -244,7 +243,7 @@ srv.start().then(WoT => {
                 });
             });
             TestBenchT.expose().then(() => {
-                console.info(TestBenchT.readProperty("title") + " ready");
+                console.info(TestBenchT.getThingDescription().title + " ready");
             });
         })
         .catch(err => {

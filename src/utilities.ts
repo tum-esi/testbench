@@ -114,7 +114,7 @@ export function validateResponse(responseName: string, response: JSON, schemaLoc
 // ------------------------ SCHEMA GENERATION ------------------------------------
 
 // extracts json schema from property
-function extractSchema(fragment: wot.PropertyFragment | wot.EventFragment) {
+function extractSchema(fragment: any) {
     let extractedSchema;
     if (fragment.type == 'object') {
         if (fragment.hasOwnProperty('properties')) {
@@ -227,7 +227,7 @@ export function generateSchemas(td: Thing, schemaLocation: string, logMode: bool
 }
 
 // --------------------------- UTILITY FUNCTIONS -------------------------------------
-export function getInteractionByName(td: Thing, name: string): [string, wot.PropertyFragment | wot.ActionFragment | wot.EventFragment] {
+export function getInteractionByName(td: Thing, name: string): [string, any] {
     for (var key in td.properties) {
         if (key == name) {
             return ['Property', td.properties[key]];
