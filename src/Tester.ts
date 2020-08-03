@@ -17,16 +17,16 @@ import { testConfig } from './utilities'
 var timers = require("timers")
 
 export class Tester {
-	private tutTd: Thing; //the TD that belongs to the Thing under Test
+	private tutTd: wot.ThingDescription; //the TD that belongs to the Thing under Test
 	private testConfig: testConfig; //the file that describes various locations of the files that are needed. Must be configured by the user
 	public codeGen: Utils.CodeGenerator; //this will generate the requests to be sent to the tut
 	public testReport: TestReport; //after the testing, this will contain the bare results
 	private tut: wot.ConsumedThing; // the thing under test
 
 	//this is a basic constructor, it is planned to change to incorporate more things into the initiate function
-	constructor(tC: testConfig, tutTd: Thing, tut: wot.ConsumedThing) {
+	constructor(tC: testConfig, tut: wot.ConsumedThing) {
 		this.testConfig = tC;
-		this.tutTd = tutTd;
+		this.tutTd = tut.getThingDescription();
 		this.tut = tut;
 	}
 

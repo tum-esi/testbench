@@ -159,13 +159,9 @@ srv.start().then(WoT => {
                                         JSON.stringify(testConfig, null, ' ')); */
                             srv.addCredentials(testConfig.credentials);
                         return TestBenchT.readProperty("thingUnderTestTD").then(async (tutTD) => {
-                            let stringtutTD = JSON.stringify(tutTD);
-                            if (stringtutTD != "") {
-                                let tutT: Thing = TDParser.parseTD(stringtutTD);
-                                tutName = tutT.id;
-                                // TODO Potentially tutT can be used instead of tutTD here (then stringtutTD would not be needed)
+                            if (JSON.stringify(tutTD) != "") {
                                 let consumedTuT: wot.ConsumedThing = await WoT.consume(tutTD);
-                                tester = new Tester(testConfig, tutT, consumedTuT);
+                                tester = new Tester(testConfig, consumedTuT);
                                 let returnCheck = tester.initiate(logMode);
                                 if (returnCheck == 0) {
                                     return TestBenchT.writeProperty("testData", tester.codeGen.requests).then(() => {
