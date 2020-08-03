@@ -43,7 +43,6 @@ srv.addClientFactory(new CoapClientFactory());
 srv.addClientFactory(new CoapsClientFactory());
 srv.addClientFactory(new MqttClientFactory());
 
-
 srv.start().then(WoT => {
     console.log('\x1b[36m%s\x1b[0m', '* TestBench servient started');
     WoT.produce({
