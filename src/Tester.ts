@@ -8,8 +8,6 @@ It is possible to define multiple test scenarios with each having different requ
 After the test a test report can be generated and analyzed to get more meaning of the results.
 !!! tut means Thing Under Test
  */
-import {Servient} from '@node-wot/core';
-import {Thing} from '@node-wot/td-tools';
 import * as wot from 'wot-typescript-definitions';
 import * as Utils from './utilities'
 import { TestReport } from './TestReport'
@@ -69,7 +67,7 @@ export class Tester {
 	 * @param actionName: The name of the action to invoke.
 	 * @param toSend: The payload to send to invoke the action.
 	 */
-	private tryInvokeAction(actionName: string, toSend?: JSON): Promise<any> {
+	private tryToInvokeAction(actionName: string, toSend?: JSON): Promise<any> {
 		if (toSend != null) {
 			return Utils.promiseTimeout(this.testConfig.ActionTimeout, this.tut.invokeAction(actionName, toSend));
 		}
@@ -111,8 +109,8 @@ export class Tester {
 			//invoking the action
 			try {
 				if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Invoking action " + actionName + " with data:", JSON.stringify(toSend, null, ' '));
-				// Apply a timeout of 5 seconds to doSomething
-				self.tryInvokeAction(actionName, toSend).then((res: any) => {
+				// Try to invoke the action.
+				self.tryToInvokeAction(actionName, toSend).then((res: any) => {
 					if (interaction.hasOwnProperty('output')) { //the action doesn't have to answer something back
 						let answer = res;
 						if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Answer is:", JSON.stringify(answer, null, ' '));
