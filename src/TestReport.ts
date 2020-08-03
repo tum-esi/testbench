@@ -1,5 +1,4 @@
 import fs = require('fs');
-import  {Tester} from "./Tester"
 var mkdirp = require("mkdirp");
 
 interface message {

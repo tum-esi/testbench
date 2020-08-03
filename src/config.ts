@@ -3,7 +3,6 @@
  * Copyright (c) 2019 - www.esi.ei.tum.de
  * MIT Licence - see LICENSE
  ********************************************************************************/
-import { testConfig } from './utilities'
 //testConfig for config file structure
 const inquirer = require("inquirer");
 export const parseArgs = (tDescPaths: Array<string>) => {
