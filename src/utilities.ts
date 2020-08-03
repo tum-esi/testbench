@@ -49,7 +49,7 @@ export class CodeGenerator {
     }
     // generates fake data and stores it to config TestDataLocation location
     public generateFakeData(testConf: any, tdesc: wot.ThingDescription) {
-        // create interaction list: no optimized soluton: -----------
+        // create interaction list: no optimized solution: -----------
         let requestList = [];
         for (var key in tdesc.properties) {
             let scenarioList = [];

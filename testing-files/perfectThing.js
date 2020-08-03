@@ -93,7 +93,7 @@ srv.start().then(WoT => {
                     items: {
                         type: "number"
                     }
-                } 
+                }
             }
         },
         events: {
@@ -102,7 +102,7 @@ srv.start().then(WoT => {
             }
         }
     })
-    
+
         .then((thing) => {
             thing.writeProperty("display", "initialization string");
             thing.writeProperty("counter", 0);
