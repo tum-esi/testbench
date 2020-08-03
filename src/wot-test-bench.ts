@@ -18,19 +18,19 @@ if(process.argv.length > 2){
 	configFile = configPath;
 }
 //getting the test config and extraction anything possible
-let testConfig: testConfig = 
+let testConfig: testConfig =
 		JSON.parse(fs.readFileSync(configFile, "utf8"));
 let tbName: string = testConfig["TBname"];
 let tutName: string = "";
 
-//creating the Test Bench as a servient. 
+//creating the Test Bench as a servient.
 //It will test the Thing as a client and interact with the tester as a Server
 let srv = new Servient();
 // srv.addCredentials(testConfig.credentials);
 console.log(srv);
-let httpServer = (typeof testConfig.http.port === "number") ? 
+let httpServer = (typeof testConfig.http.port === "number") ?
 			new HttpServer(testConfig.http) : new HttpServer();
-let coapServer = (typeof testConfig.coap.port === "number") ?                   
+let coapServer = (typeof testConfig.coap.port === "number") ?
             new CoapServer(testConfig.coap.port) : new CoapServer();
 srv.addServer(httpServer);
 srv.addServer(coapServer);
@@ -152,7 +152,7 @@ srv.start().then(WoT => {
                     return TestBenchT.readProperty("testConfig").then((newConf) => {
                             testConfig = JSON.parse(JSON.stringify(newConf));
 
-                            /* fs.writeFileSync('./default-config.json', 
+                            /* fs.writeFileSync('./default-config.json',
                                         JSON.stringify(testConfig, null, ' ')); */
                             srv.addCredentials(testConfig.credentials);
                         return TestBenchT.readProperty("thingUnderTestTD").then(async (tutTD) => {

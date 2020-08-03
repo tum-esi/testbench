@@ -53,7 +53,7 @@ export class CodeGenerator {
         let requestList = [];
         for (var key in tdesc.properties) {
             let scenarioList = [];
-            for (var j = 0; j < testConf.Scenarios; j++) { 
+            for (var j = 0; j < testConf.Scenarios; j++) {
                 let dataPair = {}
                 dataPair['interactionName'] = key;
                 dataPair['interactionValue'] = this.createRequest(key, testConf.SchemaLocation, 'Property');
@@ -63,7 +63,7 @@ export class CodeGenerator {
         }
         for (var key in tdesc.actions) {
             let scenarioList = [];
-            for (var j = 0; j < testConf.Scenarios; j++) { 
+            for (var j = 0; j < testConf.Scenarios; j++) {
                 let dataPair = {}
                 dataPair['interactionName'] = key;
                 dataPair['interactionValue'] = this.createRequest(key, testConf.SchemaLocation, 'Action');
@@ -73,7 +73,7 @@ export class CodeGenerator {
         }
         for (var key in tdesc.events) {
             let scenarioList = [];
-            for (var j = 0; j < testConf.Scenarios; j++) { 
+            for (var j = 0; j < testConf.Scenarios; j++) {
                 let dataPair = {}
                 dataPair['interactionName'] = key;
                 dataPair['interactionValue'] = this.createRequest(key, testConf.SchemaLocation, 'Event');
@@ -172,7 +172,7 @@ export function generateSchemas(td: wot.ThingDescription, schemaLocation: string
 
     // property schemas:
     for (var key in td.properties) {
-        if (td.properties.hasOwnProperty(key)) {           
+        if (td.properties.hasOwnProperty(key)) {
             // checks if writable:
             if (!(td.properties[key].readOnly)) {
                 // create request schema:
@@ -195,7 +195,7 @@ export function generateSchemas(td: wot.ThingDescription, schemaLocation: string
         if (td.actions.hasOwnProperty(key)) {
             if (td.actions[key].hasOwnProperty('input')) {
                 // create request schema:
-                let dataSchema = 
+                let dataSchema =
                 writeSchema(key, JSON.stringify(td.actions[key].input).slice(0, -1).substring(1), schemaLocationReq, 'Action');
                 reqSchemaCount++;
             }

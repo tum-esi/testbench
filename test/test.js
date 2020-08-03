@@ -1,4 +1,4 @@
-var chai = require('chai'); 
+var chai = require('chai');
 var chaiHttp = require('chai-http');
 chai.use(chaiHttp);
 var app = 'localhost:8980';
@@ -30,7 +30,6 @@ describe("Action: fastTest", function() {
 				done();
 			});
         });
-
     });
 });
 

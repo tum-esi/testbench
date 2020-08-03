@@ -13,32 +13,32 @@ export const parseArgs = (tDescPaths: Array<string>) => {
 
         } else if (arg.match(/^(-v|--version)$/i)) {
             console.info(require("../package.json").version);
-    
+
         } else {
             console.info("-c can be used to specify config file");
 		}
-		
+
     });
 }
 		/*
-interface defaultQueryResponse {                                                
-    choice: string;                                                             
-}                                                                               
-                                                                                
-const defaultQuery = async () => {                                       
-    return inquirer.prompt({                                                    
-        type: 'list',                                                           
-        name: 'choice',                                                         
-        message: 'Use default configuration?',                                  
-        choices: ['yes', 'no']                                                  
-    }).then((response: defaultQueryResponse) => response.choice);               
+interface defaultQueryResponse {
+    choice: string;
 }
 
-let decideToUseDefaultConfigFile = defaultQuery().then( (response: string) => {                    
+const defaultQuery = async () => {
+    return inquirer.prompt({
+        type: 'list',
+        name: 'choice',
+        message: 'Use default configuration?',
+        choices: ['yes', 'no']
+    }).then((response: defaultQueryResponse) => response.choice);
+}
+
+let decideToUseDefaultConfigFile = defaultQuery().then( (response: string) => {
 	if(response === "yes"){
 		configPath = 'default-config.json';
 	}
-		else{} //confiqurationQuery 
+		else{} //confiqurationQuery
 });
 		 */
 export var configPath: string;
