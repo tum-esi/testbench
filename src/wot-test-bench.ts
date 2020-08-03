@@ -242,6 +242,7 @@ srv.start().then(WoT => {
                     return false;
                 });
             });
+
             TestBenchT.expose().then(() => {
                 console.info(TestBenchT.getThingDescription().title + " ready");
             });
