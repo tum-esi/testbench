@@ -1,5 +1,5 @@
 import fs = require('fs');
-var mkdirp = require("mkdirp");
+const mkdirp = require('mkdirp');
 
 interface message {
     name?: string;
@@ -15,15 +15,15 @@ export class TestReport {
     private testScenarioCount: number; //incremented at each addition of a new test scenario that contains different messages
     private maxTestScenario: number; // the max number of test scenarios for a given repetition
 
-
     constructor() {
         this.results = [];
         this.testCycleCount = -1;
         this.testScenarioCount = -1;
         this.maxTestScenario = 0;
     }
-    public getResults(): Array<any> { //basic getter
-        let returnResults = this.results;
+    public getResults(): Array<any> {
+        //basic getter
+        const returnResults = this.results;
         this.results = [];
         this.testCycleCount = -1;
         this.testScenarioCount = -1;
@@ -46,7 +46,8 @@ export class TestReport {
     //it creates a new empty array that will be later on filled with objects that represent message exchanges
     public addTestScenario(/*tester:Tester,callback:Function*/): void {
         this.testScenarioCount++;
-        if (this.testScenarioCount > this.maxTestScenario) { //update the max value that is used for displaying
+        if (this.testScenarioCount > this.maxTestScenario) {
+            //update the max value that is used for displaying
             this.maxTestScenario = this.testScenarioCount;
         }
         this.results[this.testCycleCount][this.testScenarioCount] = [];
@@ -56,62 +57,77 @@ export class TestReport {
     //this adds a message exchange
     //tha name of the message and the results of the exchange should be entered in the arguments
     //after getting all the arguments, these arguments are transformed into a JSON object that represents the exchange that has just occurred
-    public addMessage(testCycle:number, testScenario:number, name: string, result: boolean, sent: JSON, received: JSON, errorId: number, error: string): void {
+    public addMessage(
+        testCycle: number,
+        testScenario: number,
+        name: string,
+        result: boolean,
+        sent: JSON,
+        received: JSON,
+        errorId: number,
+        error: string
+    ): void {
         //message to be built
-        let curMessage: message = { "name": name, "result": result, "sent": sent, "received": received, "errorId": errorId, "error": error };
+        const curMessage: message = {
+            name: name,
+            result: result,
+            sent: sent,
+            received: received,
+            errorId: errorId,
+            error: error,
+        };
         //filling the results
         this.results[testCycle][testScenario].push(curMessage);
     }
 
     public printResults(): void {
-        console.log("Results of the last test with Errors/TotalTests");
-        process.stdout.write("Test Scenario Number > ");
+        console.log('Results of the last test with Errors/TotalTests');
+        process.stdout.write('Test Scenario Number > ');
         for (var i = 0; i <= this.maxTestScenario; i++) {
-            process.stdout.write("TS" + i + "\t");
+            process.stdout.write('TS' + i + '\t');
         }
-        console.log("Test Cycle Nb:");
+        console.log('Test Cycle Nb:');
 
         //printing the results
         for (var i = 0; i <= this.testCycleCount; i++) {
-            process.stdout.write("TC" + i + "\t \t \t");
-            for (var j = 0; j <= this.maxTestScenario; j++) {
+            process.stdout.write('TC' + i + '\t \t \t');
+            for (let j = 0; j <= this.maxTestScenario; j++) {
                 //summing up the fails for this one scenario
 
                 //this try catch exists because not every scenario is obligated to have the same number of messages
                 //this is of course not necessary for the current state of the test bench
-                let currentScenario: any = this.results[i][j];
-                let curSceLength: number = currentScenario.length;
+                const currentScenario: any = this.results[i][j];
+                const curSceLength: number = currentScenario.length;
 
-                let fails: number = 0;
+                let fails = 0;
                 try {
-                    for (var k = 0; k < curSceLength; k++) {
-                        let curMessage: message = currentScenario[k];
+                    for (let k = 0; k < curSceLength; k++) {
+                        const curMessage: message = currentScenario[k];
                         //if the results of the single test is false, the number to be displayed in the table is incremented
-                        let curResult: boolean = curMessage.result;
+                        const curResult: boolean = curMessage.result;
                         if (!curResult) {
                             fails++;
                         }
                     }
 
-                    process.stdout.write(fails + "/" + curSceLength + "\t"); //this is used for displaying how many failures are there for one scenario
+                    process.stdout.write(fails + '/' + curSceLength + '\t'); //this is used for displaying how many failures are there for one scenario
                 } catch (Error) {
-                    process.stdout.write(fails + "/" + curSceLength + "\t");
+                    process.stdout.write(fails + '/' + curSceLength + '\t');
                 }
-
             }
             console.log();
         }
     }
     public storeReport(location: string, tutName: string) {
         try {
-            mkdirp(location)
-            var files = fs.readdirSync(location); // returns string list
+            mkdirp(location);
+            const files = fs.readdirSync(location); // returns string list
             if (files.length > 0) {
                 let maxReportCount = 0;
 
                 // find max number of stored tut-reports:
-                for (var i in files) {
-                    let splitFile = files[i].split('-');
+                for (const i in files) {
+                    const splitFile = files[i].split('-');
                     if (splitFile[1] == tutName) {
                         if (Number(splitFile[0]) > maxReportCount) {
                             maxReportCount = Number(splitFile[0]);
@@ -119,16 +135,37 @@ export class TestReport {
                     }
                 }
                 maxReportCount++;
-                fs.writeFileSync(location+maxReportCount.toString()+"-"+tutName+"-testReport.json", JSON.stringify(this.results,null,4));
-                console.log("Report stored in "+location+maxReportCount.toString()+"-"+tutName+"-testReport.json");
+                fs.writeFileSync(
+                    location +
+                        maxReportCount.toString() +
+                        '-' +
+                        tutName +
+                        '-testReport.json',
+                    JSON.stringify(this.results, null, 4)
+                );
+                console.log(
+                    'Report stored in ' +
+                        location +
+                        maxReportCount.toString() +
+                        '-' +
+                        tutName +
+                        '-testReport.json'
+                );
             } else {
-                fs.writeFileSync(location + "1-"+tutName+"-testReport.json", JSON.stringify(this.results,null,4));
-                console.log("Report stored in "+location+"1-"+tutName+"-testReport.json");
+                fs.writeFileSync(
+                    location + '1-' + tutName + '-testReport.json',
+                    JSON.stringify(this.results, null, 4)
+                );
+                console.log(
+                    'Report stored in ' +
+                        location +
+                        '1-' +
+                        tutName +
+                        '-testReport.json'
+                );
             }
         } catch (error) {
-            console.log("Report could not be stored");
+            console.log('Report could not be stored');
         }
-
-
     }
 }
