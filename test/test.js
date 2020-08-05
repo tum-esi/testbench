@@ -53,48 +53,10 @@ describe("Action: fastTest", function () {
                                 },
                                 {
                                     href:
-                                        "http://[localhost]:8081/TestServient/properties/display",
-                                    contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
-                                },
-                                {
-                                    href:
-                                        "http://[localhost]:8081/TestServient/properties/display/observable",
-                                    contentType: "application/json",
-                                    op: ["observeproperty"],
-                                    subprotocol: "longpoll",
-                                },
-                                {
-                                    href:
-                                        "http://[localhost]:8081/TestServient/properties/display",
-                                    contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
-                                },
-                                {
-                                    href:
-                                        "http://[localhost]:8081/TestServient/properties/display/observable",
-                                    contentType: "application/json",
-                                    op: ["observeproperty"],
-                                    subprotocol: "longpoll",
-                                },
-                                {
-                                    href:
                                         "coap://localhost:8082/TestServient/pr/display",
                                     contentType: "application/json",
                                     op: ["readproperty", "writeproperty"],
-                                },
-                                {
-                                    href:
-                                        "coap://[localhost]:8082/TestServient/pr/display",
-                                    contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
-                                },
-                                {
-                                    href:
-                                        "coap://[localhost]:8082/TestServient/pr/display",
-                                    contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
-                                },
+                                }
                             ],
                         },
                         counter: {
@@ -119,48 +81,10 @@ describe("Action: fastTest", function () {
                                 },
                                 {
                                     href:
-                                        "http://[localhost]:8081/TestServient/properties/counter",
-                                    contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
-                                },
-                                {
-                                    href:
-                                        "http://[localhost]:8081/TestServient/properties/counter/observable",
-                                    contentType: "application/json",
-                                    op: ["observeproperty"],
-                                    subprotocol: "longpoll",
-                                },
-                                {
-                                    href:
-                                        "http://[localhost]:8081/TestServient/properties/counter",
-                                    contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
-                                },
-                                {
-                                    href:
-                                        "http://[localhost]:8081/TestServient/properties/counter/observable",
-                                    contentType: "application/json",
-                                    op: ["observeproperty"],
-                                    subprotocol: "longpoll",
-                                },
-                                {
-                                    href:
                                         "coap://localhost:8082/TestServient/pr/counter",
                                     contentType: "application/json",
                                     op: ["readproperty", "writeproperty"],
-                                },
-                                {
-                                    href:
-                                        "coap://[localhost]:8082/TestServient/pr/counter",
-                                    contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
-                                },
-                                {
-                                    href:
-                                        "coap://[localhost]:8082/TestServient/pr/counter",
-                                    contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
-                                },
+                                }
                             ],
                         },
                         temperature: {
@@ -185,48 +109,10 @@ describe("Action: fastTest", function () {
                                 },
                                 {
                                     href:
-                                        "http://[localhost]:8081/TestServient/properties/temperature",
-                                    contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
-                                },
-                                {
-                                    href:
-                                        "http://[localhost]:8081/TestServient/properties/temperature/observable",
-                                    contentType: "application/json",
-                                    op: ["observeproperty"],
-                                    subprotocol: "longpoll",
-                                },
-                                {
-                                    href:
-                                        "http://[localhost]:8081/TestServient/properties/temperature",
-                                    contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
-                                },
-                                {
-                                    href:
-                                        "http://[localhost]:8081/TestServient/properties/temperature/observable",
-                                    contentType: "application/json",
-                                    op: ["observeproperty"],
-                                    subprotocol: "longpoll",
-                                },
-                                {
-                                    href:
                                         "coap://localhost:8082/TestServient/pr/temperature",
                                     contentType: "application/json",
                                     op: ["readproperty", "writeproperty"],
-                                },
-                                {
-                                    href:
-                                        "coap://[localhost]:8082/TestServient/pr/temperature",
-                                    contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
-                                },
-                                {
-                                    href:
-                                        "coap://[localhost]:8082/TestServient/pr/temperature",
-                                    contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
-                                },
+                                }
                             ],
                         },
                         testObject: {
@@ -252,34 +138,10 @@ describe("Action: fastTest", function () {
                                 },
                                 {
                                     href:
-                                        "http://[localhost]:8081/TestServient/properties/testObject",
-                                    contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
-                                },
-                                {
-                                    href:
-                                        "http://[localhost]:8081/TestServient/properties/testObject",
-                                    contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
-                                },
-                                {
-                                    href:
                                         "coap://localhost:8082/TestServient/pr/testObject",
                                     contentType: "application/json",
                                     op: ["readproperty", "writeproperty"],
-                                },
-                                {
-                                    href:
-                                        "coap://[localhost]:8082/TestServient/pr/testObject",
-                                    contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
-                                },
-                                {
-                                    href:
-                                        "coap://[localhost]:8082/TestServient/pr/testObject",
-                                    contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
-                                },
+                                }
                             ],
                         },
                         testArray: {
@@ -298,34 +160,10 @@ describe("Action: fastTest", function () {
                                 },
                                 {
                                     href:
-                                        "http://[localhost]:8081/TestServient/properties/testArray",
-                                    contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
-                                },
-                                {
-                                    href:
-                                        "http://[localhost]:8081/TestServient/properties/testArray",
-                                    contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
-                                },
-                                {
-                                    href:
                                         "coap://localhost:8082/TestServient/pr/testArray",
                                     contentType: "application/json",
                                     op: ["readproperty", "writeproperty"],
-                                },
-                                {
-                                    href:
-                                        "coap://[localhost]:8082/TestServient/pr/testArray",
-                                    contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
-                                },
-                                {
-                                    href:
-                                        "coap://[localhost]:8082/TestServient/pr/testArray",
-                                    contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
-                                },
+                                }
                             ],
                         },
                     },
@@ -342,33 +180,7 @@ describe("Action: fastTest", function () {
                                 },
                                 {
                                     href:
-                                        "http://[localhost]:8081/TestServient/actions/setCounter",
-                                    contentType: "application/json",
-                                    op: ["invokeaction"],
-                                    "htv:methodName": "POST",
-                                },
-                                {
-                                    href:
-                                        "http://[localhost]:8081/TestServient/actions/setCounter",
-                                    contentType: "application/json",
-                                    op: ["invokeaction"],
-                                    "htv:methodName": "POST",
-                                },
-                                {
-                                    href:
                                         "coap://localhost:8082/TestServient/ac/setCounter",
-                                    contentType: "application/json",
-                                    op: "invokeaction",
-                                },
-                                {
-                                    href:
-                                        "coap://[localhost]:8082/TestServient/ac/setCounter",
-                                    contentType: "application/json",
-                                    op: "invokeaction",
-                                },
-                                {
-                                    href:
-                                        "coap://[localhost]:8082/TestServient/ac/setCounter",
                                     contentType: "application/json",
                                     op: "invokeaction",
                                 },
@@ -388,33 +200,7 @@ describe("Action: fastTest", function () {
                                 },
                                 {
                                     href:
-                                        "http://[localhost]:8081/TestServient/actions/getTemperature",
-                                    contentType: "application/json",
-                                    op: ["invokeaction"],
-                                    "htv:methodName": "POST",
-                                },
-                                {
-                                    href:
-                                        "http://[localhost]:8081/TestServient/actions/getTemperature",
-                                    contentType: "application/json",
-                                    op: ["invokeaction"],
-                                    "htv:methodName": "POST",
-                                },
-                                {
-                                    href:
                                         "coap://localhost:8082/TestServient/ac/getTemperature",
-                                    contentType: "application/json",
-                                    op: "invokeaction",
-                                },
-                                {
-                                    href:
-                                        "coap://[localhost]:8082/TestServient/ac/getTemperature",
-                                    contentType: "application/json",
-                                    op: "invokeaction",
-                                },
-                                {
-                                    href:
-                                        "coap://[localhost]:8082/TestServient/ac/getTemperature",
                                     contentType: "application/json",
                                     op: "invokeaction",
                                 },
@@ -435,33 +221,7 @@ describe("Action: fastTest", function () {
                                 },
                                 {
                                     href:
-                                        "http://[localhost]:8081/TestServient/actions/setDisplay",
-                                    contentType: "application/json",
-                                    op: ["invokeaction"],
-                                    "htv:methodName": "POST",
-                                },
-                                {
-                                    href:
-                                        "http://[localhost]:8081/TestServient/actions/setDisplay",
-                                    contentType: "application/json",
-                                    op: ["invokeaction"],
-                                    "htv:methodName": "POST",
-                                },
-                                {
-                                    href:
                                         "coap://localhost:8082/TestServient/ac/setDisplay",
-                                    contentType: "application/json",
-                                    op: "invokeaction",
-                                },
-                                {
-                                    href:
-                                        "coap://[localhost]:8082/TestServient/ac/setDisplay",
-                                    contentType: "application/json",
-                                    op: "invokeaction",
-                                },
-                                {
-                                    href:
-                                        "coap://[localhost]:8082/TestServient/ac/setDisplay",
                                     contentType: "application/json",
                                     op: "invokeaction",
                                 },
@@ -491,33 +251,7 @@ describe("Action: fastTest", function () {
                                 },
                                 {
                                     href:
-                                        "http://[localhost]:8081/TestServient/actions/setTestObject",
-                                    contentType: "application/json",
-                                    op: ["invokeaction"],
-                                    "htv:methodName": "POST",
-                                },
-                                {
-                                    href:
-                                        "http://[localhost]:8081/TestServient/actions/setTestObject",
-                                    contentType: "application/json",
-                                    op: ["invokeaction"],
-                                    "htv:methodName": "POST",
-                                },
-                                {
-                                    href:
                                         "coap://localhost:8082/TestServient/ac/setTestObject",
-                                    contentType: "application/json",
-                                    op: "invokeaction",
-                                },
-                                {
-                                    href:
-                                        "coap://[localhost]:8082/TestServient/ac/setTestObject",
-                                    contentType: "application/json",
-                                    op: "invokeaction",
-                                },
-                                {
-                                    href:
-                                        "coap://[localhost]:8082/TestServient/ac/setTestObject",
                                     contentType: "application/json",
                                     op: "invokeaction",
                                 },
@@ -541,33 +275,7 @@ describe("Action: fastTest", function () {
                                 },
                                 {
                                     href:
-                                        "http://[localhost]:8081/TestServient/actions/setTestArray",
-                                    contentType: "application/json",
-                                    op: ["invokeaction"],
-                                    "htv:methodName": "POST",
-                                },
-                                {
-                                    href:
-                                        "http://[localhost]:8081/TestServient/actions/setTestArray",
-                                    contentType: "application/json",
-                                    op: ["invokeaction"],
-                                    "htv:methodName": "POST",
-                                },
-                                {
-                                    href:
                                         "coap://localhost:8082/TestServient/ac/setTestArray",
-                                    contentType: "application/json",
-                                    op: "invokeaction",
-                                },
-                                {
-                                    href:
-                                        "coap://[localhost]:8082/TestServient/ac/setTestArray",
-                                    contentType: "application/json",
-                                    op: "invokeaction",
-                                },
-                                {
-                                    href:
-                                        "coap://[localhost]:8082/TestServient/ac/setTestArray",
                                     contentType: "application/json",
                                     op: "invokeaction",
                                 },
@@ -589,33 +297,7 @@ describe("Action: fastTest", function () {
                                 },
                                 {
                                     href:
-                                        "http://[localhost]:8081/TestServient/events/onChange",
-                                    contentType: "application/json",
-                                    subprotocol: "longpoll",
-                                    op: ["subscribeevent"],
-                                },
-                                {
-                                    href:
-                                        "http://[localhost]:8081/TestServient/events/onChange",
-                                    contentType: "application/json",
-                                    subprotocol: "longpoll",
-                                    op: ["subscribeevent"],
-                                },
-                                {
-                                    href:
                                         "coap://localhost:8082/TestServient/ev/onChange",
-                                    contentType: "application/json",
-                                    op: "subscribeevent",
-                                },
-                                {
-                                    href:
-                                        "coap://[localhost]:8082/TestServient/ev/onChange",
-                                    contentType: "application/json",
-                                    op: "subscribeevent",
-                                },
-                                {
-                                    href:
-                                        "coap://[localhost]:8082/TestServient/ev/onChange",
                                     contentType: "application/json",
                                     op: "subscribeevent",
                                 },
@@ -634,29 +316,7 @@ describe("Action: fastTest", function () {
                                 "writeallproperties",
                                 "writemultipleproperties",
                             ],
-                        },
-                        {
-                            href:
-                                "http://[localhost]:8081/TestServient/all/properties",
-                            contentType: "application/json",
-                            op: [
-                                "readallproperties",
-                                "readmultipleproperties",
-                                "writeallproperties",
-                                "writemultipleproperties",
-                            ],
-                        },
-                        {
-                            href:
-                                "http://[localhost]:8081/TestServient/all/properties",
-                            contentType: "application/json",
-                            op: [
-                                "readallproperties",
-                                "readmultipleproperties",
-                                "writeallproperties",
-                                "writemultipleproperties",
-                            ],
-                        },
+                        }
                     ],
                     securityDefinitions: { nosec_sc: { scheme: "nosec" } },
                 })
