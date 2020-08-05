@@ -1,6 +1,6 @@
 # Web of Things Test Bench
 
-[![Build Status](https://travis-ci.org/tum-esi/testbench.svg?branch=master)](https://travis-ci.org/tum-ei-esi/testbench)
+[![Build Status](https://travis-ci.org/tum-esi/testbench.svg?branch=master)](https://travis-ci.org/tum-esi/testbench)
 
 Tests a WoT Thing by executing interactions automatically, based on its Thing Description.
 
