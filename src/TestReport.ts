@@ -48,16 +48,16 @@ export class Payload {
 
 export class MiniTestReport {
     passed?: boolean; //If used for PropertyTesting each subtest (read, write, subscribe) can fail individually.
-    sent: Payload | string; //timestamp, sentMessage
-    received: Payload | string; //timestamp, receivedMessage
+    sent: Payload | null; //timestamp, sentMessage
+    received: Payload | null; //timestamp, receivedMessage
     result: Result; //resultID, errorMessage
 
     constructor(passed: boolean = null) {
         if (passed != null) {
             this.passed = passed
         }
-        this.sent = "nothing";
-        this.received = "nothing";
+        this.sent = null;
+        this.received = null;
         this.result = null;
     }
 }
@@ -69,12 +69,22 @@ export class ActionTestReportContainer extends InteractionTestReportContainer {
         super(testCycle, testScenario, name);
         this.report = new MiniTestReport();
     }
+
+    getPrintableMessage() {
+
+    }
 }
 
 export class PropertyTestReportContainer extends InteractionTestReportContainer{
     readPropertyReport?: MiniTestReport;
     writePropertyReport?: MiniTestReport;
-    subscribePropertyReport?: MiniTestReport;
+    observePropertyReport?: MiniTestReport;
+}
+
+export class EventTestReportContainer extends InteractionTestReportContainer {
+    subscribeEventReport: MiniTestReport; //in and output
+    eventDataReport: MiniTestReport; //only output
+    cancelEventReport: MiniTestReport; //in and output
 }
 
 export class TestReport {

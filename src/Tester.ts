@@ -298,7 +298,7 @@ export class Tester {
 						if (errorsProp2) { //meaning that there is a validation error
 							if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Received second response is not valid for: " + propertyName, errorsProp2);
                             //here for the received, two response values are put
-                            container.writePropertyReport.received = new Payload(responseTimeStamp, JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify(data2) + "]"));
+                            container.writePropertyReport.received = new Payload(responseTimeStamp, data2);
                             container.writePropertyReport.result = new Result(45, "Received second response is not valid, " + JSON.stringify(errorsProp2));
                             self.testReport.addMessage(container);
 							// self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend,
@@ -313,7 +313,7 @@ export class Tester {
                                 if (logMode) console.log('\x1b[36m%s\x1b[0m', "* The value gotten after writing is the same for the property: " + propertyName);
                                 container.passed = true;
                                 container.writePropertyReport.passed = true;
-                                container.writePropertyReport.received = new Payload(responseTimeStamp, JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify(data2) + "]"));
+                                container.writePropertyReport.received = new Payload(responseTimeStamp, data2);
                                 container.writePropertyReport.result = new Result(201);
                                 self.testReport.addMessage(container);
 								// self.testReport.addMessage(testCycle, testScenario, propertyName, true, toSend,
@@ -322,7 +322,7 @@ export class Tester {
 							} else {
 								//maybe the value changed between two requests...
                                 if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Property test of " + propertyName + " is successful: write works, fetch not matching");
-                                container.writePropertyReport.received = new Payload(responseTimeStamp, JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify(data2) + "]"));
+                                container.writePropertyReport.received = new Payload(responseTimeStamp, data2);
                                 container.writePropertyReport.result = new Result(46, "The second get didn't match the write");
                                 self.testReport.addMessage(container);
 								// self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend,
