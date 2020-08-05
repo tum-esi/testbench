@@ -19,14 +19,14 @@ describe("Property: testData", function () {
 });
 
 /**
- * Returns true if at least one testCase failed. Returns false otherwise. Checks all
+ * Returns true if all tests passed. Returns false otherwise. Checks all
  * given TestScenarios.
  * @param {*} res The result of the chai request to check.
  */
-function atLeastOneTestFailed(res) {
+function allTestsPassed(res) {
     let textAnswer = res.res.text; //TestResult as text.
     jsonAnswer = JSON.parse(textAnswer); //TestResult as JSON.
-    //All testCaseResults of every TestScenario is pushed to an Array.
+    //All testCaseResults of every TestScenario are pushed to an Array.
     let resultArray = new Array(jsonAnswer[0].length * jsonAnswer[0][0].length);
     jsonAnswer[0].forEach((testScenario) => {
         testScenario.forEach((testCase) => {
@@ -34,8 +34,8 @@ function atLeastOneTestFailed(res) {
             resultArray.push(testCase.passed);
         });
     })
-    //If Array contains false at least one test failed.
-    return failedAtLeastOnce = resultArray.includes(false);
+    //If Array does not include false every Tests passed
+    return failedAtLeastOnce = !resultArray.includes(false);
 }
 
 describe("Action: fastTest", function () {
@@ -365,7 +365,7 @@ describe("Action: fastTest", function () {
                     },
                 })
                 .end(function (err, res) {
-                    expect(atLeastOneTestFailed(res)).to.be.false;
+                    expect(allTestsPassed(res)).to.be.true;
                     expect(err).to.be.null;
                     done();
                 });
