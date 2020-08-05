@@ -43,217 +43,208 @@ srv.addClientFactory(new CoapClientFactory());
 srv.addClientFactory(new CoapsClientFactory());
 srv.addClientFactory(new MqttClientFactory());
 
-
 srv.start().then(WoT => {
     console.log('\x1b[36m%s\x1b[0m', '* TestBench servient started');
-    let TestBenchT = WoT.produce({
+    WoT.produce({
         title: tbName,
-        description: "WoT Test Bench tests a Thing by getting its TD" + 
-						"and executing all of its interactions with data" + 
-						"generated in runtime. For simple use, invoke the" +
-						"fastTest action with the TD of your Thing as" +
-						"input data",
-		"@context": ["https://www.w3.org/2019/wot/td/v1",                       
-                {"cov": "http://www.example.org/coap-binding#"}]
-    });
-    let tester: Tester = null;
-    TestBenchT.addProperty("testConfig", {
-        type: "string",
-        writable: true,
-        description: "(Optional) Writing to this property configures" +
-						"the Test Bench. TDs with security schemes" +
-						"require this property to contain the security" +
-						"credentials"
-    }, testConfig);
-    TestBenchT.addProperty("testBenchStatus", {
-        type: "string",
-        writable: false,
-        description: "(not finished) Shows the status of the test"+ 
-					"bench whether it is currently testing a device or not"
-    }, "");
-    TestBenchT.addProperty("thingUnderTestTD", {
-        type: "string",
-        writable: true,
-        description: "Write to this property in order to give the" + 
-						"TD of your Thing to test. Not necessary for fastTest"
-    }, "");
-    TestBenchT.addProperty("testData", {
-        type: "string",
-        writable: true,
-        description: "(Optional) This property contains all the data" +
-					"that will be sent by the Test Bench to the Thing" +
-					"under Test. You can also write in custom data"
-    });
-    TestBenchT.addProperty("testReport", {
-        type: "string",
-        writable: false,
-        description: "Contains all of the outputs of the testing." + 
-						"Not necessary for fastTest"
-    });
-
-    TestBenchT.addAction("fastTest", {
-            input: {
-                type: "string"
+        description: "WoT Test Bench tests a Thing by getting its TD" +
+            "and executing all of its interactions with data" +
+            "generated in runtime. For simple use, invoke the" +
+            "fastTest action with the TD of your Thing as" +
+            "input data",
+        "@context": ["https://www.w3.org/2019/wot/td/v1",
+            { "cov": "http://www.example.org/coap-binding#" }],
+        properties: {
+            testConfig: {
+                type: "string",
+                writable: true,
+                description: "(Optional) Writing to this property configures" +
+                    "the Test Bench. TDs with security schemes" +
+                    "require this property to contain the security" +
+                    "credentials"
             },
-            output: {
-                type: "string"
+            testBenchStatus: {
+                type: "string",
+                writable: false,
+                description: "(not finished) Shows the status of the test" +
+                    "bench whether it is currently testing a device or not"
             },
-            description: "Send a TD as input data and it will return" +
-							"a test report once the test has finished"
+            thingUnderTestTD: {
+                type: "string",
+                writable: true,
+                description: "Write to this property in order to give the" +
+                    "TD of your Thing to test. Not necessary for fastTest"
+            },
+            testData: {
+                type: "string",
+                writable: true,
+                description: "(Optional) This property contains all the data" +
+                    "that will be sent by the Test Bench to the Thing" +
+                    "under Test. You can also write in custom data"
+            },
+            testReport: {
+                type: "string",
+                writable: false,
+                description: "Contains all of the outputs of the testing." +
+                    "Not necessary for fastTest"
+            }
         },
-        (thingTD: string) => {
-            //get the input
-            return TestBenchT.properties.thingUnderTestTD.
-					write(thingTD).then(() => {
-                //write it into tutTD prop
-                //call initiate
-                return TestBenchT.actions.initiate.invoke(true).then(() => {
-                    //call testThing
-                    return TestBenchT.actions.testThing.invoke(true).
-																then(() => {
-                        //call testThing
-                        return TestBenchT.properties.testReport.read();
-                        //return the simplified version
+        actions: {
+            fastTest: {
+                input: {
+                    type: "string"
+                },
+                output: {
+                    type: "string"
+                },
+                description: "Send a TD as input data and it will return" +
+                    "a test report once the test has finished"
+            },
+            initiate: {
+                input: {
+                    type: "boolean"
+                }, // true sets logMode to active
+                output: {
+                    type: "string"
+                },
+                description: "By invoking this action, the test bench consumes" +
+                    "the thing under test, generates data to be" +
+                    "sent. Not necessary for fastTest"
+            },
+            testThing: {
+                input: {
+                    type: "boolean"
+                },
+                output: {
+                    type: "boolean"
+                },
+                description: "By invoking this action the testing starts" +
+                    "and produces a test report that can be read." +
+                    "Not necessary for fastTest"
+            }
+        },
+    })
+        .then((TestBenchT) => {
+            let tester: Tester = null;
+            // init property values
+            TestBenchT.writeProperty("testConfig", testConfig);
+            TestBenchT.writeProperty("testBenchStatus", "");
+            TestBenchT.writeProperty("thingUnderTestTD", "");
+
+            // set action handlers
+            TestBenchT.setActionHandler("fastTest", (thingTD: string) => {
+                //get the input
+                return TestBenchT.writeProperty("thingUnderTestTD", thingTD).then(() => {
+                        //write it into tutTD prop
+                        //call initiate
+                        return TestBenchT.invokeAction("initiate", true).then(() => {
+                            //call testThing
+                            return TestBenchT.invokeAction("testThing", true).then(() => {
+                                //call testThing
+                                return TestBenchT.readProperty("testReport");
+                                //return the simplified version
+                            });
+                        });
                     });
-                });
             });
+            /* update config file, gets tutTD if not "", consume tutTD, adds
+             Tester, set generated data to testData: */
+            TestBenchT.setActionHandler("initiate", (logMode: boolean) => {
+                return TestBenchT.writeProperty("testReport", "[]").then(() => {
+                    return TestBenchT.readProperty("testConfig").then((newConf) => {
+                            testConfig = JSON.parse(JSON.stringify(newConf));
 
-
-
-        });
-
-    /* update config file, gets tutTD if not "", 
-		consume tutTD, adds Tester, set generated data to testData: */
-    TestBenchT.addAction("initiate", {
-            input: {
-                type: "boolean"
-            }, // true sets logMode to active
-            output: {
-                type: "string"
-            },
-            description: "By invoking this action, the test bench consumes" + 
-							"the thing under test, generates data to be" + 
-							"sent. Not necessary for fastTest"
-        },
-        (logMode: boolean) => {
-            return TestBenchT.properties.testReport.write("[]").then(() => {
-                return TestBenchT.properties.testConfig.read().
-														then((newConf) => {
-                    testConfig = JSON.parse(JSON.stringify(newConf));
-
-                    /* fs.writeFileSync('./default-config.json', 
-								JSON.stringify(testConfig, null, ' ')); */
-                    srv.addCredentials(testConfig.credentials);
-                    return TestBenchT.properties.thingUnderTestTD.read().
-															then((tutTD) => {
-                        tutTD = JSON.stringify(tutTD);
-                        if (tutTD != "") {
-                            let tutT: Thing = TDParser.parseTD(tutTD);
-                            tutName = tutT.id;
-                            let consumedTuT: wot.ConsumedThing = 
-														WoT.consume(tutTD);
-                            tester = new Tester(testConfig, 
-													tutT, 
-													consumedTuT);
-                            let returnCheck = tester.initiate(logMode);
-                            if (returnCheck == 0) {
-                                return TestBenchT.properties.testData.
-										write(tester.codeGen.requests).
-																then(() => {
-                                    return "Initiation was successful."
-                                }).catch(() => {
-                                    console.log('\x1b[36m%s\x1b[0m', 
-												"* :::::ERROR::::: Init:" + 
-											"Set testData property failed");
+                            /* fs.writeFileSync('./default-config.json', 
+                                        JSON.stringify(testConfig, null, ' ')); */
+                            srv.addCredentials(testConfig.credentials);
+                        return TestBenchT.readProperty("thingUnderTestTD").then(async (tutTD) => {
+                            if (JSON.stringify(tutTD) != "") {
+                                let consumedTuT: wot.ConsumedThing = await WoT.consume(tutTD);
+                                tester = new Tester(testConfig, consumedTuT);
+                                let returnCheck = tester.initiate(logMode);
+                                if (returnCheck == 0) {
+                                    return TestBenchT.writeProperty("testData", tester.codeGen.requests).then(() => {
+                                        return "Initiation was successful."
+                                    }).catch(() => {
+                                        console.log('\x1b[36m%s\x1b[0m',
+                                            "* :::::ERROR::::: Init:" +
+                                            "Set testData property failed");
+                                        return "Initiation failed";
+                                    });
+                                } else if (returnCheck == 1) {
+                                    return TestBenchT.writeProperty("testData", tester.codeGen.requests).then(() => {
+                                            return "Initiation was successful," +
+                                                "but no interactions were found."
+                                        }).catch(() => {
+                                            console.log('\x1b[36m%s\x1b[0m',
+                                                "* :::::ERROR:::::" +
+                                                "Init: Set testData" +
+                                                "property failed");
+                                            return "Initiation failed";
+                                        });
+                                } else {
                                     return "Initiation failed";
-                                });
-                            } else if (returnCheck == 1) {
-                                return TestBenchT.properties.testData.
-											write(tester.codeGen.requests).
-																then(() => {
-                                    return "Initiation was successful," + 
-											"but no interactions were found."
-                                }).catch(() => {
-                                    console.log('\x1b[36m%s\x1b[0m', 
-												"* :::::ERROR:::::" +
-												"Init: Set testData" +
-												"property failed");
-                                    return "Initiation failed";
-                                });
+                                }
                             } else {
-                                return "Initiation failed";
+                                return "Initiation failed," +
+                                    "Thing under Test is an empty string.";
                             }
-                        } else {
-                            return "Initiation failed," +
-									"Thing under Test is an empty string.";
-                        }
-                    }).catch(() => {
-                        console.log('\x1b[36m%s\x1b[0m', 
-										"* :::::ERROR::::: Init: Get" +
-											"tutTD property failed");
-                        return "Initiation failed";
-                    });
+                        }).catch(() => {
+                            console.log('\x1b[36m%s\x1b[0m',
+                                "* :::::ERROR::::: Init: Get" +
+                                "tutTD property failed");
+                            return "Initiation failed";
+                        });
+                        }).catch(() => {
+                            console.log('\x1b[36m%s\x1b[0m',
+                                "* :::::ERROR::::: Init: Get" +
+                                "config property failed");
+                            return "Initiation failed";
+                        });
                 }).catch(() => {
-                    console.log('\x1b[36m%s\x1b[0m', 
-								"* :::::ERROR::::: Init: Get" +
-										"config property failed");
-                    return "Initiation failed";
+                    console.log('\x1b[36m%s\x1b[0m',
+                        "* :::::ERROR::::: Init: write" +
+                        "testReport property failed");
+                    return "Could not reinitialize the test report";
                 });
-            }).catch(() => {
-                console.log('\x1b[36m%s\x1b[0m', 
-						"* :::::ERROR::::: Init: write" +
-								"testReport property failed");
-                return "Could not reinitialize the test report";
             });
-        });
-    // Tests the tut. If input true, logMode is on.
-    TestBenchT.addAction("testThing", {
-            input: {
-                type: "boolean"
-            },
-            output: {
-                type: "boolean"
-            },
-            description: "By invoking this action the testing starts" +
-								"and produces a test report that can be read." +
-								"Not necessary for fastTest"
-        },
-        (logMode: boolean) => {
-            return TestBenchT.properties.testData.read().then((data) => {
-                fs.writeFileSync(testConfig.TestDataLocation, 
-									JSON.stringify(data, 
-									null, 
-									' '));
-                console.log('\x1b[36m%s\x1b[0m', 
-							'* ------ START OF TESTTHING METHOD ------');
-                return tester.testThing(testConfig.Repetitions, 
-											testConfig.Scenarios, 
-											logMode).then(testReport => {
-                    testReport.printResults();
-                    testReport.storeReport(testConfig.TestReportsLocation, 
-														tutName);
-                    return TestBenchT.properties.testReport.
-									write(testReport.getResults()).
-											then(() => true, () => false);
+            // Tests the tut. If input true, logMode is on.
+            TestBenchT.setActionHandler("testThing", (logMode: boolean) => {
+                return TestBenchT.readProperty("testData").then((data) => {
+                    fs.writeFileSync(testConfig.TestDataLocation,
+                        JSON.stringify(data,
+                            null,
+                            ' '));
+                    console.log('\x1b[36m%s\x1b[0m',
+                        '* ------ START OF TESTTHING METHOD ------');
+                    return tester.testThing(testConfig.Repetitions,
+                        testConfig.Scenarios,
+                        logMode).then(testReport => {
+                            testReport.printResults();
+                            testReport.storeReport(testConfig.TestReportsLocation,
+                                tutName);
+                            return TestBenchT.writeProperty("testReport", testReport.getResults()).then(() => true, () => false);
+                        }).catch(() => {
+                            console.log('\x1b[36m%s\x1b[0m',
+                                "* :::::ERROR::::: TestThing" +
+                                "method went wrong");
+                            return false;
+                        });
                 }).catch(() => {
-                    console.log('\x1b[36m%s\x1b[0m', 
-									"* :::::ERROR::::: TestThing" + 
-									"method went wrong");
+                    console.log('\x1b[36m%s\x1b[0m',
+                        "* :::::ERROR::::: TestThing: Get" +
+                        "test data property failed");
                     return false;
                 });
-            }).catch(() => {
-                console.log('\x1b[36m%s\x1b[0m', 
-									"* :::::ERROR::::: TestThing: Get" + 
-									"test data property failed");
-                return false;
             });
-        });
 
-    TestBenchT.expose().then(() => {
-        console.info(TestBenchT.title + " ready");
-    });
-}).catch(err => {
-    console.log('\x1b[36m%s\x1b[0m', 
-					"* :::::ERROR::::: Servient" +
-							"startup failed");
+            TestBenchT.expose().then(() => {
+                console.info(TestBenchT.getThingDescription().title + " ready");
+            });
+        })
+        .catch(err => {
+            console.log('\x1b[36m%s\x1b[0m',
+                "* :::::ERROR::::: Servient" +
+                "startup failed");
+        })
 });

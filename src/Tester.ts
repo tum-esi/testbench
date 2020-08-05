@@ -17,16 +17,16 @@ import { testConfig } from './utilities'
 var timers = require("timers")
 
 export class Tester {
-	private tutTd: Thing; //the TD that belongs to the Thing under Test
+	private tutTd: wot.ThingDescription; //the TD that belongs to the Thing under Test
 	private testConfig: testConfig; //the file that describes various locations of the files that are needed. Must be configured by the user
 	public codeGen: Utils.CodeGenerator; //this will generate the requests to be sent to the tut
 	public testReport: TestReport; //after the testing, this will contain the bare results
 	private tut: wot.ConsumedThing; // the thing under test
 
 	//this is a basic constructor, it is planned to change to incorporate more things into the initiate function
-	constructor(tC: testConfig, tutTd: Thing, tut: wot.ConsumedThing) {
+	constructor(tC: testConfig, tut: wot.ConsumedThing) {
 		this.testConfig = tC;
-		this.tutTd = tutTd;
+		this.tutTd = tut.getThingDescription();
 		this.tut = tut;
 	}
 
@@ -54,7 +54,7 @@ export class Tester {
 	}
 
 	// -----TODO thing of timers to cause event
-	public testEvent(testCycle: number, actionName: string, interaction: wot.EventFragment, testScenario: number, interactionIndex: number,logMode: boolean): Promise<any> {
+	public testEvent(testCycle: number, actionName: string, interaction: any, testScenario: number, interactionIndex: number,logMode: boolean): Promise<any> {
 		// testing event function
 
 		return new Promise(function (resolve, reject) {
@@ -69,7 +69,7 @@ export class Tester {
 	testScenario number is related to the json file that contains the requests to be sent. In this file, in the array of interaction names,
 	you can put different json values that will be sent to the thing
 	 */
-	public testAction(testCycle: number, actionName: string, interaction: wot.ActionFragment, testScenario: number, interactionIndex: number, logMode: boolean): Promise<any> {
+	public testAction(testCycle: number, actionName: string, interaction: any, testScenario: number, interactionIndex: number, logMode: boolean): Promise<any> {
 		var self = this;
 		return new Promise(function (resolve, reject) {
 			let toSend: JSON;
@@ -101,7 +101,7 @@ export class Tester {
 				// Apply a timeout of 5 seconds to doSomething
 				// TO DO: no repeat the same thing twice
 				if(toSend!=null){
-					let invokeAction = Utils.promiseTimeout(self.testConfig.ActionTimeout, self.tut.actions[actionName].invoke(toSend));
+					let invokeAction = Utils.promiseTimeout(self.testConfig.ActionTimeout, self.tut.invokeAction(actionName, toSend));
 					invokeAction.then((res: any) => {
 						if (interaction.hasOwnProperty('output')) { //the action doesnt have to answer something back
 							let answer = res;
@@ -136,7 +136,7 @@ export class Tester {
 						resolve(true);
 					});
 				} else {
-					let invokeAction = Utils.promiseTimeout(self.testConfig.ActionTimeout, self.tut.actions[actionName].invoke());
+					let invokeAction = Utils.promiseTimeout(self.testConfig.ActionTimeout, self.tut.invokeAction(actionName));
 					invokeAction.then((res: any) => {
 						if (interaction.hasOwnProperty('output')) { //the action doesnt have to answer something back
 							let answer = res;
@@ -188,7 +188,7 @@ export class Tester {
 		Then property values are fetched again. Here it is hoped that the value is the same as the written one but if the value changes in between it will
 		be different. This is recorded as an error but has a specific error case number. This basically tests if the property is really writable
 	 */
-	public testProperty(testCycle: number, propertyName: string, interaction: wot.PropertyFragment, testScenario: number, interactionIndex:number, logMode: boolean): Promise<any> {
+	public testProperty(testCycle: number, propertyName: string, interaction: any, testScenario: number, interactionIndex:number, logMode: boolean): Promise<any> {
 		var self = this;
 		return new Promise(function (resolve, reject) {
 			let isWritable: boolean = !(interaction.readOnly);
@@ -203,7 +203,7 @@ export class Tester {
 			if (logMode && isWritable) console.log('\x1b[36m%s\x1b[0m', "* Property is writable");
 			if (logMode && !isWritable) console.log('\x1b[36m%s\x1b[0m', "* Property not writable");
 			if (isReadable) {
-				let curPropertyData: any = self.tut.properties[propertyName].read().then((res: any) => {
+				let curPropertyData: any = self.tut.readProperty(propertyName).then((res: any) => {
 					data = res;
 					if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* DATA AFTER FIRST READ PROPERTY:", JSON.stringify(data, null, ' '));
 					//validating the property value with its Schemas
@@ -256,14 +256,14 @@ export class Tester {
 
 				//setting the property, aka writing into it
 				if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Writing to property " + propertyName + " with data:", JSON.stringify(toSend, null, ' '));
-				self.tut.properties[propertyName].write(toSend).then(() => {
+				self.tut.writeProperty(propertyName, toSend).then(() => {
 					if (!isReadable) {
 						if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Property test of " + propertyName + " is succesful: no read")
 						self.testReport.addMessage(testCycle, testScenario, propertyName, true, toSend, JSON.parse("\"nothing\""), 200, "");
 						resolve(true);
 					}
 					//now reading and hoping to get the same value
-					let curPropertyData2: any = self.tut.properties[propertyName].read().then((res2: any) => {
+					let curPropertyData2: any = self.tut.readProperty(propertyName).then((res2: any) => {
 						data2 = res2;
 						if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* For the second one, gotten propery data is:", JSON.stringify(data2, null, ' '));
 						//validating the gotten value (this shouldnt be necessary since the first time was correct but it is here nonetheless)
