@@ -8,8 +8,6 @@ import { MqttClientFactory } from "@node-wot/binding-mqtt";
 import { CoapServer } from "@node-wot/binding-coap";
 import { CoapClientFactory } from "@node-wot/binding-coap";
 import { CoapsClientFactory } from "@node-wot/binding-coap";
-import { Thing } from "@node-wot/td-tools";
-import * as TDParser from '@node-wot/td-tools';
 import { Tester } from './Tester';
 import { testConfig } from './utilities';
 import { parseArgs, configPath, tdPaths } from './config';

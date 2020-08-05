@@ -1,6 +1,4 @@
-import * as TDParser from '@node-wot/td-tools';
 import * as wot from 'wot-typescript-definitions';
-import { Thing } from '@node-wot/td-tools';
 var fs = require('fs');
 var mkdirp = require("mkdirp");
 var jsf = require('json-schema-faker');
