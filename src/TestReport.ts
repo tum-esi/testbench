@@ -1,14 +1,82 @@
 import fs = require('fs');
+import { PassThrough } from 'stream';
 var mkdirp = require("mkdirp");
 
 interface message {
     name?: string;
-    result?: boolean;
+    passed?: boolean;
     sent?: JSON;
     received?: JSON;
-    errorId?: number;
-    error?: string;
+    resultId?: number;
+    errorMessage?: string;
 }
+
+
+export class InteractionTestReportContainer {
+    testCycle: number;
+    testScenario: number;
+    name: string;
+    passed: boolean;
+
+    constructor(testCycle: number, testScenario: number, name: string) {
+        this.testCycle = testCycle;
+        this.testScenario = testScenario;
+        this.name = name;
+        this.passed = false;
+    }
+}
+
+export class Result {
+    id: number;
+    message?: string;
+
+    constructor(id: number, message?: string) {
+        this.id = id;
+        this.message = message;
+    }
+}
+
+export class Payload {
+    timestamp: Date;
+    payload: JSON;
+
+    constructor(timestamp: Date, payload: JSON) {
+        this.timestamp = timestamp;
+        this.payload = payload;
+    }
+}
+
+export class MiniTestReport {
+    passed?: boolean; //If used for PropertyTesting each subtest (read, write, subscribe) can fail individually.
+    sent: Payload | string; //timestamp, sentMessage
+    received: Payload | string; //timestamp, receivedMessage
+    result: Result; //resultID, errorMessage
+
+    constructor(passed: boolean = null) {
+        if (passed != null) {
+            this.passed = passed
+        }
+        this.sent = "nothing";
+        this.received = "nothing";
+        this.result = null;
+    }
+}
+
+export class ActionTestReportContainer extends InteractionTestReportContainer {
+    report: MiniTestReport;
+
+    constructor(testCycle: number, testScenario: number, name: string) {
+        super(testCycle, testScenario, name);
+        this.report = new MiniTestReport();
+    }
+}
+
+export class PropertyTestReportContainer extends InteractionTestReportContainer{
+    readPropertyReport?: MiniTestReport;
+    writePropertyReport?: MiniTestReport;
+    subscribePropertyReport?: MiniTestReport;
+}
+
 export class TestReport {
     private results: Array<any>; //stores all the sent and received messages as well as the errors being produced
     private testCycleCount: number; //incremented at each repetition of a group of test scenarios
@@ -56,11 +124,23 @@ export class TestReport {
     //this adds a message exchange
     //tha name of the message and the results of the exchange should be entered in the arguments
     //after getting all the arguments, these arguments are transformed into a JSON object that represents the exchange that has just occurred
-    public addMessage(testCycle:number, testScenario:number, name: string, result: boolean, sent: JSON, received: JSON, errorId: number, error: string): void {
+    //public addMessage(testCycle:number, testScenario:number, name: string, result: boolean, sent: JSON, received: JSON, errorId: number, error: string): void {
+    public addMessage(testContainer: any): void {
         //message to be built
-        let curMessage: message = { "name": name, "result": result, "sent": sent, "received": received, "errorId": errorId, "error": error };
+        // let curMessage: message = {
+        //     "name": testResult.actionName,
+        //     "result": testResult.hasPassed,
+        //     "sent": testResult.sentMessage[1],
+        //     "received": testResult.receivedMessage[1],
+        //     "resultId": testResult.resultId,
+        //     "errorMessage": testResult.resultMessage
+        // };
         //filling the results
-        this.results[testCycle][testScenario].push(curMessage);
+        let testCycle = testContainer.testCycle;
+        let testScenario = testContainer.testScenario;
+        delete testContainer.testCycle;
+        delete testContainer.testScenario;
+        this.results[testCycle][testScenario].push(testContainer);
     }
 
     public printResults(): void {
@@ -87,7 +167,7 @@ export class TestReport {
                     for (var k = 0; k < curSceLength; k++) {
                         let curMessage: message = currentScenario[k];
                         //if the results of the single test is false, the number to be displayed in the table is incremented
-                        let curResult: boolean = curMessage.result;
+                        let curResult: boolean = curMessage.passed;
                         if (!curResult) {
                             fails++;
                         }
