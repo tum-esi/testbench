@@ -1,5 +1,4 @@
 import fs = require('fs');
-import  {Tester} from "./Tester"
 var mkdirp = require("mkdirp");
 
 interface message {
@@ -56,7 +55,7 @@ export class TestReport {
 
     //this adds a message exchange
     //tha name of the message and the results of the exchange should be entered in the arguments
-    //after getting all the arguments, these arguments are transformed into a JSON object that represents the exchange that has just occured
+    //after getting all the arguments, these arguments are transformed into a JSON object that represents the exchange that has just occurred
     public addMessage(testCycle:number, testScenario:number, name: string, result: boolean, sent: JSON, received: JSON, errorId: number, error: string): void {
         //message to be built
         let curMessage: message = { "name": name, "result": result, "sent": sent, "received": received, "errorId": errorId, "error": error };
@@ -127,7 +126,7 @@ export class TestReport {
                 console.log("Report stored in "+location+"1-"+tutName+"-testReport.json");
             }
         } catch (error) {
-            console.log("Report couldnt be stored");
+            console.log("Report could not be stored");
         }
 
 

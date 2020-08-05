@@ -6,6 +6,7 @@
     "lib": ["DOM","ES2015"],
     "outDir": "dist",
     "moduleResolution": "node",
-    "baseUrl": "src"
+    "baseUrl": "src",
+    "sourceMap": true
   }
 }

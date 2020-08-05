@@ -1,6 +1,4 @@
-import * as TDParser from '@node-wot/td-tools';
 import * as wot from 'wot-typescript-definitions';
-import { Thing } from '@node-wot/td-tools';
 var fs = require('fs');
 var mkdirp = require("mkdirp");
 var jsf = require('json-schema-faker');
@@ -34,9 +32,9 @@ export interface testConfig {
 
 // -------------------------- FAKE DATA GENERATION ---------------------------------
 export class CodeGenerator {
-    private td: Thing;
+    private td: wot.ThingDescription;
     public requests: any;
-    constructor(tdesc: Thing, testConf: any) {
+    constructor(tdesc: wot.ThingDescription, testConf: any) {
         this.td = tdesc;
         this.generateFakeData(testConf, tdesc);
         this.requests = this.getRequests(testConf.TestDataLocation);
@@ -50,7 +48,7 @@ export class CodeGenerator {
         }
     }
     // generates fake data and stores it to config TestDataLocation location
-    public generateFakeData(testConf: any, tdesc: Thing) {
+    public generateFakeData(testConf: any, tdesc: wot.ThingDescription) {
         // create interaction list: no optimized soluton: -----------
         let requestList = [];
         for (var key in tdesc.properties) {
@@ -114,7 +112,7 @@ export function validateResponse(responseName: string, response: JSON, schemaLoc
 // ------------------------ SCHEMA GENERATION ------------------------------------
 
 // extracts json schema from property
-function extractSchema(fragment: wot.PropertyFragment | wot.EventFragment) {
+function extractSchema(fragment: any) {
     let extractedSchema;
     if (fragment.type == 'object') {
         if (fragment.hasOwnProperty('properties')) {
@@ -164,7 +162,7 @@ function writeSchema(name, dataSchema, schemaLocationR, interaction) {
     fs.writeFileSync(writeLoc, schema);
 }
 // generates schemas from all interactions
-export function generateSchemas(td: Thing, schemaLocation: string, logMode: boolean): number {
+export function generateSchemas(td: wot.ThingDescription, schemaLocation: string, logMode: boolean): number {
     let schemaLocationReq = schemaLocation + 'Requests/';
     let schemaLocationResp = schemaLocation + 'Responses/';
     let reqSchemaCount : number = 0;
@@ -227,7 +225,7 @@ export function generateSchemas(td: Thing, schemaLocation: string, logMode: bool
 }
 
 // --------------------------- UTILITY FUNCTIONS -------------------------------------
-export function getInteractionByName(td: Thing, name: string): [string, wot.PropertyFragment | wot.ActionFragment | wot.EventFragment] {
+export function getInteractionByName(td: wot.ThingDescription, name: string): [string, any] {
     for (var key in td.properties) {
         if (key == name) {
             return ['Property', td.properties[key]];
