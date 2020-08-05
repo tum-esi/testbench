@@ -1,8 +1,3 @@
-#!/usr/bin/env node
-/********************************************************************************
- * Copyright (c) 2019 - www.esi.ei.tum.de
- * MIT Licence - see LICENSE
- ********************************************************************************/
 //testConfig for config file structure
 const inquirer = require("inquirer");
 export const parseArgs = (tDescPaths: Array<string>) => {
