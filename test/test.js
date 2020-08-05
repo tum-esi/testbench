@@ -17,6 +17,27 @@ describe("Property: testData", function () {
         });
     });
 });
+
+/**
+ * Returns true if at least one testCase failed. Returns false otherwise. Checks all
+ * given TestScenarios.
+ * @param {*} res The result of the chai request to check.
+ */
+function atLeastOneTestFailed(res) {
+    let textAnswer = res.res.text; //TestResult as text.
+    jsonAnswer = JSON.parse(textAnswer); //TestResult as JSON.
+    //All testCaseResults of every TestScenario is pushed to an Array.
+    let resultArray = new Array(jsonAnswer[0].length * jsonAnswer[0][0].length);
+    jsonAnswer[0].forEach((testScenario) => {
+        testScenario.forEach((testCase) => {
+            //console.log(testCase.passed);
+            resultArray.push(testCase.passed);
+        });
+    })
+    //If Array contains false at least one test failed.
+    return failedAtLeastOnce = resultArray.includes(false);
+}
+
 describe("Action: fastTest", function () {
     describe("Test entire system", function () {
         it("Fast Test", function (done) {
@@ -56,7 +77,7 @@ describe("Action: fastTest", function () {
                                         "coap://localhost:8082/TestServient/pr/display",
                                     contentType: "application/json",
                                     op: ["readproperty", "writeproperty"],
-                                }
+                                },
                             ],
                         },
                         counter: {
@@ -84,15 +105,13 @@ describe("Action: fastTest", function () {
                                         "coap://localhost:8082/TestServient/pr/counter",
                                     contentType: "application/json",
                                     op: ["readproperty", "writeproperty"],
-                                }
+                                },
                             ],
                         },
                         temperature: {
                             type: "number",
-                            writable: false,
                             observable: true,
-                            readOnly: false,
-                            writeOnly: false,
+                            readOnly: true,
                             forms: [
                                 {
                                     href:
@@ -112,7 +131,7 @@ describe("Action: fastTest", function () {
                                         "coap://localhost:8082/TestServient/pr/temperature",
                                     contentType: "application/json",
                                     op: ["readproperty", "writeproperty"],
-                                }
+                                },
                             ],
                         },
                         testObject: {
@@ -123,7 +142,9 @@ describe("Action: fastTest", function () {
                                     minimum: 0,
                                     maximum: 100,
                                 },
-                                status: { type: "string" },
+                                status: {
+                                    type: "string",
+                                },
                             },
                             writable: true,
                             readOnly: false,
@@ -141,12 +162,14 @@ describe("Action: fastTest", function () {
                                         "coap://localhost:8082/TestServient/pr/testObject",
                                     contentType: "application/json",
                                     op: ["readproperty", "writeproperty"],
-                                }
+                                },
                             ],
                         },
                         testArray: {
                             type: "array",
-                            items: { type: "number" },
+                            items: {
+                                type: "number",
+                            },
                             writable: true,
                             readOnly: false,
                             writeOnly: false,
@@ -163,13 +186,15 @@ describe("Action: fastTest", function () {
                                         "coap://localhost:8082/TestServient/pr/testArray",
                                     contentType: "application/json",
                                     op: ["readproperty", "writeproperty"],
-                                }
+                                },
                             ],
                         },
                     },
                     actions: {
                         setCounter: {
-                            input: { type: "number" },
+                            input: {
+                                type: "number",
+                            },
                             forms: [
                                 {
                                     href:
@@ -189,7 +214,9 @@ describe("Action: fastTest", function () {
                             safe: false,
                         },
                         getTemperature: {
-                            output: { type: "number" },
+                            output: {
+                                type: "number",
+                            },
                             forms: [
                                 {
                                     href:
@@ -209,8 +236,12 @@ describe("Action: fastTest", function () {
                             safe: false,
                         },
                         setDisplay: {
-                            input: { type: "string" },
-                            output: { type: "string" },
+                            input: {
+                                type: "string",
+                            },
+                            output: {
+                                type: "string",
+                            },
                             forms: [
                                 {
                                     href:
@@ -238,7 +269,9 @@ describe("Action: fastTest", function () {
                                         minimum: 0,
                                         maximum: 100,
                                     },
-                                    status: { type: "string" },
+                                    status: {
+                                        type: "string",
+                                    },
                                 },
                             },
                             forms: [
@@ -260,10 +293,17 @@ describe("Action: fastTest", function () {
                             safe: false,
                         },
                         setTestArray: {
-                            input: { type: "array", items: { type: "number" } },
+                            input: {
+                                type: "array",
+                                items: {
+                                    type: "number",
+                                },
+                            },
                             output: {
                                 type: "array",
-                                items: { type: "number" },
+                                items: {
+                                    type: "number",
+                                },
                             },
                             forms: [
                                 {
@@ -316,14 +356,16 @@ describe("Action: fastTest", function () {
                                 "writeallproperties",
                                 "writemultipleproperties",
                             ],
-                        }
+                        },
                     ],
-                    securityDefinitions: { nosec_sc: { scheme: "nosec" } },
+                    securityDefinitions: {
+                        nosec_sc: {
+                            scheme: "nosec",
+                        },
+                    },
                 })
                 .end(function (err, res) {
-                    console.log(res);
-                    let test = JSON.stringify(res).includes("passed");
-                    expect(test).to.be.false;
+                    expect(atLeastOneTestFailed(res)).to.be.false;
                     expect(err).to.be.null;
                     done();
                 });
