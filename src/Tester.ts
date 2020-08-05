@@ -1,5 +1,5 @@
 /*
-This class is used for testing an IoT thing that hosts a Thing Description. 
+This class is used for testing an IoT thing that hosts a Thing Description.
 The testing is based on the Thing Description but the configuration needs to be made with the test-config file.
 This file has to be in the parent directory and needs to have the interface testConfig
 Also a file with the contents of the requests need to be provided, the location should be specified in the test config file.
@@ -75,7 +75,7 @@ export class Tester {
 	}
 
 	/*
-	This method test the action given in the parameters. 
+	This method test the action given in the parameters.
 	logMode toggles between outputting every single step and error into the terminal. TRUE outputs to the terminal
 	testScenario number is related to the json file that contains the requests to be sent. In this file, in the array of interaction names,
 	you can put different json values that will be sent to the thing
@@ -85,7 +85,7 @@ export class Tester {
 		return new Promise(function (resolve, reject) {
 			let toSend: JSON;
 			let answer: JSON;
-			//generating the message to send 
+			//generating the message to send
 			try {
 				toSend = self.codeGen.findRequestValue(self.testConfig.TestDataLocation, testScenario, interactionIndex, actionName);
 				if (logMode) console.log('\x1b[36m%s%s\x1b[0m', '* Created value to send :', JSON.stringify(toSend, null, ' '));
@@ -188,7 +188,7 @@ export class Tester {
 						if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is valid for: " + propertyName);
 					}
 					if (!isWritable) {
-						// if it is not writable, we are done here! 
+						// if it is not writable, we are done here!
 						if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Property test of " + propertyName + " is successful: no write, first response is schema valid")
 						self.testReport.addMessage(testCycle, testScenario, propertyName, true, JSON.parse("\"nothing\""), data, 200, "");
 						resolve(true);
@@ -204,7 +204,7 @@ export class Tester {
 			if (isWritable) { //if we can write into the property, it means that we can test whether we can write and get back the same type
 				//the same value will be expected but a special error case will be written if it is not the same since maybe the value is changing very fast
 				if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Testing the write functionality for:", propertyName);
-				//generating the message to send 
+				//generating the message to send
 				try {
 					toSend = self.codeGen.findRequestValue(self.testConfig.TestDataLocation, testScenario, interactionIndex, propertyName);
 					if (logMode) console.log('\x1b[36m%s%s\x1b[0m', '* Created value to send:', JSON.stringify(toSend, null, ' '));
@@ -269,7 +269,7 @@ export class Tester {
 						}
 					}).catch((error: any) => { //problem in the node-wot level
 						if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Problem second time fetching property " + propertyName + "in the second get");
-						self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""), 
+						self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""),
 							JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify("\"nothing\"") + "]"), 31,
 							"Could not fetch property in the second get" + error);
 						reject(true);
@@ -379,7 +379,7 @@ export class Tester {
 	}
 
 	/*
-		This is the action that is accessible from the Thing Description. 
+		This is the action that is accessible from the Thing Description.
 		Meaning that, after consuming the test bench, this action can be invoked to test the entirety of the Thing with many test scenarios and repetitions
 		There is only a simple, repetitive call to test Scenario with adding arrays into the test report in between
 		Also according to the repetition number specified in the test config, the same test can be done multiple times.

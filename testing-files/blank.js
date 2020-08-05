@@ -28,7 +28,7 @@ description: "thing that implements event mechanism",
   thing.expose().then(() => {
     console.info(thing.title + " ready");
   });
-  
+
   setInterval( async () => {
     let mock = Math.random()*100;
     thing.writeProperty("temperature", mock);
@@ -38,7 +38,7 @@ description: "thing that implements event mechanism",
       thing.emitEvent("onchange");
     }
   }, 1000);
-  
+
 } catch (err) {
    console.log("Script error: " + err);
 }
