@@ -102,7 +102,6 @@ export class Tester {
                 // TODO Ask if null (as off now) or toSend (as off before) should be written for container.report.result
                 container.passed = false;
                 container.report.result = new Result(12, "Cannot create message: " + Error);
-                //self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, JSON.parse("\"nothing\""), 12, "Cannot create message: " + Error);
                 resolve(container);
 			}
 			//validating request against a schema. Validator returns an array that describes the error. This array is empty when there is no error
@@ -113,7 +112,6 @@ export class Tester {
                     if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Created request is not valid for " + actionName + "\nMessage is " + toSend + "\nError is " + errors);
                     container.passed = false;
                     container.report.result = new Result(13, "Created message has bad format: " + JSON.stringify(errors));
-					//self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, JSON.parse("\"nothing\""), 13, "Created message has bad format: " + JSON.stringify(errors));
                     resolve(container);
 				} else {
 					if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Created request is valid for: " + actionName);
@@ -137,7 +135,6 @@ export class Tester {
                             if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Response is not in JSON format");
                             container.passed = false;
                             container.report.result = new Result(15, "Response is not in JSON format: " + error);
-							//self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 15, "Response is not in JSON format: " + error);
                             resolve(container);
 						}
 						//validating the response against its schema, same as before
@@ -146,7 +143,6 @@ export class Tester {
                             if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is not valid for: " + actionName);
                             container.passed = false;
                             container.report.result = new Result(16, "Received response is not valid, " + JSON.stringify(errorsRes));
-							//self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 16, "Received response is not valid, " + JSON.stringify(errorsRes));
                             resolve(container);
 						} else {
 							if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is valid for: " + actionName);
@@ -154,25 +150,21 @@ export class Tester {
 						//if nothing is wrong, putting a good result
                         if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* ", actionName + " is successful");
                         container.report.result = new Result(100);
-						//self.testReport.addMessage(testCycle, testScenario, actionName, true, toSend, answer, 100, "");
                         resolve(container);
 					} else { // in case there is no answer needed it is a successful test as well
                         if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* ", actionName + " is successful without return value");
                         container.report.result = new Result(101, "no return value needed");
-						//self.testReport.addMessage(testCycle, testScenario, actionName, true, toSend, JSON.parse("\"nothing\""), 101, "no return value needed");
                         resolve(container);
 					}
                 }).catch((error) => {
                     container.passed = false;
                     container.report.result = new Result(999, "Invoke Action Error: " + error);
-					//self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 999, "Invoke Action Error: " + error);
                     resolve(container);
 				});
 			} catch (Error) { // in case there is a problem with the invoke of the action
                 if (logMode) console.log("* Response receiving for  " + actionName + "is unsuccessful, continuing with other scenarios");
                 container.passed = false;
                 container.report.result = new Result(10, "Problem invoking the action" + Error);
-				//self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, JSON.parse("\"nothing\""), 10, "Problem invoking the action" + Error);
                 resolve(container);
 			}
 		});
@@ -227,7 +219,6 @@ export class Tester {
                         if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Received response is not valid for: " + propertyName, errorsProp);
                         container.passed = false;
                         container.readPropertyReport.result = new Result(35, "Received response is not valid, " + JSON.stringify(errorsProp));
-                        //self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""), data, 35, "Received response is not valid, " + JSON.stringify(errorsProp));
                     } else {
                         if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is valid for: " + propertyName);
                         container.readPropertyReport.passed = true;
@@ -239,7 +230,6 @@ export class Tester {
                     container.passed = false;
                     container.readPropertyReport.passed = false;
                     container.readPropertyReport.result = new Result(30, "Could not fetch property");
-                    //self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""), JSON.parse("\"nothing\""), 30, "Could not fetch property");
                     return true
                 });
                 return false;
@@ -263,7 +253,6 @@ export class Tester {
                     if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Cannot create message for " + propertyName + ", look at the previous message to identify the problem");
                     container.passed = false;
                     container.writePropertyReport.result = new Result(40, "Cannot create message: " + Error);
-                    //self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend, JSON.parse("\"nothing\""), 40, "Cannot create message: " + Error);
                     return false;
                 }
 
@@ -274,8 +263,6 @@ export class Tester {
                     if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Created request is not valid for " + propertyName + "\nMessage is " + toSend + "\nError is " + errors);
                     container.passed = false;
                     container.readPropertyReport.result = new Result(41, "Created message has bad format: " + JSON.stringify(errors));
-                    // self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend,
-                    // 	JSON.parse("\"nothing\""), 41, "Created message has bad format: " + JSON.stringify(errors));
                     return false;
                 } else {
                     if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Created request is valid for: " + propertyName);
@@ -290,7 +277,6 @@ export class Tester {
                         if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Property test of " + propertyName + " is successful: no read");
                         container.writePropertyReport.passed = true;
                         container.writePropertyReport.result = new Result(200);
-                        //self.testReport.addMessage(testCycle, testScenario, propertyName, true, toSend, JSON.parse("\"nothing\""), 200, "");
                         return false;
                     }
                     //now reading and hoping to get the same value
@@ -307,9 +293,6 @@ export class Tester {
                             container.passed = false;
                             container.writePropertyReport.received = new Payload(responseTimeStamp, data2);
                             container.writePropertyReport.result = new Result(45, "Received second response is not valid, " + JSON.stringify(errorsProp2));
-                            // self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend,
-                            // 	JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify(data2) + "]"), 45,
-                            // 	"Received second response is not valid, " + JSON.stringify(errorsProp2));
                             return false;
                         } else { //if there is no validation error we can test if the value we've gotten is the same as the one we wrote
                             if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received second response is valid for: " + propertyName);
@@ -320,16 +303,11 @@ export class Tester {
                                 if (logMode) console.log('\x1b[36m%s\x1b[0m', "* The value gotten after writing is the same for the property: " + propertyName);
                                 container.writePropertyReport.received = new Payload(responseTimeStamp, data2);
                                 container.writePropertyReport.result = new Result(201);
-                                // self.testReport.addMessage(testCycle, testScenario, propertyName, true, toSend,
-                                // 	JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify(data2) + "]"), 201, "");
                             } else {
                                 //maybe the value changed between two requests...
                                 if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Property test of " + propertyName + " is successful: write works, fetch not matching");
                                 container.writePropertyReport.received = new Payload(responseTimeStamp, data2);
                                 container.writePropertyReport.result = new Result(46, "The second get didn't match the write");
-                                // self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend,
-                                // 	JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify(data2) + "]"), 46,
-                                // 	"The second get didn't match the write");
                             }
                             return false;
                         }
@@ -338,9 +316,6 @@ export class Tester {
                         container.passed = false;
                         container.writePropertyReport.passed = false;
                         container.writePropertyReport.result = new Result(31, "Could not fetch property in the second get" + error);
-                        // self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""),
-                        // 	JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify("\"nothing\"") + "]"), 31,
-                        // 	"Could not fetch property in the second get" + error);
                         return true;
                     });
                 }).catch((error: any) => {
@@ -348,9 +323,6 @@ export class Tester {
                     container.passed = false;
                     container.writePropertyReport.passed = false;
                     container.writePropertyReport.result = new Result(32, "Problem setting property" + Error);
-                    // self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend,
-                    // 	JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify("\"nothing\"") + "]"), 32,
-                    // 	"Problem setting property" + Error);
                     return false;
                 });
             }
@@ -417,11 +389,14 @@ export class Tester {
 			}
 		});
 	}
-	/*
-				This method tests all the messages with the values of one given scenario
-				Actions and Properties are all tested
-				The return value needs to be changed and made into a Promise
-	 */
+    /**
+     * This method tests all the messages with the values of one given scenario
+     * Actions and Properties are all tested
+     * The return value needs to be changed and made into a Promise
+     * @param testCycle The number indicating the testCycle.
+     * @param testScenario The number indicating the testScenario.
+     * @param logMode True if logMode is enabled, false otherwise.
+     */
 	public testScenario(testCycle: number, testScenario: number, logMode: boolean): Promise<any> {
 		var self = this;
 		let interactionList: Array<string> = [];
@@ -471,16 +446,17 @@ export class Tester {
 			});
 		});
 	}
-
-	/*
-		This is the action that is accessible from the Thing Description.
-		Meaning that, after consuming the test bench, this action can be invoked to test the entirety of the Thing with many test scenarios and repetitions
-		There is only a simple, repetitive call to test Scenario with adding arrays into the test report in between
-		Also according to the repetition number specified in the test config, the same test can be done multiple times.
-
-		It return the test report that has all the required functions to display the results
-	 */
-
+    /**
+     * This is the action that is accessible from the Thing Description.
+     * Meaning that, after consuming the test bench, this action can be invoked to test the entirety of the Thing with many test scenarios and repetitions
+     * There is only a simple, repetitive call to test Scenario with adding arrays into the test report in between
+     * Also according to the repetition number specified in the test config, the same test can be done multiple times.
+     *
+     * It return the test report that has all the required functions to display the results
+     * @param repetition The number indicating the repetition.
+     * @param testScenario The number indicating the testScenario.
+     * @param logMode True if logMode is enabled, false otherwise.
+     */
 	public testThing(repetition: number, scenarioNumber: number, logMode: boolean): Promise<TestReport> {
 		var self = this;
 		let reps: Array<number> = [];
