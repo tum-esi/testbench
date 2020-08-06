@@ -93,6 +93,8 @@ export class Tester {
 				if (logMode) console.log('\x1b[36m%s%s\x1b[0m', '* Created value to send :', JSON.stringify(toSend, null, ' '));
 			} catch (Error) {
                 if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Cannot create for " + actionName + ", look at the previous message to identify the problem");
+                // TODO Ask if null (as off now) or toSend (as off before) should be written for container.report.result
+                container.passed = false;
                 container.report.result = new Result(12, "Cannot create message: " + Error);
                 self.testReport.addMessage(container);
                 //self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, JSON.parse("\"nothing\""), 12, "Cannot create message: " + Error);
@@ -104,6 +106,7 @@ export class Tester {
 				let errors: Array<any> = Utils.validateRequest(actionName, toSend, self.testConfig.SchemaLocation, "Action");
 				if (errors) { //meaning that there is a validation error
                     if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Created request is not valid for " + actionName + "\nMessage is " + toSend + "\nError is " + errors);
+                    container.passed = false;
                     container.report.result = new Result(13, "Created message has bad format: " + JSON.stringify(errors));
                     self.testReport.addMessage(container);
 					//self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, JSON.parse("\"nothing\""), 13, "Created message has bad format: " + JSON.stringify(errors));
@@ -119,7 +122,7 @@ export class Tester {
                 const invokedAction = self.tryToInvokeAction(actionName, toSend);
                 invokedAction[1].then((res: any) => {
                     let responseTimeStamp = new Date();
-                    container.report.sent = new Payload(invokedAction[0], toSend);
+                    container.report.sent = new Payload(invokedAction[0], toSend); //sentTimeStamp, Payload
                     if (interaction.hasOwnProperty('output')) { //the action doesn't have to answer something back
                         let answer = res;
                         container.report.received = new Payload(responseTimeStamp, answer);
@@ -128,6 +131,7 @@ export class Tester {
 							let temp: JSON = answer;
 						} catch (error) {
                             if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Response is not in JSON format");
+                            container.passed = false;
                             container.report.result = new Result(15, "Response is not in JSON format: " + error);
                             self.testReport.addMessage(container);
 							//self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 15, "Response is not in JSON format: " + error);
@@ -137,6 +141,7 @@ export class Tester {
 						let errorsRes: Array<any> = Utils.validateResponse(actionName, answer, self.testConfig.SchemaLocation, 'Action');
 						if (errorsRes) { //meaning that there is a validation error
                             if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is not valid for: " + actionName);
+                            container.passed = false;
                             container.report.result = new Result(16, "Received response is not valid, " + JSON.stringify(errorsRes));
                             self.testReport.addMessage(container);
 							//self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 16, "Received response is not valid, " + JSON.stringify(errorsRes));
@@ -146,21 +151,19 @@ export class Tester {
 						}
 						//if nothing is wrong, putting a good result
                         if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* ", actionName + " is successful");
-                        container.passed = true;
                         container.report.result = new Result(100);
                         self.testReport.addMessage(container);
 						//self.testReport.addMessage(testCycle, testScenario, actionName, true, toSend, answer, 100, "");
 						resolve(true);
 					} else { // in case there is no answer needed it is a successful test as well
                         if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* ", actionName + " is successful without return value");
-                        container.passed = true;
                         container.report.result = new Result(101, "no return value needed");
                         self.testReport.addMessage(container);
 						//self.testReport.addMessage(testCycle, testScenario, actionName, true, toSend, JSON.parse("\"nothing\""), 101, "no return value needed");
 						resolve(true);
 					}
                 }).catch((error) => {
-                    container.passed = false; // Necessary if error is thrown after setting passed = true.
+                    container.passed = false;
                     container.report.result = new Result(999, "Invoke Action Error: " + error);
                     self.testReport.addMessage(container);
 					//self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 999, "Invoke Action Error: " + error);
@@ -168,6 +171,7 @@ export class Tester {
 				});
 			} catch (Error) { // in case there is a problem with the invoke of the action
                 if (logMode) console.log("* Response receiving for  " + actionName + "is unsuccessful, continuing with other scenarios");
+                container.passed = false;
                 container.report.result = new Result(10, "Problem invoking the action" + Error);
                 self.testReport.addMessage(container);
 				//self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, JSON.parse("\"nothing\""), 10, "Problem invoking the action" + Error);
@@ -185,17 +189,14 @@ export class Tester {
 		Then property values are fetched again. Here it is hoped that the value is the same as the written one but if the value changes in between it will
 		be different. This is recorded as an error but has a specific error case number. This basically tests if the property is really writable
 	 */
-	public testProperty(testCycle: number, propertyName: string, interaction: any, testScenario: number, interactionIndex:number, logMode: boolean): Promise<any> {
+    public testProperty(testCycle: number, propertyName: string, interaction: any, testScenario: number, interactionIndex: number, logMode: boolean): Promise<any> {
+
 		var self = this;
         return new Promise(function (resolve, reject) {
-            let container = new PropertyTestReportContainer(testCycle, testScenario, propertyName);
+            var container = new PropertyTestReportContainer(testCycle, testScenario, propertyName);
 			let isWritable: boolean = !(interaction.readOnly);
             let isReadable: boolean = !(interaction.writeOnly);
-			let toSend: JSON;
-			let data: JSON;
-            let data2: JSON;
 
-			//getting the property value
             if (logMode) {
                 console.log('\x1b[36m%s\x1b[0m', "* First Read Property");
                 if (isReadable) console.log('\x1b[36m%s\x1b[0m', "* Property is readable");
@@ -203,159 +204,164 @@ export class Tester {
                 if (isWritable) console.log('\x1b[36m%s\x1b[0m', "* Property is writable");
                 if (!isWritable) console.log('\x1b[36m%s\x1b[0m', "* Property is not writable");
             }
-            if (isReadable) {
+
+            function testReadProperty(): boolean {
+                let data: JSON;
                 if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Testing the read functionality for:", propertyName);
                 container.readPropertyReport = new MiniTestReport(false);
                 let curPropertyData: any = self.tut.readProperty(propertyName).then((res: any) => {
                     let responseTimeStamp = new Date();
                     data = res;
                     container.readPropertyReport.received = new Payload(responseTimeStamp, res);
-					if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* DATA AFTER FIRST READ PROPERTY:", JSON.stringify(data, null, ' '));
-					//validating the property value with its Schemas
-					let errorsProp: Array<any> = Utils.validateResponse(propertyName, data, self.testConfig.SchemaLocation, "Property");
-					if (errorsProp) { //meaning that there is a validation error
+                    if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* DATA AFTER FIRST READ PROPERTY:", JSON.stringify(data, null, ' '));
+                    //validating the property value with its Schemas
+                    let errorsProp: Array<any> = Utils.validateResponse(propertyName, data, self.testConfig.SchemaLocation, "Property");
+                    if (errorsProp) { //meaning that there is a validation error
                         if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Received response is not valid for: " + propertyName, errorsProp);
+                        container.passed = false;
                         container.readPropertyReport.result = new Result(35, "Received response is not valid, " + JSON.stringify(errorsProp));
                         //self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""), data, 35, "Received response is not valid, " + JSON.stringify(errorsProp));
-                        self.testReport.addMessage(container);
-						resolve(true);
-					} else {
+                    } else {
                         if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is valid for: " + propertyName);
                         container.readPropertyReport.passed = true;
                         container.readPropertyReport.result = new Result(200);
-					}
-					if (!isWritable) {
-						// if it is not writable, we are done here!
-                        if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Property test of " + propertyName + " is successful: no write, first response is schema valid")
-                        container.passed = true;
-                        //self.testReport.addMessage(testCycle, testScenario, propertyName, true, JSON.parse("\"nothing\""), data, 200, "");
-                        self.testReport.addMessage(container);
-						resolve(true);
-					}
-
-				}).catch((error: any) => { //problem in the node-wot level
-					if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Problem fetching first time property: " + propertyName);
+                    }
+                }).catch((error: any) => { //problem in the node-wot level
+                    if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Problem fetching first time property: " + propertyName);
                     console.log("ERROR is: ", error);
+                    container.passed = false;
                     container.readPropertyReport.passed = false;
                     container.readPropertyReport.result = new Result(30, "Could not fetch property");
                     //self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""), JSON.parse("\"nothing\""), 30, "Could not fetch property");
-                    self.testReport.addMessage(container);
-					reject(true);
-				});
-			}
-			if (isWritable) { //if we can write into the property, it means that we can test whether we can write and get back the same type
-				//the same value will be expected but a special error case will be written if it is not the same since maybe the value is changing very fast
+                    return true
+                });
+                return false;
+            }
+
+            function testWriteProperty(): boolean { //if we can write into the property, it means that we can test whether we can write and get back the same type
+                //the same value will be expected but a special error case will be written if it is not the same since maybe the value is changing very fast
+                let data2: JSON;
+                let toSend: JSON;
                 if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Testing the write functionality for:", propertyName);
                 container.writePropertyReport = new MiniTestReport(false);
-				//generating the message to send
-				try {
-					toSend = self.codeGen.findRequestValue(self.testConfig.TestDataLocation, testScenario, interactionIndex, propertyName);
-					if (logMode) console.log('\x1b[36m%s%s\x1b[0m', '* Created value to send:', JSON.stringify(toSend, null, ' '));
-				} catch (Error) {
+                //generating the message to send
+                try {
+                    toSend = self.codeGen.findRequestValue(self.testConfig.TestDataLocation, testScenario, interactionIndex, propertyName);
+                    if (logMode) console.log('\x1b[36m%s%s\x1b[0m', '* Created value to send:', JSON.stringify(toSend, null, ' '));
+                } catch (Error) {
                     if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Cannot create message for " + propertyName + ", look at the previous message to identify the problem");
+                    container.passed = false;
                     container.writePropertyReport.result = new Result(40, "Cannot create message: " + Error);
                     //self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend, JSON.parse("\"nothing\""), 40, "Cannot create message: " + Error);
-                    self.testReport.addMessage(container);
-					resolve(true);
-				}
+                    return false;
+                }
 
-				//validating request against a schema, same as the action. Since the requests are written by the user there can be errors
-				//Pay attention that validateResponse is called because writing to a property is based on its outputData
-				let errors: Array<any> = Utils.validateResponse(propertyName, toSend, self.testConfig.SchemaLocation, "Property");
-				if (errors) { //meaning that there is a validation error
+                //validating request against a schema, same as the action. Since the requests are written by the user there can be errors
+                //Pay attention that validateResponse is called because writing to a property is based on its outputData
+                let errors: Array<any> = Utils.validateResponse(propertyName, toSend, self.testConfig.SchemaLocation, "Property");
+                if (errors) { //meaning that there is a validation error
                     if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Created request is not valid for " + propertyName + "\nMessage is " + toSend + "\nError is " + errors);
+                    container.passed = false;
                     container.readPropertyReport.result = new Result(41, "Created message has bad format: " + JSON.stringify(errors));
-                    self.testReport.addMessage(container);
-					// self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend,
-					// 	JSON.parse("\"nothing\""), 41, "Created message has bad format: " + JSON.stringify(errors));
-					resolve(true);
-				} else {
-					if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Created request is valid for: " + propertyName);
-				}
+                    // self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend,
+                    // 	JSON.parse("\"nothing\""), 41, "Created message has bad format: " + JSON.stringify(errors));
+                    return false;
+                } else {
+                    if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Created request is valid for: " + propertyName);
+                }
 
-				//setting the property, aka writing into it
-				if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Writing to property " + propertyName + " with data:", JSON.stringify(toSend, null, ' '));
+                //setting the property, aka writing into it
+                if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Writing to property " + propertyName + " with data:", JSON.stringify(toSend, null, ' '));
                 self.tut.writeProperty(propertyName, toSend).then(() => {
                     let responseTimeStamp = new Date();
                     container.writePropertyReport.sent = new Payload(responseTimeStamp, toSend);
-					if (!isReadable) {
-                        if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Property test of " + propertyName + " is successful: no read")
-                        container.passed = true;
+                    if (!isReadable) {
+                        if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Property test of " + propertyName + " is successful: no read");
                         container.writePropertyReport.passed = true;
                         container.writePropertyReport.result = new Result(200);
-                        self.testReport.addMessage(container);
-						//self.testReport.addMessage(testCycle, testScenario, propertyName, true, toSend, JSON.parse("\"nothing\""), 200, "");
-						resolve(true);
-					}
-					//now reading and hoping to get the same value
-					let curPropertyData2: any = self.tut.readProperty(propertyName).then((res2: any) => {
-						data2 = res2;
-						if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* For the second one, gotten property data is:", JSON.stringify(data2, null, ' '));
-						//validating the gotten value (this shouldn't be necessary since the first time was correct but it is here nonetheless)
+                        //self.testReport.addMessage(testCycle, testScenario, propertyName, true, toSend, JSON.parse("\"nothing\""), 200, "");
+                        return false;
+                    }
+                    //now reading and hoping to get the same value
+                    let curPropertyData2: any = self.tut.readProperty(propertyName).then((res2: any) => {
+                        data2 = res2;
+                        if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* For the second one, gotten property data is:", JSON.stringify(data2, null, ' '));
+                        //validating the gotten value (this shouldn't be necessary since the first time was correct but it is here nonetheless)
 
-						let errorsProp2: Array<any> = Utils.validateResponse(propertyName, data2, self.testConfig.SchemaLocation, "Property")
+                        let errorsProp2: Array<any> = Utils.validateResponse(propertyName, data2, self.testConfig.SchemaLocation, "Property")
 
-						if (errorsProp2) { //meaning that there is a validation error
-							if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Received second response is not valid for: " + propertyName, errorsProp2);
+                        if (errorsProp2) { //meaning that there is a validation error
+                            if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Received second response is not valid for: " + propertyName, errorsProp2);
                             //here for the received, two response values are put
+                            container.passed = false;
                             container.writePropertyReport.received = new Payload(responseTimeStamp, data2);
                             container.writePropertyReport.result = new Result(45, "Received second response is not valid, " + JSON.stringify(errorsProp2));
-                            self.testReport.addMessage(container);
-							// self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend,
-							// 	JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify(data2) + "]"), 45,
-							// 	"Received second response is not valid, " + JSON.stringify(errorsProp2));
-							resolve(true);
-						} else { //if there is no validation error we can test if the value we've gotten is the same as the one we wrote
-							if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received second response is valid for: " + propertyName);
-							if (JSON.stringify(data2) == JSON.stringify(toSend)) {
-								// wohoo everything is fine
-								if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Property test of " + propertyName + " is successful: write works & second get property successful");
+                            // self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend,
+                            // 	JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify(data2) + "]"), 45,
+                            // 	"Received second response is not valid, " + JSON.stringify(errorsProp2));
+                            return false;
+                        } else { //if there is no validation error we can test if the value we've gotten is the same as the one we wrote
+                            if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received second response is valid for: " + propertyName);
+                            container.writePropertyReport.passed = true;
+                            if (JSON.stringify(data2) == JSON.stringify(toSend)) {
+                                // wohoo everything is fine
+                                if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Property test of " + propertyName + " is successful: write works & second get property successful");
                                 if (logMode) console.log('\x1b[36m%s\x1b[0m', "* The value gotten after writing is the same for the property: " + propertyName);
-                                container.passed = true;
-                                container.writePropertyReport.passed = true;
                                 container.writePropertyReport.received = new Payload(responseTimeStamp, data2);
                                 container.writePropertyReport.result = new Result(201);
-                                self.testReport.addMessage(container);
-								// self.testReport.addMessage(testCycle, testScenario, propertyName, true, toSend,
-								// 	JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify(data2) + "]"), 201, "");
-								resolve(true);
-							} else {
-								//maybe the value changed between two requests...
+                                // self.testReport.addMessage(testCycle, testScenario, propertyName, true, toSend,
+                                // 	JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify(data2) + "]"), 201, "");
+                            } else {
+                                //maybe the value changed between two requests...
                                 if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Property test of " + propertyName + " is successful: write works, fetch not matching");
                                 container.writePropertyReport.received = new Payload(responseTimeStamp, data2);
                                 container.writePropertyReport.result = new Result(46, "The second get didn't match the write");
-                                self.testReport.addMessage(container);
-								// self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend,
-								// 	JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify(data2) + "]"), 46,
-								// 	"The second get didn't match the write");
-								resolve(true);
-							}
-						}
-					}).catch((error: any) => { //problem in the node-wot level
+                                // self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend,
+                                // 	JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify(data2) + "]"), 46,
+                                // 	"The second get didn't match the write");
+                            }
+                            return false;
+                        }
+                    }).catch((error: any) => { //problem in the node-wot level
                         if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Problem second time fetching property " + propertyName + "in the second get");
+                        container.passed = false;
                         container.writePropertyReport.passed = false;
-                        container.writePropertyReport.received = new Payload(null, JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify("\"nothing\"") + "]"));
                         container.writePropertyReport.result = new Result(31, "Could not fetch property in the second get" + error);
-                        self.testReport.addMessage(container);
-						// self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""),
-						// 	JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify("\"nothing\"") + "]"), 31,
-						// 	"Could not fetch property in the second get" + error);
-						reject(true);
-					});
-				}).catch((error: any) => {
+                        // self.testReport.addMessage(testCycle, testScenario, propertyName, false, JSON.parse("\"nothing\""),
+                        // 	JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify("\"nothing\"") + "]"), 31,
+                        // 	"Could not fetch property in the second get" + error);
+                        return true;
+                    });
+                }).catch((error: any) => {
                     if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Couldn't set the property: " + propertyName);
-                    //var container = new PropertyTestReportContainer(testCycle, testScenario, name);
                     container.passed = false;
                     container.writePropertyReport.passed = false;
-                    container.writePropertyReport.received = JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify("\"nothing\"") + "]");
                     container.writePropertyReport.result = new Result(32, "Problem setting property" + Error);
+                    // self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend,
+                    // 	JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify("\"nothing\"") + "]"), 32,
+                    // 	"Problem setting property" + Error);
+                    return false;
+                });
+            }
+
+            if (isReadable) {
+                let nodeWotError = testReadProperty();
+                if (nodeWotError) {
+                    container.passed = false;
                     self.testReport.addMessage(container);
-					// self.testReport.addMessage(testCycle, testScenario, propertyName, false, toSend,
-					// 	JSON.parse("[" + JSON.stringify(data) + "," + JSON.stringify("\"nothing\"") + "]"), 32,
-					// 	"Problem setting property" + Error);
-					resolve(true);
-				});
-			}
+                    reject(true)
+                };
+            }
+            if (isWritable) {
+                let nodeWotError = testWriteProperty();
+                if (nodeWotError) {
+                    container.passed = false
+                    self.testReport.addMessage(container);
+                    reject(true)
+                };
+            }
+            self.testReport.addMessage(container);
+            resolve(true);
 		});
 	}
 

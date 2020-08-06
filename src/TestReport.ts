@@ -2,16 +2,6 @@ import fs = require('fs');
 import { PassThrough } from 'stream';
 var mkdirp = require("mkdirp");
 
-interface message {
-    name?: string;
-    passed?: boolean;
-    sent?: JSON;
-    received?: JSON;
-    resultId?: number;
-    errorMessage?: string;
-}
-
-
 export class InteractionTestReportContainer {
     testCycle: number;
     testScenario: number;
@@ -22,7 +12,7 @@ export class InteractionTestReportContainer {
         this.testCycle = testCycle;
         this.testScenario = testScenario;
         this.name = name;
-        this.passed = false;
+        this.passed = true;
     }
 }
 
@@ -47,15 +37,13 @@ export class Payload {
 }
 
 export class MiniTestReport {
-    passed?: boolean; //If used for PropertyTesting each subtest (read, write, subscribe) can fail individually.
+    passed: boolean | null; //If used for PropertyTesting each subtest (read, write, subscribe) can fail individually.
     sent: Payload | null; //timestamp, sentMessage
     received: Payload | null; //timestamp, receivedMessage
     result: Result; //resultID, errorMessage
 
     constructor(passed: boolean = null) {
-        if (passed != null) {
-            this.passed = passed
-        }
+        this.passed = passed;
         this.sent = null;
         this.received = null;
         this.result = null;
@@ -71,20 +59,59 @@ export class ActionTestReportContainer extends InteractionTestReportContainer {
     }
 
     getPrintableMessage() {
-
+        delete this.testCycle;
+        delete this.testScenario;
+        delete this.report.passed;
+        return this;
     }
 }
 
 export class PropertyTestReportContainer extends InteractionTestReportContainer{
-    readPropertyReport?: MiniTestReport;
-    writePropertyReport?: MiniTestReport;
-    observePropertyReport?: MiniTestReport;
+    readPropertyReport: MiniTestReport;
+    writePropertyReport: MiniTestReport;
+    observePropertyReport: MiniTestReport;
+
+    constructor(testCycle: number, testScenario: number, name: string) {
+        super(testCycle, testScenario, name);
+        this.readPropertyReport = null;
+        this.writePropertyReport = null;
+        this.observePropertyReport = null;
+    }
+
+    getPrintableMessage() {
+        delete this.testCycle;
+        delete this.testScenario;
+        if (this.readPropertyReport == null) {
+            delete this.readPropertyReport;
+        }
+        if (this.writePropertyReport == null) {
+            delete this.writePropertyReport;
+        }
+        if (this.observePropertyReport == null) {
+            delete this.observePropertyReport;
+        }
+        return this;
+    }
 }
 
 export class EventTestReportContainer extends InteractionTestReportContainer {
     subscribeEventReport: MiniTestReport; //in and output
     eventDataReport: MiniTestReport; //only output
     cancelEventReport: MiniTestReport; //in and output
+
+    constructor(testCycle: number, testScenario: number, name: string) {
+        super(testCycle, testScenario, name);
+        this.subscribeEventReport = new MiniTestReport();
+        this.eventDataReport = new MiniTestReport();
+        this.cancelEventReport = new MiniTestReport();
+    }
+
+    getPrintableMessage() {
+        delete this.eventDataReport.sent;
+        delete this.testCycle;
+        delete this.testScenario;
+        return this;
+    }
 }
 
 export class TestReport {
@@ -146,11 +173,7 @@ export class TestReport {
         //     "errorMessage": testResult.resultMessage
         // };
         //filling the results
-        let testCycle = testContainer.testCycle;
-        let testScenario = testContainer.testScenario;
-        delete testContainer.testCycle;
-        delete testContainer.testScenario;
-        this.results[testCycle][testScenario].push(testContainer);
+        this.results[testContainer.testCycle][testContainer.testScenario].push(testContainer.getPrintableMessage());
     }
 
     public printResults(): void {
@@ -175,7 +198,7 @@ export class TestReport {
                 let fails: number = 0;
                 try {
                     for (var k = 0; k < curSceLength; k++) {
-                        let curMessage: message = currentScenario[k];
+                        let curMessage: InteractionTestReportContainer = currentScenario[k];
                         //if the results of the single test is false, the number to be displayed in the table is incremented
                         let curResult: boolean = curMessage.passed;
                         if (!curResult) {
