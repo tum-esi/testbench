@@ -12,8 +12,6 @@ import * as wot from 'wot-typescript-definitions';
 import * as Utils from './utilities'
 import { TestReport, ActionTestReportContainer, PropertyTestReportContainer, MiniTestReport, Result, Payload, EventTestReportContainer} from './TestReport'
 import { testConfig } from './utilities'
-import { timeStamp } from 'console';
-var timers = require("timers")
 
 export class Tester {
 	private tutTd: wot.ThingDescription; //the TD that belongs to the Thing under Test

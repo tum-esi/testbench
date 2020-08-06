@@ -1,5 +1,4 @@
 import fs = require('fs');
-import { PassThrough } from 'stream';
 var mkdirp = require("mkdirp");
 
 export class InteractionTestReportContainer {
@@ -37,7 +36,7 @@ export class Payload {
 }
 
 export class MiniTestReport {
-    passed: boolean | null; //If used for PropertyTesting each subtest (read, write, subscribe) can fail individually.
+    passed: boolean | null; //If used for PropertyTesting each subTest (read, write, subscribe) can fail individually.
     sent: Payload | null; //timestamp, sentMessage
     received: Payload | null; //timestamp, receivedMessage
     result: Result; //resultID, errorMessage
@@ -58,6 +57,11 @@ export class ActionTestReportContainer extends InteractionTestReportContainer {
         this.report = new MiniTestReport();
     }
 
+    /**
+     * Restructures the ReportContainer to match the structure of the printed Message. Potentially a new JSON object
+     * could be created and returned here if in the future the originally formatted container is needed for further processing.
+     * @return The restructured testReportContainer.
+     */
     getPrintableMessage() {
         delete this.testCycle;
         delete this.testScenario;
@@ -78,6 +82,11 @@ export class PropertyTestReportContainer extends InteractionTestReportContainer{
         this.observePropertyReport = null;
     }
 
+    /**
+     * Restructures the ReportContainer to match the structure of the printed Message. Potentially a new JSON object
+     * could be created and returned here if in the future the originally formatted container is needed for further processing.
+     * @return The restructured testReportContainer.
+     */
     getPrintableMessage() {
         delete this.testCycle;
         delete this.testScenario;
@@ -106,6 +115,11 @@ export class EventTestReportContainer extends InteractionTestReportContainer {
         this.cancelEventReport = new MiniTestReport();
     }
 
+    /**
+     * Restructures the ReportContainer to match the structure of the printed Message. Potentially a new JSON object
+     * could be created and returned here if in the future the originally formatted container is needed for further processing.
+     * @return The restructured testReportContainer.
+     */
     getPrintableMessage() {
         delete this.eventDataReport.sent;
         delete this.testCycle;
