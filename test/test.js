@@ -74,7 +74,7 @@ function getAllTestCases(jsonTestResult) {
                 allTestCases.push(testCase);
             });
         });
-    })
+    });
     return allTestCases;
 }
 
@@ -85,8 +85,8 @@ function getAllTestCases(jsonTestResult) {
  * @returns {JSON | null} The JSON object containing the TestCase or null if name was not found.
  */
 function getTestCaseByName(testScenario, testCaseName) {
-    for (var i=0; i<testScenario.length;++i) {
-        if (testScenario[i]==testCaseName) {
+    for (var i = 0; i < testScenario.length; ++i) {
+        if (testScenario[i] == testCaseName) {
             return testScenario[i];
         }
         return null;
@@ -105,7 +105,7 @@ function getAllTestCasesWithName(testCases, testCaseName) {
     testCaseName.forEach((testCase) => {
         if (testCase.name == testCaseName) {
             AllTestCasesWithName.push(testCase);
-        };
+        }
     });
     return AllTestCasesWithName;
 }
@@ -115,9 +115,9 @@ function getAllTestCasesWithName(testCases, testCaseName) {
  * @param {[JSON]} allTestCases The array containing all the TestCase JSON objects.
  * @returns {boolean} Returns true if all Tests passed. Returns false otherwise.
  */
-function allTestPassed(allTestCases){
+function allTestPassed(allTestCases) {
     //If Array does not contain passed == false every test passed.
-    return !allTestCases.some(testCase => testCase.passed == false);
+    return !allTestCases.some((testCase) => testCase.passed == false);
 }
 
 describe("Action: fastTest", function () {
@@ -130,13 +130,9 @@ describe("Action: fastTest", function () {
                     title: "TestServient",
                     description:
                         "Test servient that can be used as a servient to be tested with the WoT Test Bench",
-                    "@context": "https://www.w3.org/2019/wot/td/v1",
-                    "@type": "Thing",
-                    security: ["nosec_sc"],
                     properties: {
                         display: {
                             type: "string",
-                            writable: true,
                             observable: true,
                             readOnly: false,
                             writeOnly: false,
@@ -156,7 +152,7 @@ describe("Action: fastTest", function () {
                                 },
                                 {
                                     href:
-                                        "coap://localhost:8082/TestServient/pr/display",
+                                        "coap://localhost:8082/TestServient/properties/display",
                                     contentType: "application/json",
                                     op: ["readproperty", "writeproperty"],
                                 },
@@ -164,7 +160,6 @@ describe("Action: fastTest", function () {
                         },
                         counter: {
                             type: "number",
-                            writable: true,
                             observable: true,
                             readOnly: false,
                             writeOnly: false,
@@ -184,7 +179,7 @@ describe("Action: fastTest", function () {
                                 },
                                 {
                                     href:
-                                        "coap://localhost:8082/TestServient/pr/counter",
+                                        "coap://localhost:8082/TestServient/properties/counter",
                                     contentType: "application/json",
                                     op: ["readproperty", "writeproperty"],
                                 },
@@ -192,16 +187,16 @@ describe("Action: fastTest", function () {
                         },
                         temperature: {
                             type: "number",
-                            writable: false,
-                            observable: true,
                             readOnly: true,
+                            observable: true,
                             writeOnly: false,
                             forms: [
                                 {
                                     href:
                                         "http://localhost:8081/TestServient/properties/temperature",
                                     contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
+                                    op: ["readproperty"],
+                                    "htv:methodName": "GET",
                                 },
                                 {
                                     href:
@@ -212,9 +207,9 @@ describe("Action: fastTest", function () {
                                 },
                                 {
                                     href:
-                                        "coap://localhost:8082/TestServient/pr/temperature",
+                                        "coap://localhost:8082/TestServient/properties/temperature",
                                     contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
+                                    op: ["readproperty"],
                                 },
                             ],
                         },
@@ -230,7 +225,6 @@ describe("Action: fastTest", function () {
                                     type: "string",
                                 },
                             },
-                            writable: true,
                             readOnly: false,
                             writeOnly: false,
                             observable: false,
@@ -243,7 +237,7 @@ describe("Action: fastTest", function () {
                                 },
                                 {
                                     href:
-                                        "coap://localhost:8082/TestServient/pr/testObject",
+                                        "coap://localhost:8082/TestServient/properties/testObject",
                                     contentType: "application/json",
                                     op: ["readproperty", "writeproperty"],
                                 },
@@ -254,7 +248,6 @@ describe("Action: fastTest", function () {
                             items: {
                                 type: "number",
                             },
-                            writable: true,
                             readOnly: false,
                             writeOnly: false,
                             observable: false,
@@ -267,7 +260,7 @@ describe("Action: fastTest", function () {
                                 },
                                 {
                                     href:
-                                        "coap://localhost:8082/TestServient/pr/testArray",
+                                        "coap://localhost:8082/TestServient/properties/testArray",
                                     contentType: "application/json",
                                     op: ["readproperty", "writeproperty"],
                                 },
@@ -289,7 +282,7 @@ describe("Action: fastTest", function () {
                                 },
                                 {
                                     href:
-                                        "coap://localhost:8082/TestServient/ac/setCounter",
+                                        "coap://localhost:8082/TestServient/actions/setCounter",
                                     contentType: "application/json",
                                     op: "invokeaction",
                                 },
@@ -311,7 +304,7 @@ describe("Action: fastTest", function () {
                                 },
                                 {
                                     href:
-                                        "coap://localhost:8082/TestServient/ac/getTemperature",
+                                        "coap://localhost:8082/TestServient/actions/getTemperature",
                                     contentType: "application/json",
                                     op: "invokeaction",
                                 },
@@ -336,7 +329,7 @@ describe("Action: fastTest", function () {
                                 },
                                 {
                                     href:
-                                        "coap://localhost:8082/TestServient/ac/setDisplay",
+                                        "coap://localhost:8082/TestServient/actions/setDisplay",
                                     contentType: "application/json",
                                     op: "invokeaction",
                                 },
@@ -368,7 +361,7 @@ describe("Action: fastTest", function () {
                                 },
                                 {
                                     href:
-                                        "coap://localhost:8082/TestServient/ac/setTestObject",
+                                        "coap://localhost:8082/TestServient/actions/setTestObject",
                                     contentType: "application/json",
                                     op: "invokeaction",
                                 },
@@ -399,7 +392,7 @@ describe("Action: fastTest", function () {
                                 },
                                 {
                                     href:
-                                        "coap://localhost:8082/TestServient/ac/setTestArray",
+                                        "coap://localhost:8082/TestServient/actions/setTestArray",
                                     contentType: "application/json",
                                     op: "invokeaction",
                                 },
@@ -421,14 +414,17 @@ describe("Action: fastTest", function () {
                                 },
                                 {
                                     href:
-                                        "coap://localhost:8082/TestServient/ev/onChange",
+                                        "coap://localhost:8082/TestServient/events/onChange",
                                     contentType: "application/json",
                                     op: "subscribeevent",
                                 },
                             ],
                         },
                     },
-                    id: "urn:uuid:4d856a78-a2ff-4dff-90c2-af42afce13e0",
+                    "@context": "https://www.w3.org/2019/wot/td/v1",
+                    "@type": "Thing",
+                    security: ["nosec_sc"],
+                    id: "urn:uuid:3999c3d8-1b55-4c05-bc63-c91f0981cf36",
                     forms: [
                         {
                             href:

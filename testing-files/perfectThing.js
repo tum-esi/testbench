@@ -100,7 +100,8 @@ srv.start().then(WoT => {
             onChange: {
                 type: "number"
             }
-        }
+        },
+        id: "urn:uuid:3999c3d8-1b55-4c05-bc63-c91f0981cf36"
     })
 
         .then((thing) => {
