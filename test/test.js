@@ -19,23 +19,105 @@ describe("Property: testData", function () {
 });
 
 /**
- * Returns true if all tests passed. Returns false otherwise. Checks all
- * given TestScenarios.
- * @param {*} res The result of the chai request to check.
+ * Returns a JSON object containing the TestResults from a chai send request result object.
+ * @param {any} res The result of the chai send request.
+ * @return {JSON} The JSON containing the TestResults.
  */
-function allTestsPassed(res) {
-    let textAnswer = res.res.text; //TestResult as text.
-    jsonAnswer = JSON.parse(textAnswer); //TestResult as JSON.
-    //All testCaseResults of every TestScenario are pushed to an Array.
-    let resultArray = new Array(jsonAnswer[0].length * jsonAnswer[0][0].length);
-    jsonAnswer[0].forEach((testScenario) => {
-        testScenario.forEach((testCase) => {
-            //console.log(testCase.passed);
-            resultArray.push(testCase.passed);
+function getTestResult(res) {
+    let stringTestResult = res.res.text; //TestResult as text.
+    return JSON.parse(stringTestResult); //Return TestResult as JSON.
+}
+
+/**
+ * Returns a TestCycle object from a TestResult object by int.
+ * @param {JSON} testResult The JSON object containing the TestResults.
+ * @param {number} cycleInt The number defining the TestCycle.
+ * @returns {JSON} The JSON object containing the TestCycle.
+ */
+function getTestCycleByInt(testResult, cycleInt) {
+    //console.log(testResult[cycleInt])
+    return testResult[cycleInt];
+}
+
+/**
+ * Returns a TestScenario object from a TestCycle object by int.
+ * @param {JSON} testCycle The JSON object containing the TestCycle.
+ * @param {number} scenarioInt The number defining the TestScenario.
+ * @returns {JSON} The JSON object containing the TestScenario.
+ */
+function getTestScenarioByInt(testCycle, scenarioInt) {
+    return testCycle[scenarioInt];
+}
+
+/**
+ * Returns a TestCase object from a TestScenario object by int.
+ * @param {JSON} testScenario The JSON object containing the TestScenario.
+ * @param {JSON} testCaseInt The JSON object containing the TestCase.
+ * @return {JSON} The JSON object containing the TestCase.
+ */
+function getTestCaseByInt(testScenario, testCaseInt) {
+    return testScenario[testCaseInt];
+}
+
+/**
+ * Returns an array with all Test Cases in the given TestResult JSON object.
+ * @param {JSON} jsonTestResult The TestResult JSON.
+ * @return {[JSON]} The array containing all testCase JSON objects.
+ */
+function getAllTestCases(jsonTestResult) {
+    var allTestCases = [];
+    jsonTestResult.forEach((testCycle) => {
+        testCycle.forEach((testScenario) => {
+            //Could potentially be solved more elegant by using allTestCases.concat(testScenario), but
+            //then legacy loops would have to be used.
+            testScenario.forEach((testCase) => {
+                allTestCases.push(testCase);
+            });
         });
     })
-    //If Array does not include false every Tests passed
-    return failedAtLeastOnce = !resultArray.includes(false);
+    return allTestCases;
+}
+
+/**
+ * Returns a TestCase JSON object from a TestScenario by name.
+ * @param {JSON} testScenario The JSON object containing the TestScenario.
+ * @param {string} testCaseName The string containing the TestCase name.
+ * @returns {JSON | null} The JSON object containing the TestCase or null if name was not found.
+ */
+function getTestCaseByName(testScenario, testCaseName) {
+    for (var i=0; i<testScenario.length;++i) {
+        if (testScenario[i]==testCaseName) {
+            return testScenario[i];
+        }
+        return null;
+    }
+}
+
+/**
+ * Returns all TestCase JSON objects with the given name from the given Array of TestCase JSON object.
+ * @param {[JSON]} testCases The array of JSON objects containing the TestCases to check.
+ * @param {string} testCaseName The string containing the TestCase name.
+ * @returns An arry containing all the TestCase JSON objects with the given name. Array is empty
+ * if no TestCase with the given name has been found.
+ */
+function getAllTestCasesWithName(testCases, testCaseName) {
+    let AllTestCasesWithName = [];
+    testCaseName.forEach((testCase) => {
+        if (testCase.name == testCaseName) {
+            AllTestCasesWithName.push(testCase);
+        };
+    });
+    return AllTestCasesWithName;
+}
+
+/**
+ * Returns true if all TestCases in the given array passed. Returns false otherwise.
+ * @param {[JSON]} allTestCases The array containing all the TestCase JSON objects.
+ * @returns {boolean} Returns true if all Tests passed. Returns false otherwise.
+ */
+function allTestPassed(allTestCases){
+    //If Array does not contain passed == false every test passed.
+    return !allTestCases.some(testCase => testCase.passed == false);
 }
 
 describe("Action: fastTest", function () {
@@ -110,8 +192,10 @@ describe("Action: fastTest", function () {
                         },
                         temperature: {
                             type: "number",
+                            writable: false,
                             observable: true,
                             readOnly: true,
+                            writeOnly: false,
                             forms: [
                                 {
                                     href:
@@ -365,7 +449,10 @@ describe("Action: fastTest", function () {
                     },
                 })
                 .end(function (err, res) {
-                    expect(allTestsPassed(res)).to.be.true;
+                    let allTestCases = getAllTestCases(getTestResult(res));
+                    //console.log(allTestCases); //Can be used to log TestResults for debugging purposes.
+                    expect(allTestCases.length).to.be.equal(20); //Check if all TestCases have been generated.
+                    expect(allTestPassed(allTestCases)).to.be.true; //Check if all TestCases have passed.
                     expect(err).to.be.null;
                     done();
                 });
