@@ -10,7 +10,7 @@ After the test a test report can be generated and analyzed to get more meaning o
  */
 import * as wot from 'wot-typescript-definitions';
 import * as Utils from './utilities'
-import { TestReport, ActionTestReportContainer, PropertyTestReportContainer, MiniTestReport, Result, Payload} from './TestReport'
+import { TestReport, ActionTestReportContainer, PropertyTestReportContainer, MiniTestReport, Result, Payload, EventTestReportContainer} from './TestReport'
 import { testConfig } from './utilities'
 import { timeStamp } from 'console';
 var timers = require("timers")
@@ -53,12 +53,12 @@ export class Tester {
 	}
 
 	// -----TODO thing of timers to cause event
-	public testEvent(testCycle: number, actionName: string, interaction: any, testScenario: number, interactionIndex: number,logMode: boolean): Promise<any> {
+	public testEvent(testCycle: number, actionName: string, interaction: any, testScenario: number, interactionIndex: number,logMode: boolean): Promise<EventTestReportContainer> {
 		// testing event function
 
 		return new Promise(function (resolve, reject) {
 			// implement event testing here:
-			resolve(true);
+			resolve(new EventTestReportContainer(-1, -1, "default"));
 		});
 	}
 
@@ -81,7 +81,7 @@ export class Tester {
 	testScenario number is related to the json file that contains the requests to be sent. In this file, in the array of interaction names,
 	you can put different json values that will be sent to the thing
 	 */
-	public testAction(testCycle: number, actionName: string, interaction: any, testScenario: number, interactionIndex: number, logMode: boolean): Promise<any> {
+	public testAction(testCycle: number, actionName: string, interaction: any, testScenario: number, interactionIndex: number, logMode: boolean): Promise<ActionTestReportContainer> {
 		var self = this;
         return new Promise(function (resolve, reject) {
             var container = new ActionTestReportContainer(testCycle, testScenario, actionName);
@@ -96,9 +96,8 @@ export class Tester {
                 // TODO Ask if null (as off now) or toSend (as off before) should be written for container.report.result
                 container.passed = false;
                 container.report.result = new Result(12, "Cannot create message: " + Error);
-                self.testReport.addMessage(container);
                 //self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, JSON.parse("\"nothing\""), 12, "Cannot create message: " + Error);
-				resolve(true);
+                resolve(container);
 			}
 			//validating request against a schema. Validator returns an array that describes the error. This array is empty when there is no error
 			//a first thinking would say that it shouldn't be necessary but since the requests are user written, there can be errors there as well.
@@ -108,9 +107,8 @@ export class Tester {
                     if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Created request is not valid for " + actionName + "\nMessage is " + toSend + "\nError is " + errors);
                     container.passed = false;
                     container.report.result = new Result(13, "Created message has bad format: " + JSON.stringify(errors));
-                    self.testReport.addMessage(container);
 					//self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, JSON.parse("\"nothing\""), 13, "Created message has bad format: " + JSON.stringify(errors));
-					resolve(true);
+                    resolve(container);
 				} else {
 					if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Created request is valid for: " + actionName);
 				}
@@ -133,9 +131,8 @@ export class Tester {
                             if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Response is not in JSON format");
                             container.passed = false;
                             container.report.result = new Result(15, "Response is not in JSON format: " + error);
-                            self.testReport.addMessage(container);
 							//self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 15, "Response is not in JSON format: " + error);
-							resolve(true);
+                            resolve(container);
 						}
 						//validating the response against its schema, same as before
 						let errorsRes: Array<any> = Utils.validateResponse(actionName, answer, self.testConfig.SchemaLocation, 'Action');
@@ -143,39 +140,34 @@ export class Tester {
                             if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is not valid for: " + actionName);
                             container.passed = false;
                             container.report.result = new Result(16, "Received response is not valid, " + JSON.stringify(errorsRes));
-                            self.testReport.addMessage(container);
 							//self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 16, "Received response is not valid, " + JSON.stringify(errorsRes));
-							resolve(true);
+                            resolve(container);
 						} else {
 							if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is valid for: " + actionName);
 						}
 						//if nothing is wrong, putting a good result
                         if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* ", actionName + " is successful");
                         container.report.result = new Result(100);
-                        self.testReport.addMessage(container);
 						//self.testReport.addMessage(testCycle, testScenario, actionName, true, toSend, answer, 100, "");
-						resolve(true);
+                        resolve(container);
 					} else { // in case there is no answer needed it is a successful test as well
                         if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* ", actionName + " is successful without return value");
                         container.report.result = new Result(101, "no return value needed");
-                        self.testReport.addMessage(container);
 						//self.testReport.addMessage(testCycle, testScenario, actionName, true, toSend, JSON.parse("\"nothing\""), 101, "no return value needed");
-						resolve(true);
+                        resolve(container);
 					}
                 }).catch((error) => {
                     container.passed = false;
                     container.report.result = new Result(999, "Invoke Action Error: " + error);
-                    self.testReport.addMessage(container);
 					//self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, answer, 999, "Invoke Action Error: " + error);
-					resolve(true);
+                    resolve(container);
 				});
 			} catch (Error) { // in case there is a problem with the invoke of the action
                 if (logMode) console.log("* Response receiving for  " + actionName + "is unsuccessful, continuing with other scenarios");
                 container.passed = false;
                 container.report.result = new Result(10, "Problem invoking the action" + Error);
-                self.testReport.addMessage(container);
 				//self.testReport.addMessage(testCycle, testScenario, actionName, false, toSend, JSON.parse("\"nothing\""), 10, "Problem invoking the action" + Error);
-				resolve(true);
+                resolve(container);
 			}
 		});
 	}
@@ -189,7 +181,7 @@ export class Tester {
 		Then property values are fetched again. Here it is hoped that the value is the same as the written one but if the value changes in between it will
 		be different. This is recorded as an error but has a specific error case number. This basically tests if the property is really writable
 	 */
-    public testProperty(testCycle: number, propertyName: string, interaction: any, testScenario: number, interactionIndex: number, logMode: boolean): Promise<any> {
+    public testProperty(testCycle: number, propertyName: string, interaction: any, testScenario: number, interactionIndex: number, logMode: boolean): Promise<PropertyTestReportContainer> {
 
 		var self = this;
         return new Promise(function (resolve, reject) {
@@ -348,20 +340,17 @@ export class Tester {
                 let nodeWotError = testReadProperty();
                 if (nodeWotError) {
                     container.passed = false;
-                    self.testReport.addMessage(container);
-                    reject(true)
+                    reject(container);
                 };
             }
             if (isWritable) {
                 let nodeWotError = testWriteProperty();
                 if (nodeWotError) {
                     container.passed = false
-                    self.testReport.addMessage(container);
-                    reject(true)
+                    reject(container);
                 };
             }
-            self.testReport.addMessage(container);
-            resolve(true);
+            resolve(container);
 		});
 	}
 
@@ -372,30 +361,36 @@ export class Tester {
 			console.log('interaction pattern:', interaction[0], 'interaction:', interaction[1])
 			if (interaction[0] == 'Property') {
 				if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... Testing Property:", interactionName, ".................");
-				self.testProperty(testCycle, interactionName, interaction[1], testScenario, interactionIndex, logMode).then((curBool) => {
+                self.testProperty(testCycle, interactionName, interaction[1], testScenario, interactionIndex, logMode).then((container) => {
+                    self.testReport.addMessage(container);
 					if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... End Testing Property:", interactionName, ".................");
-					resolve(curBool);
-				}).catch((curBool) => {
+					resolve(true);
+                }).catch((container) => {
+                    self.testReport.addMessage(container);
 					if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* Error in testing property ", interactionName, ", check previous messages")
-					reject(curBool);
+					reject(true);
 				});
 			} else if (interaction[0] == 'Action') {
 				if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... Testing Action:", interactionName, ".................");
-				self.testAction(testCycle, interactionName, interaction[1], testScenario, interactionIndex, logMode).then((curBool) => {
+                self.testAction(testCycle, interactionName, interaction[1], testScenario, interactionIndex, logMode).then((container) => {
+                    self.testReport.addMessage(container);
 					if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... End Testing Action:", interactionName, ".................");
-					resolve(curBool);
-				}).catch((curBool) => {
+					resolve(true);
+                }).catch((container) => {
+                    self.testReport.addMessage(container);
 					if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* Error in testing action ", interactionName, ", check previous messages")
-					reject(curBool);
+					reject(true);
 				});
 			} else if (interaction[0] == 'Event') {
 				if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... Testing Event: ", interactionName, ".................");
-				self.testEvent(testCycle, interactionName, interaction[1], testScenario, interactionIndex, logMode).then((curBool) => {
+                self.testEvent(testCycle, interactionName, interaction[1], testScenario, interactionIndex, logMode).then((container) => {
+                    //self.testReport.addMessage(container);
 					if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... End Testing Event: ", interactionName, ".................");
-					resolve(curBool);
-				}).catch((curBool) => {
+					resolve(true);
+                }).catch((container) => {
+                    //self.testReport.addMessage(container);
 					if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* Error in testing event ", interactionName, ", check previous messages")
-					reject(curBool);
+					reject(true);
 				});
 			} else {
 				if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Asked for something other than Action or Property or Event")
