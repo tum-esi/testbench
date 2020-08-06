@@ -75,12 +75,18 @@ export class Tester {
 		return [new Date(), Utils.promiseTimeout(this.testConfig.ActionTimeout, this.tut.invokeAction(actionName))];
 	}
 
-	/*
-	This method test the action given in the parameters.
-	logMode toggles between outputting every single step and error into the terminal. TRUE outputs to the terminal
-	testScenario number is related to the json file that contains the requests to be sent. In this file, in the array of interaction names,
-	you can put different json values that will be sent to the thing
-	 */
+    /**
+     * This method test the action given in the parameters.
+     * logMode toggles between outputting every single step and error into the terminal. TRUE outputs to the terminal
+     * testScenario number is related to the json file that contains the requests to be sent. In this file, in the array of interaction names,
+     * you can put different json values that will be sent to the thing
+     * @param testCycle The number indicating the testCycle.
+     * @param actionName The string indicating the name of the action.
+     * @param interaction An interaction object containing further information about the tested interaction.
+     * @param testScenario The number indicating the testScenario.
+     * @param interactionIndex The number indicating the interactionNumber.
+     * @param logMode True if logMode is enabled, false otherwise.
+     */
 	public testAction(testCycle: number, actionName: string, interaction: any, testScenario: number, interactionIndex: number, logMode: boolean): Promise<ActionTestReportContainer> {
 		var self = this;
         return new Promise(function (resolve, reject) {
@@ -171,16 +177,21 @@ export class Tester {
 			}
 		});
 	}
-
-	/*
-		This method tests the property given in the parameters
-		logMode toggles between outputting every single step and error into the terminal. TRUE outputs to the terminal
-		testScenario number is related to the json file that contains the requests to be sent. In this file, in the array of interaction names,
-		you can put different json values that will be sent to the thing
-		First the property values are fetched from the thing. Then if the property is writable, a value from the requests is written to the property
-		Then property values are fetched again. Here it is hoped that the value is the same as the written one but if the value changes in between it will
-		be different. This is recorded as an error but has a specific error case number. This basically tests if the property is really writable
-	 */
+    /**
+     * This method tests the property given in the parameters
+     * logMode toggles between outputting every single step and error into the terminal. TRUE outputs to the terminal
+     * testScenario number is related to the json file that contains the requests to be sent. In this file, in the array of interaction names,
+     * you can put different json values that will be sent to the thing
+     * First the property values are fetched from the thing. Then if the property is writable, a value from the requests is written to the property
+     * Then property values are fetched again. Here it is hoped that the value is the same as the written one but if the value changes in between it will
+     * be different. This is recorded as an error but has a specific error case number. This basically tests if the property is really writable
+     * @param testCycle The number indicating the testCycle.
+     * @param propertyName The string indicating the name of the property.
+     * @param interaction An interaction object containing further information about the tested interaction.
+     * @param testScenario The number indicating the testScenario.
+     * @param interactionIndex The number indicating the interactionNumber.
+     * @param logMode True if logMode is enabled, false otherwise.
+     */
     public testProperty(testCycle: number, propertyName: string, interaction: any, testScenario: number, interactionIndex: number, logMode: boolean): Promise<PropertyTestReportContainer> {
 
 		var self = this;
@@ -197,6 +208,10 @@ export class Tester {
                 if (!isWritable) console.log('\x1b[36m%s\x1b[0m', "* Property is not writable");
             }
 
+            /**
+             * Tests the ReadProperty of a property. TestResults are written into container. Returns true if an error on node-wot level occurred.
+             * @returns A boolean indicating if an error on node-wot level occurred.
+             */
             function testReadProperty(): boolean {
                 let data: JSON;
                 if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Testing the read functionality for:", propertyName);
@@ -230,6 +245,10 @@ export class Tester {
                 return false;
             }
 
+            /**
+            * Tests the WriteProperty of a property. TestResults are written into container. Returns true if an error on node-wot level occurred.
+            * @returns A boolean indicating if an error on node-wot level occurred.
+            */
             function testWriteProperty(): boolean { //if we can write into the property, it means that we can test whether we can write and get back the same type
                 //the same value will be expected but a special error case will be written if it is not the same since maybe the value is changing very fast
                 let data2: JSON;
