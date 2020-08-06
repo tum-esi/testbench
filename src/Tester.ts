@@ -51,12 +51,12 @@ export class Tester {
 	}
 
 	// -----TODO thing of timers to cause event
-	public testEvent(testCycle: number, actionName: string, interaction: any, testScenario: number, interactionIndex: number,logMode: boolean): Promise<EventTestReportContainer> {
+	public testEvent(testCycle: number, actionName: string, interaction: any, testScenario: number, interactionIndex: number,logMode: boolean): Promise<boolean> {
 		// testing event function
 
 		return new Promise(function (resolve, reject) {
 			// implement event testing here:
-			resolve(new EventTestReportContainer(-1, -1, "default"));
+			resolve(true);
 		});
 	}
 
@@ -182,7 +182,7 @@ export class Tester {
      * @param interactionIndex The number indicating the interactionNumber.
      * @param logMode True if logMode is enabled, false otherwise.
      */
-    public testProperty(testCycle: number, propertyName: string, interaction: any, testScenario: number, interactionIndex: number, logMode: boolean): Promise<PropertyTestReportContainer> {
+    public testProperty(testCycle: number, propertyName: string, interaction: any, testScenario: number, interactionIndex: number, logMode: boolean): Promise<boolean> {
 
 		var self = this;
         return new Promise(function (resolve, reject) {
@@ -308,14 +308,14 @@ export class Tester {
                                         if (JSON.stringify(data2) == JSON.stringify(toSend)) {
                                             // wohoo everything is fine
                                             if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Write functionality test of " + propertyName + " is successful: write works and second get property successful");
-                                            if (logMode) console.log('\x1b[36m%s\x1b[0m', "* The value gotten after writing did match the write: " + propertyName);
+                                            if (logMode) console.log('\x1b[36m%s\x1b[0m', "* The return value of the second get property (after writing) did match the write for: " + propertyName);
                                             container.writePropertyReport.received = new Payload(responseTimeStamp, data2);
                                             container.writePropertyReport.result = new Result(201);
                                         } else {
                                             //maybe the value changed between two requests...
                                             if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Write functionality test of " + propertyName + " is successful: write works, fetch not matching");
                                             container.writePropertyReport.received = new Payload(responseTimeStamp, data2);
-                                            container.writePropertyReport.result = new Result(46, "The value gotten after writing did not match the write: " + propertyName);
+                                            container.writePropertyReport.result = new Result(46, "The return value of the second get property (after writing) did not match the write for: " + propertyName);
                                         }
                                     }
                                 })
@@ -347,11 +347,13 @@ export class Tester {
             testReadProperty()
                 .then(() => testWriteProperty())
                 .then(() => {
-                    resolve(container);
+                    self.testReport.addMessage(container);
+                    resolve(true);
                 })
-                .catch(() => {
+                .catch((curBool) => {
                     container.passed = false
-                    reject(container);
+                    self.testReport.addMessage(container);
+                    reject(curBool);
                 });
 		});
 	}
@@ -363,14 +365,12 @@ export class Tester {
 			console.log('interaction pattern:', interaction[0], 'interaction:', interaction[1])
 			if (interaction[0] == 'Property') {
 				if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... Testing Property:", interactionName, ".................");
-                self.testProperty(testCycle, interactionName, interaction[1], testScenario, interactionIndex, logMode).then((container) => {
-                    self.testReport.addMessage(container);
+                self.testProperty(testCycle, interactionName, interaction[1], testScenario, interactionIndex, logMode).then((curBool) => {
 					if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... End Testing Property:", interactionName, ".................");
-					resolve(true);
-                }).catch((container) => {
-                    self.testReport.addMessage(container);
+					resolve(curBool);
+                }).catch((curBool) => {
 					if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* Error in testing property ", interactionName, ", check previous messages")
-					reject(true);
+					reject(curBool);
 				});
 			} else if (interaction[0] == 'Action') {
 				if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... Testing Action:", interactionName, ".................");
@@ -385,14 +385,12 @@ export class Tester {
 				});
 			} else if (interaction[0] == 'Event') {
 				if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... Testing Event: ", interactionName, ".................");
-                self.testEvent(testCycle, interactionName, interaction[1], testScenario, interactionIndex, logMode).then((container) => {
-                    //self.testReport.addMessage(container);
+                self.testEvent(testCycle, interactionName, interaction[1], testScenario, interactionIndex, logMode).then((curBool) => {
 					if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* ..................... End Testing Event: ", interactionName, ".................");
-					resolve(true);
-                }).catch((container) => {
-                    //self.testReport.addMessage(container);
+					resolve(curBool);
+                }).catch((curBool) => {
 					if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', "* Error in testing event ", interactionName, ", check previous messages")
-					reject(true);
+					reject(curBool);
 				});
 			} else {
 				if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Asked for something other than Action or Property or Event")
