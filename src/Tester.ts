@@ -191,7 +191,6 @@ export class Tester {
             let isReadable: boolean = !(interaction.writeOnly);
 
             if (logMode) {
-                console.log('\x1b[36m%s\x1b[0m', "* First Read Property");
                 if (isReadable) console.log('\x1b[36m%s\x1b[0m', "* Property is readable");
                 if (!isReadable) console.log('\x1b[36m%s\x1b[0m', "* Property is not readable");
                 if (isWritable) console.log('\x1b[36m%s\x1b[0m', "* Property is writable");
@@ -202,144 +201,158 @@ export class Tester {
              * Tests the ReadProperty of a property. TestResults are written into container. Returns true if an error on node-wot level occurred.
              * @returns A boolean indicating if an error on node-wot level occurred.
              */
-            function testReadProperty(): boolean {
-                let data: JSON;
-                if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Testing the read functionality for:", propertyName);
-                container.readPropertyReport = new MiniTestReport(false);
-                let curPropertyData: any = self.tut.readProperty(propertyName).then((res: any) => {
-                    let responseTimeStamp = new Date();
-                    data = res;
-                    container.readPropertyReport.received = new Payload(responseTimeStamp, res);
-                    if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* DATA AFTER FIRST READ PROPERTY:", JSON.stringify(data, null, ' '));
-                    //validating the property value with its Schemas
-                    let errorsProp: Array<any> = Utils.validateResponse(propertyName, data, self.testConfig.SchemaLocation, "Property");
-                    if (errorsProp) { //meaning that there is a validation error
-                        if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Received response is not valid for: " + propertyName, errorsProp);
-                        container.passed = false;
-                        container.readPropertyReport.result = new Result(35, "Received response is not valid, " + JSON.stringify(errorsProp));
+            function testReadProperty(): Promise<boolean> {
+                return new Promise(function (resolve, reject) {
+                    if (isReadable) {
+                        let data: JSON;
+                        if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Testing the read functionality for: ", propertyName);
+                        container.readPropertyReport = new MiniTestReport(false);
+                        let curPropertyData: any = self.tut.readProperty(propertyName).then((res: any) => {
+                            let responseTimeStamp = new Date();
+                            data = res;
+                            container.readPropertyReport.received = new Payload(responseTimeStamp, res);
+                            if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Data after first read property: ", JSON.stringify(data, null, ' '));
+                            //validating the property value with its Schemas
+                            let errorsProp: Array<any> = Utils.validateResponse(propertyName, data, self.testConfig.SchemaLocation, "Property");
+                            if (errorsProp) { //meaning that there is a validation error
+                                if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Received response is not valid for: " + propertyName, errorsProp);
+                                container.passed = false;
+                                container.readPropertyReport.result = new Result(35, "Received response is not valid, " + JSON.stringify(errorsProp));
+                            } else {
+                                if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is valid for: " + propertyName);
+                                container.readPropertyReport.passed = true;
+                                container.readPropertyReport.result = new Result(200);
+                            }
+                        })
+                            .then(() => {
+                                if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Read functionality test of " + propertyName + " is successful: first get property is schema valid");
+                                resolve(true);
+                            })
+                            .catch((error: any) => { //problem in the node-wot level
+                            if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Problem fetching first time property: " + propertyName);
+                            console.log("ERROR is: ", error);
+                            container.passed = false;
+                            container.readPropertyReport.passed = false;
+                            container.readPropertyReport.result = new Result(30, "Could not fetch property");
+                            reject(true);
+                        });
                     } else {
-                        if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is valid for: " + propertyName);
-                        container.readPropertyReport.passed = true;
-                        container.readPropertyReport.result = new Result(200);
+                        resolve(true);
                     }
-                }).catch((error: any) => { //problem in the node-wot level
-                    if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Problem fetching first time property: " + propertyName);
-                    console.log("ERROR is: ", error);
-                    container.passed = false;
-                    container.readPropertyReport.passed = false;
-                    container.readPropertyReport.result = new Result(30, "Could not fetch property");
-                    return true
                 });
-                return false;
             }
 
             /**
             * Tests the WriteProperty of a property. TestResults are written into container. Returns true if an error on node-wot level occurred.
             * @returns A boolean indicating if an error on node-wot level occurred.
             */
-            function testWriteProperty(): boolean { //if we can write into the property, it means that we can test whether we can write and get back the same type
+            function testWriteProperty(): Promise<boolean> { //if we can write into the property, it means that we can test whether we can write and get back the same type
                 //the same value will be expected but a special error case will be written if it is not the same since maybe the value is changing very fast
-                let data2: JSON;
-                let toSend: JSON;
-                if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Testing the write functionality for:", propertyName);
-                container.writePropertyReport = new MiniTestReport(false);
-                //generating the message to send
-                try {
-                    toSend = self.codeGen.findRequestValue(self.testConfig.TestDataLocation, testScenario, interactionIndex, propertyName);
-                    if (logMode) console.log('\x1b[36m%s%s\x1b[0m', '* Created value to send:', JSON.stringify(toSend, null, ' '));
-                } catch (Error) {
-                    if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Cannot create message for " + propertyName + ", look at the previous message to identify the problem");
-                    container.passed = false;
-                    container.writePropertyReport.result = new Result(40, "Cannot create message: " + Error);
-                    return false;
-                }
-
-                //validating request against a schema, same as the action. Since the requests are written by the user there can be errors
-                //Pay attention that validateResponse is called because writing to a property is based on its outputData
-                let errors: Array<any> = Utils.validateResponse(propertyName, toSend, self.testConfig.SchemaLocation, "Property");
-                if (errors) { //meaning that there is a validation error
-                    if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Created request is not valid for " + propertyName + "\nMessage is " + toSend + "\nError is " + errors);
-                    container.passed = false;
-                    container.readPropertyReport.result = new Result(41, "Created message has bad format: " + JSON.stringify(errors));
-                    return false;
-                } else {
-                    if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Created request is valid for: " + propertyName);
-                }
-
-                //setting the property, aka writing into it
-                if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Writing to property " + propertyName + " with data:", JSON.stringify(toSend, null, ' '));
-                self.tut.writeProperty(propertyName, toSend).then(() => {
-                    let responseTimeStamp = new Date();
-                    container.writePropertyReport.sent = new Payload(responseTimeStamp, toSend);
-                    if (!isReadable) {
-                        if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Property test of " + propertyName + " is successful: no read");
-                        container.writePropertyReport.passed = true;
-                        container.writePropertyReport.result = new Result(200);
-                        return false;
-                    }
-                    //now reading and hoping to get the same value
-                    let curPropertyData2: any = self.tut.readProperty(propertyName).then((res2: any) => {
-                        data2 = res2;
-                        if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* For the second one, gotten property data is:", JSON.stringify(data2, null, ' '));
-                        //validating the gotten value (this shouldn't be necessary since the first time was correct but it is here nonetheless)
-
-                        let errorsProp2: Array<any> = Utils.validateResponse(propertyName, data2, self.testConfig.SchemaLocation, "Property")
-
-                        if (errorsProp2) { //meaning that there is a validation error
-                            if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Received second response is not valid for: " + propertyName, errorsProp2);
-                            //here for the received, two response values are put
+                return new Promise(function (resolve, reject) {
+                    if (isWritable) {
+                        let data2: JSON;
+                        let toSend: JSON;
+                        if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Testing the write functionality for: ", propertyName);
+                        container.writePropertyReport = new MiniTestReport(false);
+                        //generating the message to send
+                        try {
+                            toSend = self.codeGen.findRequestValue(self.testConfig.TestDataLocation, testScenario, interactionIndex, propertyName);
+                            if (logMode) console.log('\x1b[36m%s%s\x1b[0m', '* Created value to send: ', JSON.stringify(toSend, null, ' '));
+                        } catch (Error) {
+                            if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Cannot create message for " + propertyName + ", look at the previous message to identify the problem");
                             container.passed = false;
-                            container.writePropertyReport.received = new Payload(responseTimeStamp, data2);
-                            container.writePropertyReport.result = new Result(45, "Received second response is not valid, " + JSON.stringify(errorsProp2));
-                            return false;
-                        } else { //if there is no validation error we can test if the value we've gotten is the same as the one we wrote
-                            if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received second response is valid for: " + propertyName);
-                            container.writePropertyReport.passed = true;
-                            if (JSON.stringify(data2) == JSON.stringify(toSend)) {
-                                // wohoo everything is fine
-                                if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Property test of " + propertyName + " is successful: write works & second get property successful");
-                                if (logMode) console.log('\x1b[36m%s\x1b[0m', "* The value gotten after writing is the same for the property: " + propertyName);
-                                container.writePropertyReport.received = new Payload(responseTimeStamp, data2);
-                                container.writePropertyReport.result = new Result(201);
-                            } else {
-                                //maybe the value changed between two requests...
-                                if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Property test of " + propertyName + " is successful: write works, fetch not matching");
-                                container.writePropertyReport.received = new Payload(responseTimeStamp, data2);
-                                container.writePropertyReport.result = new Result(46, "The second get didn't match the write");
-                            }
-                            return false;
+                            container.writePropertyReport.result = new Result(40, "Cannot create message: " + Error);
+                            resolve(true);
                         }
-                    }).catch((error: any) => { //problem in the node-wot level
-                        if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Problem second time fetching property " + propertyName + "in the second get");
-                        container.passed = false;
-                        container.writePropertyReport.passed = false;
-                        container.writePropertyReport.result = new Result(31, "Could not fetch property in the second get" + error);
-                        return true;
-                    });
-                }).catch((error: any) => {
-                    if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Couldn't set the property: " + propertyName);
-                    container.passed = false;
-                    container.writePropertyReport.passed = false;
-                    container.writePropertyReport.result = new Result(32, "Problem setting property" + Error);
-                    return false;
+                        //validating request against a schema, same as the action. Since the requests are written by the user there can be errors
+                        //Pay attention that validateResponse is called because writing to a property is based on its outputData
+                        let errors: Array<any> = Utils.validateResponse(propertyName, toSend, self.testConfig.SchemaLocation, "Property");
+                        if (errors) { //meaning that there is a validation error
+                            if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Created request is not valid for " + propertyName + "\nMessage is " + toSend + "\nError is " + errors);
+                            container.passed = false;
+                            container.readPropertyReport.result = new Result(41, "Created message has bad format: " + JSON.stringify(errors));
+                            resolve(true);
+                        } else {
+                            if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Created request is valid for: " + propertyName);
+                        }
+
+                        //setting the property, aka writing into it
+                        if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Writing to property " + propertyName + " with data: ", JSON.stringify(toSend, null, ' '));
+                        let sendTimeStamp = new Date();
+                        self.tut.writeProperty(propertyName, toSend).then(() => {
+                            container.writePropertyReport.sent = new Payload(sendTimeStamp, toSend);
+                            if (!isReadable) {
+                                if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Property test of " + propertyName + " is successful: no read");
+                                container.writePropertyReport.passed = true;
+                                container.writePropertyReport.result = new Result(200);
+                                resolve(true);
+                            } else {
+                                //now reading and hoping to get the same value
+                                let curPropertyData2: any = self.tut.readProperty(propertyName).then((res2: any) => {
+                                    let responseTimeStamp = new Date();
+                                    data2 = res2;
+                                    if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Data after second read property: ", JSON.stringify(data2, null, ' '));
+                                    //validating the gotten value (this shouldn't be necessary since the first time was correct but it is here nonetheless)
+
+                                    let errorsProp2: Array<any> = Utils.validateResponse(propertyName, data2, self.testConfig.SchemaLocation, "Property")
+
+                                    if (errorsProp2) { //meaning that there is a validation error
+                                        if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* Received second response is not valid for: " + propertyName, errorsProp2);
+                                        //here for the received, two response values are put
+                                        container.passed = false;
+                                        container.writePropertyReport.received = new Payload(responseTimeStamp, data2);
+                                        container.writePropertyReport.result = new Result(45, "Received second response is not valid, " + JSON.stringify(errorsProp2));
+                                    } else { //if there is no validation error we can test if the value we've gotten is the same as the one we wrote
+                                        if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received second response is valid for: " + propertyName);
+                                        container.writePropertyReport.passed = true;
+                                        if (JSON.stringify(data2) == JSON.stringify(toSend)) {
+                                            // wohoo everything is fine
+                                            if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Write functionality test of " + propertyName + " is successful: write works and second get property successful");
+                                            if (logMode) console.log('\x1b[36m%s\x1b[0m', "* The value gotten after writing did match the write: " + propertyName);
+                                            container.writePropertyReport.received = new Payload(responseTimeStamp, data2);
+                                            container.writePropertyReport.result = new Result(201);
+                                        } else {
+                                            //maybe the value changed between two requests...
+                                            if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Write functionality test of " + propertyName + " is successful: write works, fetch not matching");
+                                            container.writePropertyReport.received = new Payload(responseTimeStamp, data2);
+                                            container.writePropertyReport.result = new Result(46, "The value gotten after writing did not match the write: " + propertyName);
+                                        }
+                                    }
+                                })
+                                    .then(() => {
+                                        resolve(true);
+                                    })
+                                    .catch((error: any) => { //problem in the node-wot level
+                                    if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Problem second time fetching property " + propertyName + "in the second get");
+                                    container.passed = false;
+                                    container.writePropertyReport.passed = false;
+                                    container.writePropertyReport.result = new Result(31, "Could not fetch property in the second get" + error);
+                                    reject(true);
+                                });
+                            };
+                        })
+                        .catch((error: any) => {
+                            if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Couldn't set the property: " + propertyName);
+                            container.passed = false;
+                            container.writePropertyReport.passed = false;
+                            container.writePropertyReport.result = new Result(32, "Problem setting property" + Error);
+                            resolve(true);
+                        });
+                    } else {
+                        resolve(true);
+                    }
                 });
             }
 
-            if (isReadable) {
-                let nodeWotError = testReadProperty();
-                if (nodeWotError) {
-                    container.passed = false;
-                    reject(container);
-                };
-            }
-            if (isWritable) {
-                let nodeWotError = testWriteProperty();
-                if (nodeWotError) {
+            testReadProperty()
+                .then(() => testWriteProperty())
+                .then(() => {
+                    resolve(container);
+                })
+                .catch(() => {
                     container.passed = false
                     reject(container);
-                };
-            }
-            resolve(container);
+                });
 		});
 	}
 
