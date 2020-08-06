@@ -175,17 +175,7 @@ export class TestReport {
     //this adds a message exchange
     //tha name of the message and the results of the exchange should be entered in the arguments
     //after getting all the arguments, these arguments are transformed into a JSON object that represents the exchange that has just occurred
-    //public addMessage(testCycle:number, testScenario:number, name: string, result: boolean, sent: JSON, received: JSON, errorId: number, error: string): void {
     public addMessage(testContainer: any): void {
-        //message to be built
-        // let curMessage: message = {
-        //     "name": testResult.actionName,
-        //     "result": testResult.hasPassed,
-        //     "sent": testResult.sentMessage[1],
-        //     "received": testResult.receivedMessage[1],
-        //     "resultId": testResult.resultId,
-        //     "errorMessage": testResult.resultMessage
-        // };
         //filling the results
         this.results[testContainer.testCycle][testContainer.testScenario].push(testContainer.getPrintableMessage());
     }

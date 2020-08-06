@@ -143,12 +143,12 @@ export class Tester {
                             container.report.result = new Result(16, "Received response is not valid, " + JSON.stringify(errorsRes));
                             resolve(container);
 						} else {
-							if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is valid for: " + actionName);
+                            if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Received response is valid for: " + actionName);
+                            //if nothing is wrong, putting a good result
+                            if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* ", actionName + " is successful");
+                            container.report.result = new Result(100);
+                            resolve(container);
 						}
-						//if nothing is wrong, putting a good result
-                        if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* ", actionName + " is successful");
-                        container.report.result = new Result(100);
-                        resolve(container);
 					} else { // in case there is no answer needed it is a successful test as well
                         if (logMode) console.log('\x1b[36m%s%s\x1b[0m', "* ", actionName + " is successful without return value");
                         container.report.result = new Result(101, "no return value needed");
