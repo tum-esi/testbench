@@ -97,7 +97,6 @@ export class Tester {
 				if (logMode) console.log('\x1b[36m%s%s\x1b[0m', '* Created value to send :', JSON.stringify(toSend, null, ' '));
 			} catch (Error) {
                 if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Cannot create for " + actionName + ", look at the previous message to identify the problem");
-                // TODO Ask if null (as off now) or toSend (as off before) should be written for container.report.result
                 container.passed = false;
                 container.report.result = new Result(12, "Cannot create message: " + Error);
                 resolve(container);
@@ -196,7 +195,6 @@ export class Tester {
                 if (isWritable) console.log('\x1b[36m%s\x1b[0m', "* Property is writable");
                 if (!isWritable) console.log('\x1b[36m%s\x1b[0m', "* Property is not writable");
             }
-
             /**
              * Tests the ReadProperty of a property. TestResults are written into container. Returns true if an error on node-wot level occurred.
              * @returns A boolean indicating if an error on node-wot level occurred.
