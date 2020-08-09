@@ -1,14 +1,133 @@
 import fs = require('fs');
 var mkdirp = require("mkdirp");
 
-interface message {
-    name?: string;
-    result?: boolean;
-    sent?: JSON;
-    received?: JSON;
-    errorId?: number;
-    error?: string;
+export class InteractionTestReportContainer {
+    testCycle: number;
+    testScenario: number;
+    name: string;
+    passed: boolean;
+
+    constructor(testCycle: number, testScenario: number, name: string) {
+        this.testCycle = testCycle;
+        this.testScenario = testScenario;
+        this.name = name;
+        this.passed = true;
+    }
 }
+
+export class Result {
+    id: number;
+    message?: string;
+
+    constructor(id: number, message?: string) {
+        this.id = id;
+        this.message = message;
+    }
+}
+
+export class Payload {
+    timestamp: Date;
+    payload: JSON;
+
+    constructor(timestamp: Date, payload: JSON) {
+        this.timestamp = timestamp;
+        this.payload = payload;
+    }
+}
+
+export class MiniTestReport {
+    passed: boolean | null; //If used for PropertyTesting each subTest (read, write, subscribe) can fail individually.
+    sent: Payload | null; //timestamp, sentMessage
+    received: Payload | null; //timestamp, receivedMessage
+    result: Result; //resultID, errorMessage
+
+    constructor(passed: boolean = null) {
+        this.passed = passed;
+        this.sent = null;
+        this.received = null;
+        this.result = null;
+    }
+}
+
+export class ActionTestReportContainer extends InteractionTestReportContainer {
+    report: MiniTestReport;
+
+    constructor(testCycle: number, testScenario: number, name: string) {
+        super(testCycle, testScenario, name);
+        this.report = new MiniTestReport();
+    }
+
+    /**
+     * Restructures the ReportContainer to match the structure of the printed Message. Potentially a new JSON object
+     * could be created and returned here if in the future the originally formatted container is needed for further processing.
+     * @return The restructured testReportContainer.
+     */
+    getPrintableMessage() {
+        delete this.testCycle;
+        delete this.testScenario;
+        delete this.report.passed;
+        return this;
+    }
+}
+
+export class PropertyTestReportContainer extends InteractionTestReportContainer{
+    readPropertyReport: MiniTestReport;
+    writePropertyReport: MiniTestReport;
+    observePropertyReport: MiniTestReport;
+
+    constructor(testCycle: number, testScenario: number, name: string) {
+        super(testCycle, testScenario, name);
+        this.readPropertyReport = null;
+        this.writePropertyReport = null;
+        this.observePropertyReport = null;
+    }
+
+    /**
+     * Restructures the ReportContainer to match the structure of the printed Message. Potentially a new JSON object
+     * could be created and returned here if in the future the originally formatted container is needed for further processing.
+     * @return The restructured testReportContainer.
+     */
+    getPrintableMessage() {
+        delete this.testCycle;
+        delete this.testScenario;
+        if (this.readPropertyReport == null) {
+            delete this.readPropertyReport;
+        }
+        if (this.writePropertyReport == null) {
+            delete this.writePropertyReport;
+        }
+        if (this.observePropertyReport == null) {
+            delete this.observePropertyReport;
+        }
+        return this;
+    }
+}
+
+export class EventTestReportContainer extends InteractionTestReportContainer {
+    subscribeEventReport: MiniTestReport; //in and output
+    eventDataReport: MiniTestReport; //only output
+    cancelEventReport: MiniTestReport; //in and output
+
+    constructor(testCycle: number, testScenario: number, name: string) {
+        super(testCycle, testScenario, name);
+        this.subscribeEventReport = new MiniTestReport();
+        this.eventDataReport = new MiniTestReport();
+        this.cancelEventReport = new MiniTestReport();
+    }
+
+    /**
+     * Restructures the ReportContainer to match the structure of the printed Message. Potentially a new JSON object
+     * could be created and returned here if in the future the originally formatted container is needed for further processing.
+     * @return The restructured testReportContainer.
+     */
+    getPrintableMessage() {
+        delete this.eventDataReport.sent;
+        delete this.testCycle;
+        delete this.testScenario;
+        return this;
+    }
+}
+
 export class TestReport {
     private results: Array<any>; //stores all the sent and received messages as well as the errors being produced
     private testCycleCount: number; //incremented at each repetition of a group of test scenarios
@@ -56,11 +175,9 @@ export class TestReport {
     //this adds a message exchange
     //tha name of the message and the results of the exchange should be entered in the arguments
     //after getting all the arguments, these arguments are transformed into a JSON object that represents the exchange that has just occurred
-    public addMessage(testCycle:number, testScenario:number, name: string, result: boolean, sent: JSON, received: JSON, errorId: number, error: string): void {
-        //message to be built
-        let curMessage: message = { "name": name, "result": result, "sent": sent, "received": received, "errorId": errorId, "error": error };
+    public addMessage(testContainer: any): void {
         //filling the results
-        this.results[testCycle][testScenario].push(curMessage);
+        this.results[testContainer.testCycle][testContainer.testScenario].push(testContainer.getPrintableMessage());
     }
 
     public printResults(): void {
@@ -85,9 +202,9 @@ export class TestReport {
                 let fails: number = 0;
                 try {
                     for (var k = 0; k < curSceLength; k++) {
-                        let curMessage: message = currentScenario[k];
+                        let curMessage: InteractionTestReportContainer = currentScenario[k];
                         //if the results of the single test is false, the number to be displayed in the table is incremented
-                        let curResult: boolean = curMessage.result;
+                        let curResult: boolean = curMessage.passed;
                         if (!curResult) {
                             fails++;
                         }
