@@ -1,0 +1,7 @@
+# Ignore artifacts:
+dist
+README.md
+.vscode/
+
+# Ignore all HTML files:
+*.html
