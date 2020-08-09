@@ -2,6 +2,7 @@
 dist
 README.md
 .vscode/
+.travis.yml
 
 # Ignore all HTML files:
 *.html

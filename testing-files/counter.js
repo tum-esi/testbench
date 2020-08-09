@@ -13,67 +13,55 @@
  * SPDX-License-Identifier: EPL-2.0 OR W3C-20150513
  ********************************************************************************/
 
-const NAME_PROPERTY_COUNT = "count";
-const NAME_ACTION_INCREMENT = "increment";
-const NAME_ACTION_DECREMENT = "decrement";
-const NAME_ACTION_RESET = "reset";
+const NAME_PROPERTY_COUNT = 'count'
+const NAME_ACTION_INCREMENT = 'increment'
+const NAME_ACTION_DECREMENT = 'decrement'
+const NAME_ACTION_RESET = 'reset'
 
 let thing = WoT.produce({
-	title: "counter",
-	description: "counter example Thing",
-	"@context": ["https://www.w3.org/2019/wot/td/v1",
-                {"cov": "http://www.example.org/coap-binding#"}]
-});
+    title: 'counter',
+    description: 'counter example Thing',
+    '@context': ['https://www.w3.org/2019/wot/td/v1', { cov: 'http://www.example.org/coap-binding#' }],
+})
 
-console.log("Created thing " + thing.title);
+console.log('Created thing ' + thing.title)
 
 thing.addProperty(
-	NAME_PROPERTY_COUNT,
-	{
-		type: "integer",
-		description: "current counter value",
-		"iot:custom": "nothing",
-		observable: true,
-		writeable: true
-	},
-	0);
+    NAME_PROPERTY_COUNT,
+    {
+        type: 'integer',
+        description: 'current counter value',
+        'iot:custom': 'nothing',
+        observable: true,
+        writeable: true,
+    },
+    0
+)
 
-thing.addAction(
-	NAME_ACTION_INCREMENT,
-	{},
-	() => {
-		console.log("Incrementing");
-		return thing.properties[NAME_PROPERTY_COUNT].read().then( (count) => {
-			let value = count + 1;
-			thing.properties[NAME_PROPERTY_COUNT].write(value);
-		});
-	}
-);
+thing.addAction(NAME_ACTION_INCREMENT, {}, () => {
+    console.log('Incrementing')
+    return thing.properties[NAME_PROPERTY_COUNT].read().then((count) => {
+        let value = count + 1
+        thing.properties[NAME_PROPERTY_COUNT].write(value)
+    })
+})
 
-thing.addAction(
-	NAME_ACTION_DECREMENT,
-	{},
-	() => {
-		console.log("Decrementing");
-		return thing.properties[NAME_PROPERTY_COUNT].read().then( (count) => {
-			let value = count - 1;
-			thing.properties[NAME_PROPERTY_COUNT].write(value);
-		});
-	}
-);
+thing.addAction(NAME_ACTION_DECREMENT, {}, () => {
+    console.log('Decrementing')
+    return thing.properties[NAME_PROPERTY_COUNT].read().then((count) => {
+        let value = count - 1
+        thing.properties[NAME_PROPERTY_COUNT].write(value)
+    })
+})
 
-thing.addAction(
-	NAME_ACTION_RESET,
-	{},
-	() => {
-		console.log("Resetting");
-		thing.properties[NAME_PROPERTY_COUNT].write(0);
-	}
-);
+thing.addAction(NAME_ACTION_RESET, {}, () => {
+    console.log('Resetting')
+    thing.properties[NAME_PROPERTY_COUNT].write(0)
+})
 
-thing.set("support", "none");
-console.info(thing.support);
+thing.set('support', 'none')
+console.info(thing.support)
 
 thing.expose().then(() => {
-	console.info(thing.title + " ready");
-});
+    console.info(thing.title + ' ready')
+})
