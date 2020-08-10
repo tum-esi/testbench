@@ -6,6 +6,7 @@ os:
   - osx
   - windows
 before_script:
+  - npx prettier --write .
   - npm run build
   - npm start &
   - node testing-files/perfectThing.js &
