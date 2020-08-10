@@ -1,9 +1,9 @@
-var Servient = require('@node-wot/core').Servient
-var HttpServer = require('@node-wot/binding-http').HttpServer
-var HttpClientFactory = require('@node-wot/binding-http').HttpClientFactory
-var CoapServer = require('@node-wot/binding-coap').CoapServer
-var CoapClientFactory = require('@node-wot/binding-coap').CoapClientFactory
-var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest
+var Servient = require("@node-wot/core").Servient
+var HttpServer = require("@node-wot/binding-http").HttpServer
+var HttpClientFactory = require("@node-wot/binding-http").HttpClientFactory
+var CoapServer = require("@node-wot/binding-coap").CoapServer
+var CoapClientFactory = require("@node-wot/binding-coap").CoapClientFactory
+var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest
 
 let srv = new Servient()
 let httpSrvObj = { port: 8083 }
@@ -14,68 +14,68 @@ srv.addServer(new CoapServer(coapSrvObj))
 srv.addClientFactory(new CoapClientFactory())
 srv.start()
     .then((WoT) => {
-        console.log('* started servient')
+        console.log("* started servient")
 
         let thing = WoT.produce({
-            title: 'TestServient',
-            description: 'Test servient that can be used as a servient to be tested with the WoT Test Bench. All interactions have errors explicetely coded',
+            title: "TestServient",
+            description: "Test servient that can be used as a servient to be tested with the WoT Test Bench. All interactions have errors explicetely coded",
         })
 
         thing.addProperty(
-            'display',
+            "display",
             {
-                type: 'string',
+                type: "string",
                 observable: true,
             },
-            'initialization string'
+            "initialization string"
         )
 
         thing.addProperty(
-            'wrongWritable',
+            "wrongWritable",
             {
                 description: "property that says writable but isn't",
-                type: 'number',
+                type: "number",
                 observable: true,
             },
             15
         )
 
-        thing.setPropertyWriteHandler('wrongWritable', () => {
+        thing.setPropertyWriteHandler("wrongWritable", () => {
             return new Promise(function (resolve, reject) {
-                console.log('Writing the old value')
-                thing.properties['wrongWritable'].write(15)
+                console.log("Writing the old value")
+                thing.properties["wrongWritable"].write(15)
                 resolve(15)
             })
             // return thing.properties["wrongWritable"].write(15).then(() => 15, () => false);
         })
 
         thing.addProperty(
-            'wrongDataTypeNumber',
+            "wrongDataTypeNumber",
             {
-                description: 'property that returns a different data type than the one described',
-                type: 'number',
+                description: "property that returns a different data type than the one described",
+                type: "number",
                 readOnly: true,
                 observable: true,
             },
-            'this is not a number'
+            "this is not a number"
         )
 
         thing.addProperty(
-            'wrongDataTypeObject',
+            "wrongDataTypeObject",
             {
                 description: "property that doesn't return a key that is required",
-                type: 'object',
+                type: "object",
                 properties: {
                     brightness: {
-                        type: 'number',
+                        type: "number",
                         minimum: 0.0,
                         maximum: 100.0,
                     },
                     status: {
-                        type: 'string',
+                        type: "string",
                     },
                 },
-                required: ['brightness', 'status'],
+                required: ["brightness", "status"],
             },
             {
                 brightness: 99.99,
@@ -83,101 +83,101 @@ srv.start()
         )
 
         thing.addProperty(
-            'testArray',
+            "testArray",
             {
-                type: 'array',
+                type: "array",
                 items: {
-                    type: 'number',
+                    type: "number",
                 },
             },
             [12, 15, 10]
         )
 
         thing.addAction(
-            'setCounter',
+            "setCounter",
             {
                 input: {
-                    type: 'number',
+                    type: "number",
                 },
             },
             (input) => {
-                console.log('* ACTION HANDLER FUNCTION for setCounter')
-                console.log('* ', input)
-                return thing.properties['counter']
+                console.log("* ACTION HANDLER FUNCTION for setCounter")
+                console.log("* ", input)
+                return thing.properties["counter"]
                     .write(input)
                     .then(() => {
-                        console.log('* Set counter successful')
+                        console.log("* Set counter successful")
                         return
                     })
                     .catch(() => {
-                        console.log('* Set counter failed')
+                        console.log("* Set counter failed")
                         return
                     })
             }
         )
 
         thing.addAction(
-            'getTemperature',
+            "getTemperature",
             {
                 output: {
-                    type: 'number',
+                    type: "number",
                 },
             },
             () => {
-                console.log('* ACTION HANDLER FUNCTION for getTemp')
-                return thing.properties['temperature']
+                console.log("* ACTION HANDLER FUNCTION for getTemp")
+                return thing.properties["temperature"]
                     .read()
                     .then((temp) => {
-                        console.log('* getTemperature successful')
+                        console.log("* getTemperature successful")
                         return temp
                     })
                     .catch(() => {
-                        console.log('* getTemperature failed')
+                        console.log("* getTemperature failed")
                         return 0
                     })
             }
         )
 
         thing.addAction(
-            'setDisplay',
+            "setDisplay",
             {
                 input: {
-                    type: 'string',
+                    type: "string",
                 },
                 output: {
-                    type: 'string',
+                    type: "string",
                 },
             },
             (input) => {
-                console.log('* ACTION HANDLER FUNCTION for setDisplay')
-                console.log('* ', input)
+                console.log("* ACTION HANDLER FUNCTION for setDisplay")
+                console.log("* ", input)
                 return new Promise((resolve, reject) => {
-                    resolve('Display set')
+                    resolve("Display set")
                 })
             }
         )
 
         thing.addAction(
-            'setTestObject',
+            "setTestObject",
             {
                 input: {
-                    type: 'object',
+                    type: "object",
                     properties: {
                         brightness: {
-                            type: 'number',
+                            type: "number",
                             minimum: 0.0,
                             maximum: 100.0,
                         },
                         status: {
-                            type: 'string',
+                            type: "string",
                         },
                     },
                 },
             },
             (input) => {
-                console.log('* ACTION HANDLER FUNCTION for setTestObject')
-                console.log('* ', input)
-                return thing.properties['testObject'].write(input).then(
+                console.log("* ACTION HANDLER FUNCTION for setTestObject")
+                console.log("* ", input)
+                return thing.properties["testObject"].write(input).then(
                     () => input,
                     () => false
                 )
@@ -185,24 +185,24 @@ srv.start()
         )
 
         thing.addAction(
-            'longTakingAction',
+            "longTakingAction",
             {
-                description: 'Action that can fail because of taking longer than usual (5s)',
+                description: "Action that can fail because of taking longer than usual (5s)",
                 input: {
-                    type: 'array',
+                    type: "array",
                     items: {
-                        type: 'number',
+                        type: "number",
                     },
                 },
                 output: {
-                    type: 'array',
+                    type: "array",
                     items: {
-                        type: 'number',
+                        type: "number",
                     },
                 },
             },
             (input) => {
-                console.log('* ACTION HANDLER FUNCTION for longTakingAction')
+                console.log("* ACTION HANDLER FUNCTION for longTakingAction")
                 var promise1 = new Promise(function (resolve, reject) {
                     setTimeout(resolve, 5000, input)
                 })
@@ -210,14 +210,14 @@ srv.start()
             }
         )
 
-        thing.addEvent('onChange', {
-            type: 'number',
+        thing.addEvent("onChange", {
+            type: "number",
         })
 
         thing.expose().then(() => {
-            console.info(thing.title + ' ready')
+            console.info(thing.title + " ready")
         })
     })
     .catch((err) => {
-        throw 'Couldnt connect to servient'
+        throw "Couldnt connect to servient"
     })

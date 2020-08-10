@@ -4,7 +4,7 @@
     "tabWidth": 4,
     "trailingComma": "es5",
     "semi": false,
-    "singleQuote": true,
+    "singleQuote": false,
     "bracketSpacing": true,
     "quoteProps": "as-needed",
     "arrowParens": "always",

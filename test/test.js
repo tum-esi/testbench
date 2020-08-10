@@ -1,14 +1,14 @@
-var chai = require('chai')
-var chaiHttp = require('chai-http')
+var chai = require("chai")
+var chaiHttp = require("chai-http")
 chai.use(chaiHttp)
-var app = 'localhost:8980'
+var app = "localhost:8980"
 var expect = chai.expect
-describe('Property: testData', function () {
-    describe('Get test Data', function () {
-        it('Get Data', function (done) {
+describe("Property: testData", function () {
+    describe("Get test Data", function () {
+        it("Get Data", function (done) {
             // Send some Form Data
             chai.request(app)
-                .get('/wot-test-bench/properties/testData')
+                .get("/wot-test-bench/properties/testData")
                 .end(function (err, res) {
                     expect(err).to.be.null
                     expect(res).to.have.status(200)
@@ -120,99 +120,99 @@ function allTestPassed(allTestCases) {
     return !allTestCases.some((testCase) => testCase.passed == false)
 }
 
-describe('Action: fastTest', function () {
-    describe('Test entire system', function () {
-        it('Fast Test', function (done) {
+describe("Action: fastTest", function () {
+    describe("Test entire system", function () {
+        it("Fast Test", function (done) {
             // Send some Form Data
             chai.request(app)
-                .post('/wot-test-bench/actions/fastTest')
+                .post("/wot-test-bench/actions/fastTest")
                 .send({
-                    title: 'TestServient',
-                    description: 'Test servient that can be used as a servient to be tested with the WoT Test Bench',
+                    title: "TestServient",
+                    description: "Test servient that can be used as a servient to be tested with the WoT Test Bench",
                     properties: {
                         display: {
-                            type: 'string',
+                            type: "string",
                             observable: true,
                             readOnly: false,
                             writeOnly: false,
                             forms: [
                                 {
-                                    href: 'http://localhost:8081/TestServient/properties/display',
-                                    contentType: 'application/json',
-                                    op: ['readproperty', 'writeproperty'],
+                                    href: "http://localhost:8081/TestServient/properties/display",
+                                    contentType: "application/json",
+                                    op: ["readproperty", "writeproperty"],
                                 },
                                 {
-                                    href: 'http://localhost:8081/TestServient/properties/display/observable',
-                                    contentType: 'application/json',
-                                    op: ['observeproperty'],
-                                    subprotocol: 'longpoll',
+                                    href: "http://localhost:8081/TestServient/properties/display/observable",
+                                    contentType: "application/json",
+                                    op: ["observeproperty"],
+                                    subprotocol: "longpoll",
                                 },
                                 {
-                                    href: 'coap://localhost:8082/TestServient/properties/display',
-                                    contentType: 'application/json',
-                                    op: ['readproperty', 'writeproperty'],
+                                    href: "coap://localhost:8082/TestServient/properties/display",
+                                    contentType: "application/json",
+                                    op: ["readproperty", "writeproperty"],
                                 },
                             ],
                         },
                         counter: {
-                            type: 'number',
+                            type: "number",
                             observable: true,
                             readOnly: false,
                             writeOnly: false,
                             forms: [
                                 {
-                                    href: 'http://localhost:8081/TestServient/properties/counter',
-                                    contentType: 'application/json',
-                                    op: ['readproperty', 'writeproperty'],
+                                    href: "http://localhost:8081/TestServient/properties/counter",
+                                    contentType: "application/json",
+                                    op: ["readproperty", "writeproperty"],
                                 },
                                 {
-                                    href: 'http://localhost:8081/TestServient/properties/counter/observable',
-                                    contentType: 'application/json',
-                                    op: ['observeproperty'],
-                                    subprotocol: 'longpoll',
+                                    href: "http://localhost:8081/TestServient/properties/counter/observable",
+                                    contentType: "application/json",
+                                    op: ["observeproperty"],
+                                    subprotocol: "longpoll",
                                 },
                                 {
-                                    href: 'coap://localhost:8082/TestServient/properties/counter',
-                                    contentType: 'application/json',
-                                    op: ['readproperty', 'writeproperty'],
+                                    href: "coap://localhost:8082/TestServient/properties/counter",
+                                    contentType: "application/json",
+                                    op: ["readproperty", "writeproperty"],
                                 },
                             ],
                         },
                         temperature: {
-                            type: 'number',
+                            type: "number",
                             readOnly: true,
                             observable: true,
                             writeOnly: false,
                             forms: [
                                 {
-                                    href: 'http://localhost:8081/TestServient/properties/temperature',
-                                    contentType: 'application/json',
-                                    op: ['readproperty'],
-                                    'htv:methodName': 'GET',
+                                    href: "http://localhost:8081/TestServient/properties/temperature",
+                                    contentType: "application/json",
+                                    op: ["readproperty"],
+                                    "htv:methodName": "GET",
                                 },
                                 {
-                                    href: 'http://localhost:8081/TestServient/properties/temperature/observable',
-                                    contentType: 'application/json',
-                                    op: ['observeproperty'],
-                                    subprotocol: 'longpoll',
+                                    href: "http://localhost:8081/TestServient/properties/temperature/observable",
+                                    contentType: "application/json",
+                                    op: ["observeproperty"],
+                                    subprotocol: "longpoll",
                                 },
                                 {
-                                    href: 'coap://localhost:8082/TestServient/properties/temperature',
-                                    contentType: 'application/json',
-                                    op: ['readproperty'],
+                                    href: "coap://localhost:8082/TestServient/properties/temperature",
+                                    contentType: "application/json",
+                                    op: ["readproperty"],
                                 },
                             ],
                         },
                         testObject: {
-                            type: 'object',
+                            type: "object",
                             properties: {
                                 brightness: {
-                                    type: 'number',
+                                    type: "number",
                                     minimum: 0,
                                     maximum: 100,
                                 },
                                 status: {
-                                    type: 'string',
+                                    type: "string",
                                 },
                             },
                             readOnly: false,
@@ -220,35 +220,35 @@ describe('Action: fastTest', function () {
                             observable: false,
                             forms: [
                                 {
-                                    href: 'http://localhost:8081/TestServient/properties/testObject',
-                                    contentType: 'application/json',
-                                    op: ['readproperty', 'writeproperty'],
+                                    href: "http://localhost:8081/TestServient/properties/testObject",
+                                    contentType: "application/json",
+                                    op: ["readproperty", "writeproperty"],
                                 },
                                 {
-                                    href: 'coap://localhost:8082/TestServient/properties/testObject',
-                                    contentType: 'application/json',
-                                    op: ['readproperty', 'writeproperty'],
+                                    href: "coap://localhost:8082/TestServient/properties/testObject",
+                                    contentType: "application/json",
+                                    op: ["readproperty", "writeproperty"],
                                 },
                             ],
                         },
                         testArray: {
-                            type: 'array',
+                            type: "array",
                             items: {
-                                type: 'number',
+                                type: "number",
                             },
                             readOnly: false,
                             writeOnly: false,
                             observable: false,
                             forms: [
                                 {
-                                    href: 'http://localhost:8081/TestServient/properties/testArray',
-                                    contentType: 'application/json',
-                                    op: ['readproperty', 'writeproperty'],
+                                    href: "http://localhost:8081/TestServient/properties/testArray",
+                                    contentType: "application/json",
+                                    op: ["readproperty", "writeproperty"],
                                 },
                                 {
-                                    href: 'coap://localhost:8082/TestServient/properties/testArray',
-                                    contentType: 'application/json',
-                                    op: ['readproperty', 'writeproperty'],
+                                    href: "coap://localhost:8082/TestServient/properties/testArray",
+                                    contentType: "application/json",
+                                    op: ["readproperty", "writeproperty"],
                                 },
                             ],
                         },
@@ -256,19 +256,19 @@ describe('Action: fastTest', function () {
                     actions: {
                         setCounter: {
                             input: {
-                                type: 'number',
+                                type: "number",
                             },
                             forms: [
                                 {
-                                    href: 'http://localhost:8081/TestServient/actions/setCounter',
-                                    contentType: 'application/json',
-                                    op: ['invokeaction'],
-                                    'htv:methodName': 'POST',
+                                    href: "http://localhost:8081/TestServient/actions/setCounter",
+                                    contentType: "application/json",
+                                    op: ["invokeaction"],
+                                    "htv:methodName": "POST",
                                 },
                                 {
-                                    href: 'coap://localhost:8082/TestServient/actions/setCounter',
-                                    contentType: 'application/json',
-                                    op: 'invokeaction',
+                                    href: "coap://localhost:8082/TestServient/actions/setCounter",
+                                    contentType: "application/json",
+                                    op: "invokeaction",
                                 },
                             ],
                             idempotent: false,
@@ -276,19 +276,19 @@ describe('Action: fastTest', function () {
                         },
                         getTemperature: {
                             output: {
-                                type: 'number',
+                                type: "number",
                             },
                             forms: [
                                 {
-                                    href: 'http://localhost:8081/TestServient/actions/getTemperature',
-                                    contentType: 'application/json',
-                                    op: ['invokeaction'],
-                                    'htv:methodName': 'POST',
+                                    href: "http://localhost:8081/TestServient/actions/getTemperature",
+                                    contentType: "application/json",
+                                    op: ["invokeaction"],
+                                    "htv:methodName": "POST",
                                 },
                                 {
-                                    href: 'coap://localhost:8082/TestServient/actions/getTemperature',
-                                    contentType: 'application/json',
-                                    op: 'invokeaction',
+                                    href: "coap://localhost:8082/TestServient/actions/getTemperature",
+                                    contentType: "application/json",
+                                    op: "invokeaction",
                                 },
                             ],
                             idempotent: false,
@@ -296,22 +296,22 @@ describe('Action: fastTest', function () {
                         },
                         setDisplay: {
                             input: {
-                                type: 'string',
+                                type: "string",
                             },
                             output: {
-                                type: 'string',
+                                type: "string",
                             },
                             forms: [
                                 {
-                                    href: 'http://localhost:8081/TestServient/actions/setDisplay',
-                                    contentType: 'application/json',
-                                    op: ['invokeaction'],
-                                    'htv:methodName': 'POST',
+                                    href: "http://localhost:8081/TestServient/actions/setDisplay",
+                                    contentType: "application/json",
+                                    op: ["invokeaction"],
+                                    "htv:methodName": "POST",
                                 },
                                 {
-                                    href: 'coap://localhost:8082/TestServient/actions/setDisplay',
-                                    contentType: 'application/json',
-                                    op: 'invokeaction',
+                                    href: "coap://localhost:8082/TestServient/actions/setDisplay",
+                                    contentType: "application/json",
+                                    op: "invokeaction",
                                 },
                             ],
                             idempotent: false,
@@ -319,29 +319,29 @@ describe('Action: fastTest', function () {
                         },
                         setTestObject: {
                             input: {
-                                type: 'object',
+                                type: "object",
                                 properties: {
                                     brightness: {
-                                        type: 'number',
+                                        type: "number",
                                         minimum: 0,
                                         maximum: 100,
                                     },
                                     status: {
-                                        type: 'string',
+                                        type: "string",
                                     },
                                 },
                             },
                             forms: [
                                 {
-                                    href: 'http://localhost:8081/TestServient/actions/setTestObject',
-                                    contentType: 'application/json',
-                                    op: ['invokeaction'],
-                                    'htv:methodName': 'POST',
+                                    href: "http://localhost:8081/TestServient/actions/setTestObject",
+                                    contentType: "application/json",
+                                    op: ["invokeaction"],
+                                    "htv:methodName": "POST",
                                 },
                                 {
-                                    href: 'coap://localhost:8082/TestServient/actions/setTestObject',
-                                    contentType: 'application/json',
-                                    op: 'invokeaction',
+                                    href: "coap://localhost:8082/TestServient/actions/setTestObject",
+                                    contentType: "application/json",
+                                    op: "invokeaction",
                                 },
                             ],
                             idempotent: false,
@@ -349,28 +349,28 @@ describe('Action: fastTest', function () {
                         },
                         setTestArray: {
                             input: {
-                                type: 'array',
+                                type: "array",
                                 items: {
-                                    type: 'number',
+                                    type: "number",
                                 },
                             },
                             output: {
-                                type: 'array',
+                                type: "array",
                                 items: {
-                                    type: 'number',
+                                    type: "number",
                                 },
                             },
                             forms: [
                                 {
-                                    href: 'http://localhost:8081/TestServient/actions/setTestArray',
-                                    contentType: 'application/json',
-                                    op: ['invokeaction'],
-                                    'htv:methodName': 'POST',
+                                    href: "http://localhost:8081/TestServient/actions/setTestArray",
+                                    contentType: "application/json",
+                                    op: ["invokeaction"],
+                                    "htv:methodName": "POST",
                                 },
                                 {
-                                    href: 'coap://localhost:8082/TestServient/actions/setTestArray',
-                                    contentType: 'application/json',
-                                    op: 'invokeaction',
+                                    href: "coap://localhost:8082/TestServient/actions/setTestArray",
+                                    contentType: "application/json",
+                                    op: "invokeaction",
                                 },
                             ],
                             idempotent: false,
@@ -379,36 +379,36 @@ describe('Action: fastTest', function () {
                     },
                     events: {
                         onChange: {
-                            type: 'number',
+                            type: "number",
                             forms: [
                                 {
-                                    href: 'http://localhost:8081/TestServient/events/onChange',
-                                    contentType: 'application/json',
-                                    subprotocol: 'longpoll',
-                                    op: ['subscribeevent'],
+                                    href: "http://localhost:8081/TestServient/events/onChange",
+                                    contentType: "application/json",
+                                    subprotocol: "longpoll",
+                                    op: ["subscribeevent"],
                                 },
                                 {
-                                    href: 'coap://localhost:8082/TestServient/events/onChange',
-                                    contentType: 'application/json',
-                                    op: 'subscribeevent',
+                                    href: "coap://localhost:8082/TestServient/events/onChange",
+                                    contentType: "application/json",
+                                    op: "subscribeevent",
                                 },
                             ],
                         },
                     },
-                    '@context': 'https://www.w3.org/2019/wot/td/v1',
-                    '@type': 'Thing',
-                    security: ['nosec_sc'],
-                    id: 'urn:uuid:3999c3d8-1b55-4c05-bc63-c91f0981cf36',
+                    "@context": "https://www.w3.org/2019/wot/td/v1",
+                    "@type": "Thing",
+                    security: ["nosec_sc"],
+                    id: "urn:uuid:3999c3d8-1b55-4c05-bc63-c91f0981cf36",
                     forms: [
                         {
-                            href: 'http://localhost:8081/TestServient/all/properties',
-                            contentType: 'application/json',
-                            op: ['readallproperties', 'readmultipleproperties', 'writeallproperties', 'writemultipleproperties'],
+                            href: "http://localhost:8081/TestServient/all/properties",
+                            contentType: "application/json",
+                            op: ["readallproperties", "readmultipleproperties", "writeallproperties", "writemultipleproperties"],
                         },
                     ],
                     securityDefinitions: {
                         nosec_sc: {
-                            scheme: 'nosec',
+                            scheme: "nosec",
                         },
                     },
                 })

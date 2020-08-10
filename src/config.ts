@@ -1,5 +1,5 @@
 //testConfig for config file structure
-const inquirer = require('inquirer')
+const inquirer = require("inquirer")
 export const parseArgs = (tDescPaths: Array<string>) => {
     let argv = process.argv.slice(2)
     let configPresentFlag = false
@@ -10,9 +10,9 @@ export const parseArgs = (tDescPaths: Array<string>) => {
         } else if (arg.match(/^(-c|--configfile)$/i)) {
             configPresentFlag = true
         } else if (arg.match(/^(-v|--version)$/i)) {
-            console.info(require('../package.json').version)
+            console.info(require("../package.json").version)
         } else {
-            console.info('-c can be used to specify config file')
+            console.info("-c can be used to specify config file")
         }
     })
 }

@@ -8,10 +8,10 @@ It is possible to define multiple test scenarios with each having different requ
 After the test a test report can be generated and analyzed to get more meaning of the results.
 !!! tut means Thing Under Test
  */
-import * as wot from 'wot-typescript-definitions'
-import * as Utils from './utilities'
-import { TestReport, ActionTestReportContainer, PropertyTestReportContainer, MiniTestReport, Result, Payload, EventTestReportContainer } from './TestReport'
-import { testConfig } from './utilities'
+import * as wot from "wot-typescript-definitions"
+import * as Utils from "./utilities"
+import { TestReport, ActionTestReportContainer, PropertyTestReportContainer, MiniTestReport, Result, Payload, EventTestReportContainer } from "./TestReport"
+import { testConfig } from "./utilities"
 
 export class Tester {
     private tutTd: wot.ThingDescription //the TD that belongs to the Thing under Test
@@ -36,24 +36,24 @@ export class Tester {
      * @param logMode True if logMode is enabled, false otherwise.
      */
     public initiate(logMode: boolean): number {
-        if (logMode) console.log('\x1b[36m%s\x1b[0m', '* Initiation has started')
+        if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Initiation has started")
         let check = 0
         try {
             check = Utils.generateSchemas(this.tutTd, this.testConfig.SchemaLocation, logMode)
-            if (logMode) console.log('\x1b[36m%s\x1b[0m', '* Finished schema generation.')
+            if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Finished schema generation.")
         } catch (Error) {
-            if (logMode) console.log('Schema Generation Error' + Error)
+            if (logMode) console.log("Schema Generation Error" + Error)
         }
         try {
             this.codeGen = new Utils.CodeGenerator(this.tutTd, this.testConfig)
-            if (logMode) console.log('\x1b[36m%s\x1b[0m', '* Finished code generation')
+            if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Finished code generation")
         } catch (Error) {
-            if (logMode) console.log('Utils.CodeGenerator Initialization Error' + Error)
+            if (logMode) console.log("Utils.CodeGenerator Initialization Error" + Error)
         }
         //The test report gets initialized and the first cycle and scenarios are added
         //This means that single tests are possible to be seen in the test report
         this.testReport = new TestReport()
-        if (logMode) console.log('\x1b[36m%s\x1b[0m', '* Initialization finished')
+        if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Initialization finished")
         return check
     }
 
@@ -123,86 +123,86 @@ export class Tester {
                 //generating the message to send
                 try {
                     toSend = self.codeGen.findRequestValue(self.testConfig.TestDataLocation, testScenario, interactionIndex, actionName)
-                    if (logMode) console.log('\x1b[36m%s%s\x1b[0m', '* Created value to send :', JSON.stringify(toSend, null, ' '))
+                    if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Created value to send :", JSON.stringify(toSend, null, " "))
                 } catch (Error) {
                     if (logMode)
-                        console.log('\x1b[36m%s\x1b[0m', '* Cannot create for ' + actionName + ', look at the previous message to identify the problem')
+                        console.log("\x1b[36m%s\x1b[0m", "* Cannot create for " + actionName + ", look at the previous message to identify the problem")
                     container.passed = false
-                    container.report.result = new Result(12, 'Cannot create message: ' + Error)
+                    container.report.result = new Result(12, "Cannot create message: " + Error)
                     resolve(true)
                 }
                 //validating request against a schema. Validator returns an array that describes the error. This array is empty when there is no error
                 //a first thinking would say that it shouldn't be necessary but since the requests are user written, there can be errors there as well.
                 if (toSend != null) {
-                    let errors: Array<any> = Utils.validateRequest(actionName, toSend, self.testConfig.SchemaLocation, 'Action')
+                    let errors: Array<any> = Utils.validateRequest(actionName, toSend, self.testConfig.SchemaLocation, "Action")
                     if (errors) {
                         //meaning that there is a validation error
                         if (logMode)
                             console.log(
-                                '\x1b[36m%s\x1b[0m',
-                                '* Created request is not valid for ' + actionName + '\nMessage is ' + toSend + '\nError is ' + errors
+                                "\x1b[36m%s\x1b[0m",
+                                "* Created request is not valid for " + actionName + "\nMessage is " + toSend + "\nError is " + errors
                             )
                         container.passed = false
-                        container.report.result = new Result(13, 'Created message has bad format: ' + JSON.stringify(errors))
+                        container.report.result = new Result(13, "Created message has bad format: " + JSON.stringify(errors))
                         resolve(true)
                     } else {
-                        if (logMode) console.log('\x1b[36m%s\x1b[0m', '* Created request is valid for: ' + actionName)
+                        if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Created request is valid for: " + actionName)
                     }
                 }
                 //invoking the action
                 try {
-                    if (logMode) console.log('\x1b[36m%s%s\x1b[0m', '* Invoking action ' + actionName + ' with data:', JSON.stringify(toSend, null, ' '))
+                    if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Invoking action " + actionName + " with data:", JSON.stringify(toSend, null, " "))
                     // Try to invoke the action.
                     const invokedAction = self.tryToInvokeAction(actionName, toSend)
                     invokedAction[1]
                         .then((res: any) => {
                             let responseTimeStamp = new Date()
                             container.report.sent = new Payload(invokedAction[0], toSend) //sentTimeStamp, Payload
-                            if (interaction.hasOwnProperty('output')) {
+                            if (interaction.hasOwnProperty("output")) {
                                 //the action doesn't have to answer something back
                                 let answer = res
                                 container.report.received = new Payload(responseTimeStamp, answer)
-                                if (logMode) console.log('\x1b[36m%s%s\x1b[0m', '* Answer is:', JSON.stringify(answer, null, ' '))
+                                if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Answer is:", JSON.stringify(answer, null, " "))
                                 try {
                                     let temp: JSON = answer
                                 } catch (error) {
-                                    if (logMode) console.log('\x1b[36m%s\x1b[0m', '* Response is not in JSON format')
+                                    if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Response is not in JSON format")
                                     container.passed = false
-                                    container.report.result = new Result(15, 'Response is not in JSON format: ' + error)
+                                    container.report.result = new Result(15, "Response is not in JSON format: " + error)
                                     resolve(true)
                                 }
                                 //validating the response against its schema, same as before
-                                let errorsRes: Array<any> = Utils.validateResponse(actionName, answer, self.testConfig.SchemaLocation, 'Action')
+                                let errorsRes: Array<any> = Utils.validateResponse(actionName, answer, self.testConfig.SchemaLocation, "Action")
                                 if (errorsRes) {
                                     //meaning that there is a validation error
-                                    if (logMode) console.log('\x1b[36m%s\x1b[0m', '* Received response is not valid for: ' + actionName)
+                                    if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Received response is not valid for: " + actionName)
                                     container.passed = false
-                                    container.report.result = new Result(16, 'Received response is not valid, ' + JSON.stringify(errorsRes))
+                                    container.report.result = new Result(16, "Received response is not valid, " + JSON.stringify(errorsRes))
                                     resolve(true)
                                 } else {
-                                    if (logMode) console.log('\x1b[36m%s\x1b[0m', '* Received response is valid for: ' + actionName)
+                                    if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Received response is valid for: " + actionName)
                                     //if nothing is wrong, putting a good result
-                                    if (logMode) console.log('\x1b[36m%s%s\x1b[0m', '* ', actionName + ' is successful')
+                                    if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* ", actionName + " is successful")
                                     container.report.result = new Result(100)
                                     resolve(true)
                                 }
                             } else {
                                 // in case there is no answer needed it is a successful test as well
-                                if (logMode) console.log('\x1b[36m%s%s\x1b[0m', '* ', actionName + ' is successful without return value')
-                                container.report.result = new Result(101, 'no return value needed')
+                                if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* ", actionName + " is successful without return value")
+                                container.report.result = new Result(101, "no return value needed")
                                 resolve(true)
                             }
                         })
                         .catch((error) => {
                             container.passed = false
-                            container.report.result = new Result(999, 'Invoke Action Error: ' + error)
+                            container.report.result = new Result(999, "Invoke Action Error: " + error)
                             resolve(true)
                         })
                 } catch (Error) {
                     // in case there is a problem with the invoke of the action
-                    if (logMode) console.log('* Response receiving for  ' + actionName + 'is unsuccessful, continuing with other scenarios')
+                    if (logMode) console.log("* Response receiving for  " + actionName + "is unsuccessful, continuing with other scenarios")
                     container.passed = false
-                    container.report.result = new Result(10, 'Problem invoking the action' + Error)
+                    container.report.result = new Result(10, "Problem invoking the action" + Error)
                     resolve(true)
                 }
             })
@@ -238,10 +238,10 @@ export class Tester {
         let isReadable: boolean = !interaction.writeOnly
 
         if (logMode) {
-            if (isReadable) console.log('\x1b[36m%s\x1b[0m', '* Property is readable')
-            if (!isReadable) console.log('\x1b[36m%s\x1b[0m', '* Property is not readable')
-            if (isWritable) console.log('\x1b[36m%s\x1b[0m', '* Property is writable')
-            if (!isWritable) console.log('\x1b[36m%s\x1b[0m', '* Property is not writable')
+            if (isReadable) console.log("\x1b[36m%s\x1b[0m", "* Property is readable")
+            if (!isReadable) console.log("\x1b[36m%s\x1b[0m", "* Property is not readable")
+            if (isWritable) console.log("\x1b[36m%s\x1b[0m", "* Property is writable")
+            if (!isWritable) console.log("\x1b[36m%s\x1b[0m", "* Property is not writable")
         }
 
         return new Promise(function (resolve, reject) {
@@ -266,7 +266,7 @@ export class Tester {
             return new Promise(function (resolve, reject) {
                 if (isReadable) {
                     let data: JSON
-                    if (logMode) console.log('\x1b[36m%s%s\x1b[0m', '* Testing the read functionality for: ', propertyName)
+                    if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Testing the read functionality for: ", propertyName)
                     container.readPropertyReport = new MiniTestReport(false)
                     self.tut
                         .readProperty(propertyName)
@@ -274,16 +274,16 @@ export class Tester {
                             let responseTimeStamp = new Date()
                             data = res
                             container.readPropertyReport.received = new Payload(responseTimeStamp, res)
-                            if (logMode) console.log('\x1b[36m%s%s\x1b[0m', '* Data after first read property: ', JSON.stringify(data, null, ' '))
+                            if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Data after first read property: ", JSON.stringify(data, null, " "))
                             //validating the property value with its Schemas
-                            let errorsProp: Array<any> = Utils.validateResponse(propertyName, data, self.testConfig.SchemaLocation, 'Property')
+                            let errorsProp: Array<any> = Utils.validateResponse(propertyName, data, self.testConfig.SchemaLocation, "Property")
                             if (errorsProp) {
                                 //meaning that there is a validation error
-                                if (logMode) console.log('\x1b[36m%s%s\x1b[0m', '* Received response is not valid for: ' + propertyName, errorsProp)
+                                if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Received response is not valid for: " + propertyName, errorsProp)
                                 container.passed = false
-                                container.readPropertyReport.result = new Result(35, 'Received response is not valid, ' + JSON.stringify(errorsProp))
+                                container.readPropertyReport.result = new Result(35, "Received response is not valid, " + JSON.stringify(errorsProp))
                             } else {
-                                if (logMode) console.log('\x1b[36m%s\x1b[0m', '* Received response is valid for: ' + propertyName)
+                                if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Received response is valid for: " + propertyName)
                                 container.readPropertyReport.passed = true
                                 container.readPropertyReport.result = new Result(200)
                             }
@@ -291,18 +291,18 @@ export class Tester {
                         .then(() => {
                             if (logMode)
                                 console.log(
-                                    '\x1b[36m%s\x1b[0m',
-                                    '* Read functionality test of ' + propertyName + ' is successful: first get property is schema valid'
+                                    "\x1b[36m%s\x1b[0m",
+                                    "* Read functionality test of " + propertyName + " is successful: first get property is schema valid"
                                 )
                             resolve(true)
                         })
                         .catch((error: any) => {
                             //problem in the node-wot level
-                            if (logMode) console.log('\x1b[36m%s\x1b[0m', '* Problem fetching first time property: ' + propertyName)
-                            console.log('ERROR is: ', error)
+                            if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Problem fetching first time property: " + propertyName)
+                            console.log("ERROR is: ", error)
                             container.passed = false
                             container.readPropertyReport.passed = false
-                            container.readPropertyReport.result = new Result(30, 'Could not fetch property')
+                            container.readPropertyReport.result = new Result(30, "Could not fetch property")
                             reject(true)
                         })
                 } else {
@@ -322,48 +322,48 @@ export class Tester {
                 if (isWritable) {
                     let data2: JSON
                     let toSend: JSON
-                    if (logMode) console.log('\x1b[36m%s%s\x1b[0m', '* Testing the write functionality for: ', propertyName)
+                    if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Testing the write functionality for: ", propertyName)
                     container.writePropertyReport = new MiniTestReport(false)
                     //generating the message to send
                     try {
                         toSend = self.codeGen.findRequestValue(self.testConfig.TestDataLocation, testScenario, interactionIndex, propertyName)
-                        if (logMode) console.log('\x1b[36m%s%s\x1b[0m', '* Created value to send: ', JSON.stringify(toSend, null, ' '))
+                        if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Created value to send: ", JSON.stringify(toSend, null, " "))
                     } catch (Error) {
                         if (logMode)
                             console.log(
-                                '\x1b[36m%s\x1b[0m',
-                                '* Cannot create message for ' + propertyName + ', look at the previous message to identify the problem'
+                                "\x1b[36m%s\x1b[0m",
+                                "* Cannot create message for " + propertyName + ", look at the previous message to identify the problem"
                             )
                         container.passed = false
-                        container.writePropertyReport.result = new Result(40, 'Cannot create message: ' + Error)
+                        container.writePropertyReport.result = new Result(40, "Cannot create message: " + Error)
                         resolve(true)
                     }
                     //validating request against a schema, same as the action. Since the requests are written by the user there can be errors
                     //Pay attention that validateResponse is called because writing to a property is based on its outputData
-                    let errors: Array<any> = Utils.validateResponse(propertyName, toSend, self.testConfig.SchemaLocation, 'Property')
+                    let errors: Array<any> = Utils.validateResponse(propertyName, toSend, self.testConfig.SchemaLocation, "Property")
                     if (errors) {
                         //meaning that there is a validation error
                         if (logMode)
                             console.log(
-                                '\x1b[36m%s\x1b[0m',
-                                '* Created request is not valid for ' + propertyName + '\nMessage is ' + toSend + '\nError is ' + errors
+                                "\x1b[36m%s\x1b[0m",
+                                "* Created request is not valid for " + propertyName + "\nMessage is " + toSend + "\nError is " + errors
                             )
                         container.passed = false
-                        container.readPropertyReport.result = new Result(41, 'Created message has bad format: ' + JSON.stringify(errors))
+                        container.readPropertyReport.result = new Result(41, "Created message has bad format: " + JSON.stringify(errors))
                         resolve(true)
                     } else {
-                        if (logMode) console.log('\x1b[36m%s\x1b[0m', '* Created request is valid for: ' + propertyName)
+                        if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Created request is valid for: " + propertyName)
                     }
 
                     //setting the property, aka writing into it
-                    if (logMode) console.log('\x1b[36m%s%s\x1b[0m', '* Writing to property ' + propertyName + ' with data: ', JSON.stringify(toSend, null, ' '))
+                    if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Writing to property " + propertyName + " with data: ", JSON.stringify(toSend, null, " "))
                     let sendTimeStamp = new Date()
                     self.tut
                         .writeProperty(propertyName, toSend)
                         .then(() => {
                             container.writePropertyReport.sent = new Payload(sendTimeStamp, toSend)
                             if (!isReadable) {
-                                if (logMode) console.log('\x1b[36m%s\x1b[0m', '* Property test of ' + propertyName + ' is successful: no read')
+                                if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Property test of " + propertyName + " is successful: no read")
                                 container.writePropertyReport.passed = true
                                 container.writePropertyReport.result = new Result(200)
                                 resolve(true)
@@ -374,39 +374,39 @@ export class Tester {
                                     .then((res2: any) => {
                                         let responseTimeStamp = new Date()
                                         data2 = res2
-                                        if (logMode) console.log('\x1b[36m%s%s\x1b[0m', '* Data after second read property: ', JSON.stringify(data2, null, ' '))
+                                        if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Data after second read property: ", JSON.stringify(data2, null, " "))
                                         //validating the gotten value (this shouldn't be necessary since the first time was correct but it is here nonetheless)
 
-                                        let errorsProp2: Array<any> = Utils.validateResponse(propertyName, data2, self.testConfig.SchemaLocation, 'Property')
+                                        let errorsProp2: Array<any> = Utils.validateResponse(propertyName, data2, self.testConfig.SchemaLocation, "Property")
 
                                         if (errorsProp2) {
                                             //meaning that there is a validation error
                                             if (logMode)
-                                                console.log('\x1b[36m%s%s\x1b[0m', '* Received second response is not valid for: ' + propertyName, errorsProp2)
+                                                console.log("\x1b[36m%s%s\x1b[0m", "* Received second response is not valid for: " + propertyName, errorsProp2)
                                             //here for the received, two response values are put
                                             container.passed = false
                                             container.writePropertyReport.received = new Payload(responseTimeStamp, data2)
                                             container.writePropertyReport.result = new Result(
                                                 45,
-                                                'Received second response is not valid, ' + JSON.stringify(errorsProp2)
+                                                "Received second response is not valid, " + JSON.stringify(errorsProp2)
                                             )
                                         } else {
                                             //if there is no validation error we can test if the value we've gotten is the same as the one we wrote
-                                            if (logMode) console.log('\x1b[36m%s\x1b[0m', '* Received second response is valid for: ' + propertyName)
+                                            if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Received second response is valid for: " + propertyName)
                                             container.writePropertyReport.passed = true
                                             if (JSON.stringify(data2) == JSON.stringify(toSend)) {
                                                 // wohoo everything is fine
                                                 if (logMode)
                                                     console.log(
-                                                        '\x1b[36m%s\x1b[0m',
-                                                        '* Write functionality test of ' +
+                                                        "\x1b[36m%s\x1b[0m",
+                                                        "* Write functionality test of " +
                                                             propertyName +
-                                                            ' is successful: write works and second get property successful'
+                                                            " is successful: write works and second get property successful"
                                                     )
                                                 if (logMode)
                                                     console.log(
-                                                        '\x1b[36m%s\x1b[0m',
-                                                        '* The return value of the second get property (after writing) did match the write for: ' + propertyName
+                                                        "\x1b[36m%s\x1b[0m",
+                                                        "* The return value of the second get property (after writing) did match the write for: " + propertyName
                                                     )
                                                 container.writePropertyReport.received = new Payload(responseTimeStamp, data2)
                                                 container.writePropertyReport.result = new Result(201)
@@ -414,13 +414,13 @@ export class Tester {
                                                 //maybe the value changed between two requests...
                                                 if (logMode)
                                                     console.log(
-                                                        '\x1b[36m%s\x1b[0m',
-                                                        '* Write functionality test of ' + propertyName + ' is successful: write works, fetch not matching'
+                                                        "\x1b[36m%s\x1b[0m",
+                                                        "* Write functionality test of " + propertyName + " is successful: write works, fetch not matching"
                                                     )
                                                 container.writePropertyReport.received = new Payload(responseTimeStamp, data2)
                                                 container.writePropertyReport.result = new Result(
                                                     46,
-                                                    'The return value of the second get property (after writing) did not match the write for: ' + propertyName
+                                                    "The return value of the second get property (after writing) did not match the write for: " + propertyName
                                                 )
                                             }
                                         }
@@ -431,19 +431,19 @@ export class Tester {
                                     .catch((error: any) => {
                                         //problem in the node-wot level
                                         if (logMode)
-                                            console.log('\x1b[36m%s\x1b[0m', '* Problem second time fetching property ' + propertyName + 'in the second get')
+                                            console.log("\x1b[36m%s\x1b[0m", "* Problem second time fetching property " + propertyName + "in the second get")
                                         container.passed = false
                                         container.writePropertyReport.passed = false
-                                        container.writePropertyReport.result = new Result(31, 'Could not fetch property in the second get' + error)
+                                        container.writePropertyReport.result = new Result(31, "Could not fetch property in the second get" + error)
                                         reject(true)
                                     })
                             }
                         })
                         .catch((error: any) => {
-                            if (logMode) console.log('\x1b[36m%s\x1b[0m', "* Couldn't set the property: " + propertyName)
+                            if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Couldn't set the property: " + propertyName)
                             container.passed = false
                             container.writePropertyReport.passed = false
-                            container.writePropertyReport.result = new Result(32, 'Problem setting property' + Error)
+                            container.writePropertyReport.result = new Result(32, "Problem setting property" + Error)
                             resolve(true)
                         })
                 } else {
@@ -457,42 +457,42 @@ export class Tester {
         var self = this
         return new Promise(function (resolve, reject) {
             let interaction = Utils.getInteractionByName(self.tutTd, interactionName)
-            console.log('interaction pattern:', interaction[0], 'interaction:', interaction[1])
-            if (interaction[0] == 'Property') {
-                if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', '* ..................... Testing Property:', interactionName, '.................')
+            console.log("interaction pattern:", interaction[0], "interaction:", interaction[1])
+            if (interaction[0] == "Property") {
+                if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* ..................... Testing Property:", interactionName, ".................")
                 self.testProperty(testCycle, interactionName, interaction[1], testScenario, interactionIndex, logMode)
                     .then((curBool) => {
-                        if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', '* ..................... End Testing Property:', interactionName, '.................')
+                        if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* ..................... End Testing Property:", interactionName, ".................")
                         resolve(curBool)
                     })
                     .catch((curBool) => {
-                        if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', '* Error in testing property ', interactionName, ', check previous messages')
+                        if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* Error in testing property ", interactionName, ", check previous messages")
                         reject(curBool)
                     })
-            } else if (interaction[0] == 'Action') {
-                if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', '* ..................... Testing Action:', interactionName, '.................')
+            } else if (interaction[0] == "Action") {
+                if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* ..................... Testing Action:", interactionName, ".................")
                 self.testAction(testCycle, interactionName, interaction[1], testScenario, interactionIndex, logMode)
                     .then((curBool) => {
-                        if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', '* ..................... End Testing Action:', interactionName, '.................')
+                        if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* ..................... End Testing Action:", interactionName, ".................")
                         resolve(curBool)
                     })
                     .catch((curBool) => {
-                        if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', '* Error in testing action ', interactionName, ', check previous messages')
+                        if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* Error in testing action ", interactionName, ", check previous messages")
                         reject(curBool)
                     })
-            } else if (interaction[0] == 'Event') {
-                if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', '* ..................... Testing Event: ', interactionName, '.................')
+            } else if (interaction[0] == "Event") {
+                if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* ..................... Testing Event: ", interactionName, ".................")
                 self.testEvent(testCycle, interactionName, interaction[1], testScenario, interactionIndex, logMode)
                     .then((curBool) => {
-                        if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', '* ..................... End Testing Event: ', interactionName, '.................')
+                        if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* ..................... End Testing Event: ", interactionName, ".................")
                         resolve(curBool)
                     })
                     .catch((curBool) => {
-                        if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', '* Error in testing event ', interactionName, ', check previous messages')
+                        if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* Error in testing event ", interactionName, ", check previous messages")
                         reject(curBool)
                     })
             } else {
-                if (logMode) console.log('\x1b[36m%s\x1b[0m', '* Asked for something other than Action or Property or Event')
+                if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Asked for something other than Action or Property or Event")
                 reject(false)
             }
         })
@@ -529,11 +529,11 @@ export class Tester {
             //in the end the return value indicates if at least one interaction failed
             promise
                 .then(() => {
-                    if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', '* ------------- Test Scenario nb', testScenario, ' has finished -------------')
+                    if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* ------------- Test Scenario nb", testScenario, " has finished -------------")
                     resolve()
                 })
                 .catch((error: Error) => {
-                    if (logMode) console.log('\x1b[36m%s%s%s%s\x1b[0m', '* Test Scenario nb', testScenario, ' has finished with an error:', error)
+                    if (logMode) console.log("\x1b[36m%s%s%s%s\x1b[0m", "* Test Scenario nb", testScenario, " has finished with an error:", error)
                     reject(error)
                 })
         })
@@ -556,11 +556,11 @@ export class Tester {
             })
             promise
                 .then(() => {
-                    if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', '* Test Cycle nb', cycleNumber, ' has finished without an error')
+                    if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* Test Cycle nb", cycleNumber, " has finished without an error")
                     resolve()
                 })
                 .catch(() => {
-                    if (logMode) console.log('\x1b[36m%s%s%s\x1b[0m', '* Test Cycle nb', cycleNumber, ' has finished with an error')
+                    if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* Test Cycle nb", cycleNumber, " has finished with an error")
                     reject()
                 })
         })
@@ -586,18 +586,18 @@ export class Tester {
             let promise = Promise.resolve()
             reps.forEach((repNb) => {
                 promise = promise.then(() => {
-                    if (logMode) console.log('\x1b[36m%s\x1b[0m', '* Cycle ' + repNb + ', testing all scenarios')
+                    if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Cycle " + repNb + ", testing all scenarios")
                     self.testReport.addTestCycle()
                     return self.testCycle(repNb, scenarioNumber, logMode)
                 })
             })
             promise
                 .then(() => {
-                    if (logMode) console.log('\x1b[36m%s\x1b[0m', '* Testing the Thing has finished without an error')
+                    if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Testing the Thing has finished without an error")
                     resolve(self.testReport)
                 })
                 .catch(() => {
-                    if (logMode) console.log('\x1b[36m%s\x1b[0m', '* Testing the Thing has finished with an error')
+                    if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Testing the Thing has finished with an error")
                     reject()
                 })
         })

@@ -1,5 +1,5 @@
-import fs = require('fs')
-var mkdirp = require('mkdirp')
+import fs = require("fs")
+var mkdirp = require("mkdirp")
 
 export class InteractionTestReportContainer {
     testCycle: number
@@ -182,16 +182,16 @@ export class TestReport {
     }
 
     public printResults(): void {
-        console.log('Results of the last test with Errors/TotalTests')
-        process.stdout.write('Test Scenario Number > ')
+        console.log("Results of the last test with Errors/TotalTests")
+        process.stdout.write("Test Scenario Number > ")
         for (var i = 0; i <= this.maxTestScenario; i++) {
-            process.stdout.write('TS' + i + '\t')
+            process.stdout.write("TS" + i + "\t")
         }
-        console.log('Test Cycle Nb:')
+        console.log("Test Cycle Nb:")
 
         //printing the results
         for (var i = 0; i <= this.testCycleCount; i++) {
-            process.stdout.write('TC' + i + '\t \t \t')
+            process.stdout.write("TC" + i + "\t \t \t")
             for (var j = 0; j <= this.maxTestScenario; j++) {
                 //summing up the fails for this one scenario
 
@@ -211,9 +211,9 @@ export class TestReport {
                         }
                     }
 
-                    process.stdout.write(fails + '/' + curSceLength + '\t') //this is used for displaying how many failures are there for one scenario
+                    process.stdout.write(fails + "/" + curSceLength + "\t") //this is used for displaying how many failures are there for one scenario
                 } catch (Error) {
-                    process.stdout.write(fails + '/' + curSceLength + '\t')
+                    process.stdout.write(fails + "/" + curSceLength + "\t")
                 }
             }
             console.log()
@@ -228,7 +228,7 @@ export class TestReport {
 
                 // find max number of stored tut-reports:
                 for (var i in files) {
-                    let splitFile = files[i].split('-')
+                    let splitFile = files[i].split("-")
                     if (splitFile[1] == tutName) {
                         if (Number(splitFile[0]) > maxReportCount) {
                             maxReportCount = Number(splitFile[0])
@@ -236,14 +236,14 @@ export class TestReport {
                     }
                 }
                 maxReportCount++
-                fs.writeFileSync(location + maxReportCount.toString() + '-' + tutName + '-testReport.json', JSON.stringify(this.results, null, 4))
-                console.log('Report stored in ' + location + maxReportCount.toString() + '-' + tutName + '-testReport.json')
+                fs.writeFileSync(location + maxReportCount.toString() + "-" + tutName + "-testReport.json", JSON.stringify(this.results, null, 4))
+                console.log("Report stored in " + location + maxReportCount.toString() + "-" + tutName + "-testReport.json")
             } else {
-                fs.writeFileSync(location + '1-' + tutName + '-testReport.json', JSON.stringify(this.results, null, 4))
-                console.log('Report stored in ' + location + '1-' + tutName + '-testReport.json')
+                fs.writeFileSync(location + "1-" + tutName + "-testReport.json", JSON.stringify(this.results, null, 4))
+                console.log("Report stored in " + location + "1-" + tutName + "-testReport.json")
             }
         } catch (error) {
-            console.log('Report could not be stored')
+            console.log("Report could not be stored")
         }
     }
 }
