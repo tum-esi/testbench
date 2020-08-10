@@ -1,15 +1,15 @@
 {
-    "@context": [
-        "http://www.w3.org/ns/td"
-    ],
+    "@context": ["http://www.w3.org/ns/td"],
     "@type": "Thing",
     "name": "ora_obd2_device_model",
     "description": "Device Model for OBD2 standard devices",
     "id": "urn:com:oracle:iot:device:obd2",
     "base": "https://129.150.200.242/iot/api/v2/apps/0-AB/devices/111AB61F-A5C7-4D5C-BC27-E227C5EE3006/deviceModels/urn%3Acom%3Aoracle%3Aiot%3Adevice%3Aobd2",
-    "security": [{
-        "scheme": "basic"
-    }],
+    "security": [
+        {
+            "scheme": "basic"
+        }
+    ],
     "createdAsString": "2018-09-27T07:29:57.061Z",
     "created": 1538033397061,
     "lastModifiedAsString": "2018-09-27T07:29:57.061Z",
@@ -28,10 +28,12 @@
                     "writable": false
                 }
             },
-            "forms": [{
-                "href": "https://129.150.200.242/iot/api/v2/apps/0-AB/devices/111AB61F-A5C7-4D5C-BC27-E227C5EE3006/deviceModels/urn%3Acom%3Aoracle%3Aiot%3Adevice%3Aobd2/attributes/ora_altitude",
-                "mediaType": "application/json"
-            }]
+            "forms": [
+                {
+                    "href": "https://129.150.200.242/iot/api/v2/apps/0-AB/devices/111AB61F-A5C7-4D5C-BC27-E227C5EE3006/deviceModels/urn%3Acom%3Aoracle%3Aiot%3Adevice%3Aobd2/attributes/ora_altitude",
+                    "mediaType": "application/json"
+                }
+            ]
         },
         "ora_latitude": {
             "name": "ora_latitude",
@@ -44,10 +46,12 @@
                     "writable": false
                 }
             },
-            "forms": [{
-                "href": "https://129.150.200.242/iot/api/v2/apps/0-AB/devices/111AB61F-A5C7-4D5C-BC27-E227C5EE3006/deviceModels/urn%3Acom%3Aoracle%3Aiot%3Adevice%3Aobd2/attributes/ora_latitude",
-                "mediaType": "application/json"
-            }]
+            "forms": [
+                {
+                    "href": "https://129.150.200.242/iot/api/v2/apps/0-AB/devices/111AB61F-A5C7-4D5C-BC27-E227C5EE3006/deviceModels/urn%3Acom%3Aoracle%3Aiot%3Adevice%3Aobd2/attributes/ora_latitude",
+                    "mediaType": "application/json"
+                }
+            ]
         },
         "ora_longitude": {
             "name": "ora_longitude",
@@ -60,10 +64,12 @@
                     "writable": false
                 }
             },
-            "forms": [{
-                "href": "https://129.150.200.242/iot/api/v2/apps/0-AB/devices/111AB61F-A5C7-4D5C-BC27-E227C5EE3006/deviceModels/urn%3Acom%3Aoracle%3Aiot%3Adevice%3Aobd2/attributes/ora_longitude",
-                "mediaType": "application/json"
-            }]
+            "forms": [
+                {
+                    "href": "https://129.150.200.242/iot/api/v2/apps/0-AB/devices/111AB61F-A5C7-4D5C-BC27-E227C5EE3006/deviceModels/urn%3Acom%3Aoracle%3Aiot%3Adevice%3Aobd2/attributes/ora_longitude",
+                    "mediaType": "application/json"
+                }
+            ]
         },
         "ora_obd2_engine_coolant_temperature": {
             "name": "ora_obd2_engine_coolant_temperature",
@@ -77,10 +83,12 @@
                     "writable": false
                 }
             },
-            "forms": [{
-                "href": "https://129.150.200.242/iot/api/v2/apps/0-AB/devices/111AB61F-A5C7-4D5C-BC27-E227C5EE3006/deviceModels/urn%3Acom%3Aoracle%3Aiot%3Adevice%3Aobd2/attributes/ora_obd2_engine_coolant_temperature",
-                "mediaType": "application/json"
-            }]
+            "forms": [
+                {
+                    "href": "https://129.150.200.242/iot/api/v2/apps/0-AB/devices/111AB61F-A5C7-4D5C-BC27-E227C5EE3006/deviceModels/urn%3Acom%3Aoracle%3Aiot%3Adevice%3Aobd2/attributes/ora_obd2_engine_coolant_temperature",
+                    "mediaType": "application/json"
+                }
+            ]
         },
         "ora_obd2_engine_rpm": {
             "name": "ora_obd2_engine_rpm",
@@ -94,10 +102,12 @@
                     "writable": false
                 }
             },
-            "forms": [{
-                "href": "https://129.150.200.242/iot/api/v2/apps/0-AB/devices/111AB61F-A5C7-4D5C-BC27-E227C5EE3006/deviceModels/urn%3Acom%3Aoracle%3Aiot%3Adevice%3Aobd2/attributes/ora_obd2_engine_rpm",
-                "mediaType": "application/json"
-            }]
+            "forms": [
+                {
+                    "href": "https://129.150.200.242/iot/api/v2/apps/0-AB/devices/111AB61F-A5C7-4D5C-BC27-E227C5EE3006/deviceModels/urn%3Acom%3Aoracle%3Aiot%3Adevice%3Aobd2/attributes/ora_obd2_engine_rpm",
+                    "mediaType": "application/json"
+                }
+            ]
         },
         "ora_obd2_mass_air_flow": {
             "name": "ora_obd2_mass_air_flow",
@@ -111,10 +121,12 @@
                     "writable": false
                 }
             },
-            "forms": [{
-                "href": "https://129.150.200.242/iot/api/v2/apps/0-AB/devices/111AB61F-A5C7-4D5C-BC27-E227C5EE3006/deviceModels/urn%3Acom%3Aoracle%3Aiot%3Adevice%3Aobd2/attributes/ora_obd2_mass_air_flow",
-                "mediaType": "application/json"
-            }]
+            "forms": [
+                {
+                    "href": "https://129.150.200.242/iot/api/v2/apps/0-AB/devices/111AB61F-A5C7-4D5C-BC27-E227C5EE3006/deviceModels/urn%3Acom%3Aoracle%3Aiot%3Adevice%3Aobd2/attributes/ora_obd2_mass_air_flow",
+                    "mediaType": "application/json"
+                }
+            ]
         },
         "ora_obd2_number_of_dtcs": {
             "name": "ora_obd2_number_of_dtcs",
@@ -128,10 +140,12 @@
                     "writable": false
                 }
             },
-            "forms": [{
-                "href": "https://129.150.200.242/iot/api/v2/apps/0-AB/devices/111AB61F-A5C7-4D5C-BC27-E227C5EE3006/deviceModels/urn%3Acom%3Aoracle%3Aiot%3Adevice%3Aobd2/attributes/ora_obd2_number_of_dtcs",
-                "mediaType": "application/json"
-            }]
+            "forms": [
+                {
+                    "href": "https://129.150.200.242/iot/api/v2/apps/0-AB/devices/111AB61F-A5C7-4D5C-BC27-E227C5EE3006/deviceModels/urn%3Acom%3Aoracle%3Aiot%3Adevice%3Aobd2/attributes/ora_obd2_number_of_dtcs",
+                    "mediaType": "application/json"
+                }
+            ]
         },
         "ora_obd2_runtime_since_engine_start": {
             "name": "ora_obd2_runtime_since_engine_start",
@@ -145,10 +159,12 @@
                     "writable": false
                 }
             },
-            "forms": [{
-                "href": "https://129.150.200.242/iot/api/v2/apps/0-AB/devices/111AB61F-A5C7-4D5C-BC27-E227C5EE3006/deviceModels/urn%3Acom%3Aoracle%3Aiot%3Adevice%3Aobd2/attributes/ora_obd2_runtime_since_engine_start",
-                "mediaType": "application/json"
-            }]
+            "forms": [
+                {
+                    "href": "https://129.150.200.242/iot/api/v2/apps/0-AB/devices/111AB61F-A5C7-4D5C-BC27-E227C5EE3006/deviceModels/urn%3Acom%3Aoracle%3Aiot%3Adevice%3Aobd2/attributes/ora_obd2_runtime_since_engine_start",
+                    "mediaType": "application/json"
+                }
+            ]
         },
         "ora_obd2_throttle_position": {
             "name": "ora_obd2_throttle_position",
@@ -162,10 +178,12 @@
                     "writable": false
                 }
             },
-            "forms": [{
-                "href": "https://129.150.200.242/iot/api/v2/apps/0-AB/devices/111AB61F-A5C7-4D5C-BC27-E227C5EE3006/deviceModels/urn%3Acom%3Aoracle%3Aiot%3Adevice%3Aobd2/attributes/ora_obd2_throttle_position",
-                "mediaType": "application/json"
-            }]
+            "forms": [
+                {
+                    "href": "https://129.150.200.242/iot/api/v2/apps/0-AB/devices/111AB61F-A5C7-4D5C-BC27-E227C5EE3006/deviceModels/urn%3Acom%3Aoracle%3Aiot%3Adevice%3Aobd2/attributes/ora_obd2_throttle_position",
+                    "mediaType": "application/json"
+                }
+            ]
         },
         "ora_obd2_total_fuel_used": {
             "name": "ora_obd2_total_fuel_used",
@@ -179,10 +197,12 @@
                     "writable": false
                 }
             },
-            "forms": [{
-                "href": "https://129.150.200.242/iot/api/v2/apps/0-AB/devices/111AB61F-A5C7-4D5C-BC27-E227C5EE3006/deviceModels/urn%3Acom%3Aoracle%3Aiot%3Adevice%3Aobd2/attributes/ora_obd2_total_fuel_used",
-                "mediaType": "application/json"
-            }]
+            "forms": [
+                {
+                    "href": "https://129.150.200.242/iot/api/v2/apps/0-AB/devices/111AB61F-A5C7-4D5C-BC27-E227C5EE3006/deviceModels/urn%3Acom%3Aoracle%3Aiot%3Adevice%3Aobd2/attributes/ora_obd2_total_fuel_used",
+                    "mediaType": "application/json"
+                }
+            ]
         },
         "ora_obd2_true_odometer": {
             "name": "ora_obd2_true_odometer",
@@ -196,10 +216,12 @@
                     "writable": false
                 }
             },
-            "forms": [{
-                "href": "https://129.150.200.242/iot/api/v2/apps/0-AB/devices/111AB61F-A5C7-4D5C-BC27-E227C5EE3006/deviceModels/urn%3Acom%3Aoracle%3Aiot%3Adevice%3Aobd2/attributes/ora_obd2_true_odometer",
-                "mediaType": "application/json"
-            }]
+            "forms": [
+                {
+                    "href": "https://129.150.200.242/iot/api/v2/apps/0-AB/devices/111AB61F-A5C7-4D5C-BC27-E227C5EE3006/deviceModels/urn%3Acom%3Aoracle%3Aiot%3Adevice%3Aobd2/attributes/ora_obd2_true_odometer",
+                    "mediaType": "application/json"
+                }
+            ]
         },
         "ora_obd2_vehicle_speed": {
             "name": "ora_obd2_vehicle_speed",
@@ -213,10 +235,12 @@
                     "writable": false
                 }
             },
-            "forms": [{
-                "href": "https://129.150.200.242/iot/api/v2/apps/0-AB/devices/111AB61F-A5C7-4D5C-BC27-E227C5EE3006/deviceModels/urn%3Acom%3Aoracle%3Aiot%3Adevice%3Aobd2/attributes/ora_obd2_vehicle_speed",
-                "mediaType": "application/json"
-            }]
+            "forms": [
+                {
+                    "href": "https://129.150.200.242/iot/api/v2/apps/0-AB/devices/111AB61F-A5C7-4D5C-BC27-E227C5EE3006/deviceModels/urn%3Acom%3Aoracle%3Aiot%3Adevice%3Aobd2/attributes/ora_obd2_vehicle_speed",
+                    "mediaType": "application/json"
+                }
+            ]
         }
     },
     "actions": {}

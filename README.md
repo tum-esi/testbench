@@ -1,6 +1,7 @@
 # Web of Things Test Bench
 
 [![Build Status](https://travis-ci.org/tum-esi/testbench.svg?branch=master)](https://travis-ci.org/tum-esi/testbench)
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
 Tests a WoT Thing by executing interactions automatically, based on its Thing Description.
 

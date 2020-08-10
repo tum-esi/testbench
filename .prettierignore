@@ -1,0 +1,10 @@
+# Ignore artifacts:
+dist/
+.vscode/
+Reports/
+Resources/
+.travis.yml
+README.md
+
+# Ignore all HTML files:
+*.html

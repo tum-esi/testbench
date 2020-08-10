@@ -1,8 +1,8 @@
-var chai = require("chai");
-var chaiHttp = require("chai-http");
-chai.use(chaiHttp);
-var app = "localhost:8980";
-var expect = chai.expect;
+var chai = require("chai")
+var chaiHttp = require("chai-http")
+chai.use(chaiHttp)
+var app = "localhost:8980"
+var expect = chai.expect
 describe("Property: testData", function () {
     describe("Get test Data", function () {
         it("Get Data", function (done) {
@@ -10,13 +10,13 @@ describe("Property: testData", function () {
             chai.request(app)
                 .get("/wot-test-bench/properties/testData")
                 .end(function (err, res) {
-                    expect(err).to.be.null;
-                    expect(res).to.have.status(200);
-                    done();
-                });
-        });
-    });
-});
+                    expect(err).to.be.null
+                    expect(res).to.have.status(200)
+                    done()
+                })
+        })
+    })
+})
 
 /**
  * Returns a JSON object containing the TestResults from a chai send request result object.
@@ -24,8 +24,8 @@ describe("Property: testData", function () {
  * @return {JSON} The JSON containing the TestResults.
  */
 function getTestResult(res) {
-    let stringTestResult = res.res.text; //TestResult as text.
-    return JSON.parse(stringTestResult); //Return TestResult as JSON.
+    let stringTestResult = res.res.text //TestResult as text.
+    return JSON.parse(stringTestResult) //Return TestResult as JSON.
 }
 
 /**
@@ -36,7 +36,7 @@ function getTestResult(res) {
  */
 function getTestCycleByInt(testResult, cycleInt) {
     //console.log(testResult[cycleInt])
-    return testResult[cycleInt];
+    return testResult[cycleInt]
 }
 
 /**
@@ -46,7 +46,7 @@ function getTestCycleByInt(testResult, cycleInt) {
  * @returns {JSON} The JSON object containing the TestScenario.
  */
 function getTestScenarioByInt(testCycle, scenarioInt) {
-    return testCycle[scenarioInt];
+    return testCycle[scenarioInt]
 }
 
 /**
@@ -56,7 +56,7 @@ function getTestScenarioByInt(testCycle, scenarioInt) {
  * @return {JSON} The JSON object containing the TestCase.
  */
 function getTestCaseByInt(testScenario, testCaseInt) {
-    return testScenario[testCaseInt];
+    return testScenario[testCaseInt]
 }
 
 /**
@@ -65,17 +65,17 @@ function getTestCaseByInt(testScenario, testCaseInt) {
  * @return {[JSON]} The array containing all testCase JSON objects.
  */
 function getAllTestCases(jsonTestResult) {
-    var allTestCases = [];
+    var allTestCases = []
     jsonTestResult.forEach((testCycle) => {
         testCycle.forEach((testScenario) => {
             //Could potentially be solved more elegant by using allTestCases.concat(testScenario), but
             //then legacy loops would have to be used.
             testScenario.forEach((testCase) => {
-                allTestCases.push(testCase);
-            });
-        });
-    });
-    return allTestCases;
+                allTestCases.push(testCase)
+            })
+        })
+    })
+    return allTestCases
 }
 
 /**
@@ -87,9 +87,9 @@ function getAllTestCases(jsonTestResult) {
 function getTestCaseByName(testScenario, testCaseName) {
     for (var i = 0; i < testScenario.length; ++i) {
         if (testScenario[i] == testCaseName) {
-            return testScenario[i];
+            return testScenario[i]
         }
-        return null;
+        return null
     }
 }
 
@@ -101,13 +101,13 @@ function getTestCaseByName(testScenario, testCaseName) {
  * if no TestCase with the given name has been found.
  */
 function getAllTestCasesWithName(testCases, testCaseName) {
-    let AllTestCasesWithName = [];
+    let AllTestCasesWithName = []
     testCaseName.forEach((testCase) => {
         if (testCase.name == testCaseName) {
-            AllTestCasesWithName.push(testCase);
+            AllTestCasesWithName.push(testCase)
         }
-    });
-    return AllTestCasesWithName;
+    })
+    return AllTestCasesWithName
 }
 
 /**
@@ -117,7 +117,7 @@ function getAllTestCasesWithName(testCases, testCaseName) {
  */
 function allTestPassed(allTestCases) {
     //If Array does not contain passed == false every test passed.
-    return !allTestCases.some((testCase) => testCase.passed == false);
+    return !allTestCases.some((testCase) => testCase.passed == false)
 }
 
 describe("Action: fastTest", function () {
@@ -128,8 +128,7 @@ describe("Action: fastTest", function () {
                 .post("/wot-test-bench/actions/fastTest")
                 .send({
                     title: "TestServient",
-                    description:
-                        "Test servient that can be used as a servient to be tested with the WoT Test Bench",
+                    description: "Test servient that can be used as a servient to be tested with the WoT Test Bench",
                     properties: {
                         display: {
                             type: "string",
@@ -138,21 +137,18 @@ describe("Action: fastTest", function () {
                             writeOnly: false,
                             forms: [
                                 {
-                                    href:
-                                        "http://localhost:8081/TestServient/properties/display",
+                                    href: "http://localhost:8081/TestServient/properties/display",
                                     contentType: "application/json",
                                     op: ["readproperty", "writeproperty"],
                                 },
                                 {
-                                    href:
-                                        "http://localhost:8081/TestServient/properties/display/observable",
+                                    href: "http://localhost:8081/TestServient/properties/display/observable",
                                     contentType: "application/json",
                                     op: ["observeproperty"],
                                     subprotocol: "longpoll",
                                 },
                                 {
-                                    href:
-                                        "coap://localhost:8082/TestServient/properties/display",
+                                    href: "coap://localhost:8082/TestServient/properties/display",
                                     contentType: "application/json",
                                     op: ["readproperty", "writeproperty"],
                                 },
@@ -165,21 +161,18 @@ describe("Action: fastTest", function () {
                             writeOnly: false,
                             forms: [
                                 {
-                                    href:
-                                        "http://localhost:8081/TestServient/properties/counter",
+                                    href: "http://localhost:8081/TestServient/properties/counter",
                                     contentType: "application/json",
                                     op: ["readproperty", "writeproperty"],
                                 },
                                 {
-                                    href:
-                                        "http://localhost:8081/TestServient/properties/counter/observable",
+                                    href: "http://localhost:8081/TestServient/properties/counter/observable",
                                     contentType: "application/json",
                                     op: ["observeproperty"],
                                     subprotocol: "longpoll",
                                 },
                                 {
-                                    href:
-                                        "coap://localhost:8082/TestServient/properties/counter",
+                                    href: "coap://localhost:8082/TestServient/properties/counter",
                                     contentType: "application/json",
                                     op: ["readproperty", "writeproperty"],
                                 },
@@ -192,22 +185,19 @@ describe("Action: fastTest", function () {
                             writeOnly: false,
                             forms: [
                                 {
-                                    href:
-                                        "http://localhost:8081/TestServient/properties/temperature",
+                                    href: "http://localhost:8081/TestServient/properties/temperature",
                                     contentType: "application/json",
                                     op: ["readproperty"],
                                     "htv:methodName": "GET",
                                 },
                                 {
-                                    href:
-                                        "http://localhost:8081/TestServient/properties/temperature/observable",
+                                    href: "http://localhost:8081/TestServient/properties/temperature/observable",
                                     contentType: "application/json",
                                     op: ["observeproperty"],
                                     subprotocol: "longpoll",
                                 },
                                 {
-                                    href:
-                                        "coap://localhost:8082/TestServient/properties/temperature",
+                                    href: "coap://localhost:8082/TestServient/properties/temperature",
                                     contentType: "application/json",
                                     op: ["readproperty"],
                                 },
@@ -230,14 +220,12 @@ describe("Action: fastTest", function () {
                             observable: false,
                             forms: [
                                 {
-                                    href:
-                                        "http://localhost:8081/TestServient/properties/testObject",
+                                    href: "http://localhost:8081/TestServient/properties/testObject",
                                     contentType: "application/json",
                                     op: ["readproperty", "writeproperty"],
                                 },
                                 {
-                                    href:
-                                        "coap://localhost:8082/TestServient/properties/testObject",
+                                    href: "coap://localhost:8082/TestServient/properties/testObject",
                                     contentType: "application/json",
                                     op: ["readproperty", "writeproperty"],
                                 },
@@ -253,14 +241,12 @@ describe("Action: fastTest", function () {
                             observable: false,
                             forms: [
                                 {
-                                    href:
-                                        "http://localhost:8081/TestServient/properties/testArray",
+                                    href: "http://localhost:8081/TestServient/properties/testArray",
                                     contentType: "application/json",
                                     op: ["readproperty", "writeproperty"],
                                 },
                                 {
-                                    href:
-                                        "coap://localhost:8082/TestServient/properties/testArray",
+                                    href: "coap://localhost:8082/TestServient/properties/testArray",
                                     contentType: "application/json",
                                     op: ["readproperty", "writeproperty"],
                                 },
@@ -274,15 +260,13 @@ describe("Action: fastTest", function () {
                             },
                             forms: [
                                 {
-                                    href:
-                                        "http://localhost:8081/TestServient/actions/setCounter",
+                                    href: "http://localhost:8081/TestServient/actions/setCounter",
                                     contentType: "application/json",
                                     op: ["invokeaction"],
                                     "htv:methodName": "POST",
                                 },
                                 {
-                                    href:
-                                        "coap://localhost:8082/TestServient/actions/setCounter",
+                                    href: "coap://localhost:8082/TestServient/actions/setCounter",
                                     contentType: "application/json",
                                     op: "invokeaction",
                                 },
@@ -296,15 +280,13 @@ describe("Action: fastTest", function () {
                             },
                             forms: [
                                 {
-                                    href:
-                                        "http://localhost:8081/TestServient/actions/getTemperature",
+                                    href: "http://localhost:8081/TestServient/actions/getTemperature",
                                     contentType: "application/json",
                                     op: ["invokeaction"],
                                     "htv:methodName": "POST",
                                 },
                                 {
-                                    href:
-                                        "coap://localhost:8082/TestServient/actions/getTemperature",
+                                    href: "coap://localhost:8082/TestServient/actions/getTemperature",
                                     contentType: "application/json",
                                     op: "invokeaction",
                                 },
@@ -321,15 +303,13 @@ describe("Action: fastTest", function () {
                             },
                             forms: [
                                 {
-                                    href:
-                                        "http://localhost:8081/TestServient/actions/setDisplay",
+                                    href: "http://localhost:8081/TestServient/actions/setDisplay",
                                     contentType: "application/json",
                                     op: ["invokeaction"],
                                     "htv:methodName": "POST",
                                 },
                                 {
-                                    href:
-                                        "coap://localhost:8082/TestServient/actions/setDisplay",
+                                    href: "coap://localhost:8082/TestServient/actions/setDisplay",
                                     contentType: "application/json",
                                     op: "invokeaction",
                                 },
@@ -353,15 +333,13 @@ describe("Action: fastTest", function () {
                             },
                             forms: [
                                 {
-                                    href:
-                                        "http://localhost:8081/TestServient/actions/setTestObject",
+                                    href: "http://localhost:8081/TestServient/actions/setTestObject",
                                     contentType: "application/json",
                                     op: ["invokeaction"],
                                     "htv:methodName": "POST",
                                 },
                                 {
-                                    href:
-                                        "coap://localhost:8082/TestServient/actions/setTestObject",
+                                    href: "coap://localhost:8082/TestServient/actions/setTestObject",
                                     contentType: "application/json",
                                     op: "invokeaction",
                                 },
@@ -384,15 +362,13 @@ describe("Action: fastTest", function () {
                             },
                             forms: [
                                 {
-                                    href:
-                                        "http://localhost:8081/TestServient/actions/setTestArray",
+                                    href: "http://localhost:8081/TestServient/actions/setTestArray",
                                     contentType: "application/json",
                                     op: ["invokeaction"],
                                     "htv:methodName": "POST",
                                 },
                                 {
-                                    href:
-                                        "coap://localhost:8082/TestServient/actions/setTestArray",
+                                    href: "coap://localhost:8082/TestServient/actions/setTestArray",
                                     contentType: "application/json",
                                     op: "invokeaction",
                                 },
@@ -406,15 +382,13 @@ describe("Action: fastTest", function () {
                             type: "number",
                             forms: [
                                 {
-                                    href:
-                                        "http://localhost:8081/TestServient/events/onChange",
+                                    href: "http://localhost:8081/TestServient/events/onChange",
                                     contentType: "application/json",
                                     subprotocol: "longpoll",
                                     op: ["subscribeevent"],
                                 },
                                 {
-                                    href:
-                                        "coap://localhost:8082/TestServient/events/onChange",
+                                    href: "coap://localhost:8082/TestServient/events/onChange",
                                     contentType: "application/json",
                                     op: "subscribeevent",
                                 },
@@ -427,15 +401,9 @@ describe("Action: fastTest", function () {
                     id: "urn:uuid:3999c3d8-1b55-4c05-bc63-c91f0981cf36",
                     forms: [
                         {
-                            href:
-                                "http://localhost:8081/TestServient/all/properties",
+                            href: "http://localhost:8081/TestServient/all/properties",
                             contentType: "application/json",
-                            op: [
-                                "readallproperties",
-                                "readmultipleproperties",
-                                "writeallproperties",
-                                "writemultipleproperties",
-                            ],
+                            op: ["readallproperties", "readmultipleproperties", "writeallproperties", "writemultipleproperties"],
                         },
                     ],
                     securityDefinitions: {
@@ -445,13 +413,13 @@ describe("Action: fastTest", function () {
                     },
                 })
                 .end(function (err, res) {
-                    let allTestCases = getAllTestCases(getTestResult(res));
+                    let allTestCases = getAllTestCases(getTestResult(res))
                     //console.log(allTestCases); //Can be used to log TestResults for debugging purposes.
-                    expect(allTestCases.length).to.be.equal(20); //Check if all TestCases have been generated.
-                    expect(allTestPassed(allTestCases)).to.be.true; //Check if all TestCases have passed.
-                    expect(err).to.be.null;
-                    done();
-                });
-        });
-    });
-});
+                    expect(allTestCases.length).to.be.equal(20) //Check if all TestCases have been generated.
+                    expect(allTestPassed(allTestCases)).to.be.true //Check if all TestCases have passed.
+                    expect(err).to.be.null
+                    done()
+                })
+        })
+    })
+})

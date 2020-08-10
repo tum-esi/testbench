@@ -1,12 +1,12 @@
 {
-  "compilerOptions": {
-    /* Basic Options */
-    "target": "ES6",
-    "module": "commonjs",
-    "lib": ["DOM","ES2015"],
-    "outDir": "dist",
-    "moduleResolution": "node",
-    "baseUrl": "src",
-    "sourceMap": true
-  }
+    "compilerOptions": {
+        /* Basic Options */
+        "target": "ES6",
+        "module": "commonjs",
+        "lib": ["DOM", "ES2015"],
+        "outDir": "dist",
+        "moduleResolution": "node",
+        "baseUrl": "src",
+        "sourceMap": true
+    }
 }
