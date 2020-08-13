@@ -80,6 +80,9 @@ export class Tester {
             testSubscribeEvent()
                 .then(() => testUnsubscribeEvent())
                 .then(() => {
+                    if (container.passed == true) {
+                        if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Test for ", eventName + " was successful.")
+                    }
                     self.testReport.addMessage(testCycle, testScenario, container)
                     resolve(true)
                 })
@@ -87,15 +90,22 @@ export class Tester {
 
         function testUnsubscribeEvent(): Promise<boolean> {
             return new Promise(function (resolve, reject) {
+                let toSend = null
+                // Trying to Unsubscribe from the Event
+                if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Trying to unsubscribe from " + eventName + " with data: ", JSON.stringify(toSend, null, " "))
                 self.tut
                     .unsubscribeEvent(eventName)
-                    .catch((error) => {
-                        if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Problem when trying to unsubscribe from event " + eventName + ": " + error)
-                        container.passed = false
-                        container.cancelEventReport.result = new Result(20, "Problem when trying to unsubscribe from event " + eventName + ": " + error)
-                        resolve(true)
-                    })
                     .then(() => {
+                        console.log("\x1b[36m%s\x1b[0m", "* Successfully unsubscribed from " + eventName)
+                        container.cancelEventReport.passed = true
+                        container.cancelEventReport.result = new Result(200)
+                    })
+                    .catch((error) => {
+                        if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Problem when trying to unsubscribe from event: " + eventName + ": " + error)
+                        container.passed = false
+                        container.cancelEventReport.result = new Result(20, "Problem when trying to unsubscribe from event: " + error)
+                    })
+                    .finally(() => {
                         resolve(true)
                     })
             })
@@ -106,31 +116,32 @@ export class Tester {
             if (indexOfEventData < self.testConfig.EventAndObservePOptions.MaxAmountRecvData || self.testConfig.EventAndObservePOptions == null) {
                 if (interaction.hasOwnProperty("data")) {
                     container.eventDataReport.received.push(new Payload(receivedTimeStamp, data))
-                    if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Received data [index: " + indexOfEventData + "]: ", JSON.stringify(data, null, " "))
+                    if (logMode)
+                        console.log("\x1b[36m%s%s\x1b[0m", "* Received event data [index: " + indexOfEventData + "]: ", JSON.stringify(data, null, " "))
                     try {
                         let temp: JSON = data
                     } catch (jsonError) {
-                        if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Received data [index: " + indexOfEventData + "] is not in JSON format")
+                        if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Received event data [index: " + indexOfEventData + "] is not in JSON format")
                         container.passed = false
                         container.eventDataReport.passed = false
                         container.eventDataReport.result = new Result(
                             15,
-                            "* Received data [index: " + indexOfEventData + "] is not in JSON format: " + jsonError
+                            "* Received event data [index: " + indexOfEventData + "] is not in JSON format: " + jsonError
                         )
                     }
                     //validating the response against its schema
                     let validationError: Array<any> = Utils.validateResponse(eventName, data, self.testConfig.SchemaLocation, "EventData")
                     if (validationError) {
                         //meaning that there is a validation error
-                        if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Received data [index: " + indexOfEventData + "] is not valid for: " + eventName)
+                        if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Received event data [index: " + indexOfEventData + "] is not valid.")
                         container.passed = false
                         container.eventDataReport.passed = false
                         container.eventDataReport.result = new Result(
                             16,
-                            "* Received data [index: " + indexOfEventData + "] is not valid, " + JSON.stringify(validationError)
+                            "* Received event data [index: " + indexOfEventData + "] is not valid, " + JSON.stringify(validationError)
                         )
                     } else {
-                        if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Received data [index: " + indexOfEventData + "] is valid for: " + eventName)
+                        if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Received event data [index: " + indexOfEventData + "] is valid.")
                     }
                     ++indexOfEventData
                 }
@@ -143,7 +154,7 @@ export class Tester {
                 // Generating the message to send.
                 try {
                     toSend = self.codeGen.findRequestValue(self.testConfig.TestDataLocation, testScenario, interactionIndex, eventName)
-                    if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Created data to send:", JSON.stringify(toSend, null, " "))
+                    if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Created data to send: ", JSON.stringify(toSend, null, " "))
                 } catch (Error) {
                     if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Cannot create for " + eventName + ", look at the previous message to identify the problem")
                     container.passed = false
@@ -168,21 +179,24 @@ export class Tester {
                         if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Created request is valid for: " + eventName)
                     }
                 }
-                // Subscribing to the Event
-                if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Subscribing to event " + eventName + " with data: ", JSON.stringify(toSend, null, " "))
-                // Try to subscribe to the event.
+                // Trying to Subscribe to the Event
                 let sendTimeStamp = new Date()
+                if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Trying to subscribe to " + eventName + " with data: ", JSON.stringify(toSend, null, " "))
                 self.tut
                     .subscribeEvent(eventName, (eventData) => {
                         testReceivedData(eventData)
                     })
                     .then(() => {
+                        if (logMode)
+                            console.log("\x1b[36m%s%s\x1b[0m", "* Successfully subscribed to " + eventName + " with data: ", JSON.stringify(toSend, null, " "))
+                        container.subscribeEventReport.passed = true
+                        container.subscribeEventReport.result = new Result(200)
                         setTimeout(() => {
                             resolve(true)
                         }, self.testConfig.EventAndObservePOptions.MsListenSynchronous)
                     })
                     .catch((error) => {
-                        if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Problem when trying to subscribe to event " + eventName + ": " + error)
+                        if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Problem when trying to subscribe to event " + eventName + ": " + error)
                         container.passed = false
                         container.subscribeEventReport.result = new Result(10, "Problem when trying to subscribe to event " + eventName + ": " + error)
                         resolve(true)
@@ -271,13 +285,16 @@ export class Tester {
                 }
                 //invoking the action
                 try {
-                    if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Invoking action " + actionName + " with data:", JSON.stringify(toSend, null, " "))
+                    if (logMode)
+                        console.log("\x1b[36m%s%s\x1b[0m", "* Trying to invoke action " + actionName + " with data:", JSON.stringify(toSend, null, " "))
                     // Try to invoke the action.
                     const invokedAction = self.tryToInvokeAction(actionName, toSend)
                     invokedAction[1]
                         .then((res: any) => {
                             let responseTimeStamp = new Date()
                             container.report.sent = new Payload(invokedAction[0], toSend) //sentTimeStamp, Payload
+                            if (logMode)
+                                console.log("\x1b[36m%s%s\x1b[0m", "* Invoked action " + actionName + " with data: ", JSON.stringify(toSend, null, " "))
                             if (interaction.hasOwnProperty("output")) {
                                 //the action doesn't have to answer something back
                                 let answer = res
