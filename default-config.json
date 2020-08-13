@@ -11,7 +11,12 @@
     "TestReportsLocation": "Reports/",
     "TestDataLocation": "Resources/fake-data.json",
     "ActionTimeout": 4000,
-    "Scenarios": 2,
+    "Scenarios": 1,
     "Repetitions": 1,
+    "EventAndObservePOptions": {
+        "MaxAmountRecvData": 10,
+        "MsListenSynchronous": 4000,
+        "MsListenAsynchronous": 5000
+    },
     "credentials": {}
 }
