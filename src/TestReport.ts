@@ -116,15 +116,15 @@ export class PropertyTestReportContainer extends InteractionTestReportContainer 
 }
 
 export class EventTestReportContainer extends InteractionTestReportContainer {
-    subscribeEventReport: MiniTestReport //in and output
+    subscriptionReport: MiniTestReport //in and output
     eventDataReport: EventDataReport //only output
-    cancelEventReport: MiniTestReport //in and output
+    cancellationReport: MiniTestReport //in and output
 
     constructor(testCycle: number, testScenario: number, name: string) {
         super(testCycle, testScenario, name)
-        this.subscribeEventReport = new MiniTestReport()
+        this.subscriptionReport = new MiniTestReport()
         this.eventDataReport = new EventDataReport()
-        this.cancelEventReport = new MiniTestReport()
+        this.cancellationReport = new MiniTestReport()
     }
 
     /**
