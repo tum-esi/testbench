@@ -159,7 +159,13 @@ function writeSchema(name, dataSchema, schemaLocationR, interaction) {
     let writeLoc: string = schemaLocationR + name + "-" + interaction + ".json"
     fs.writeFileSync(writeLoc, schema)
 }
-// generates schemas from all interactions
+
+/**
+ * Generates schemas for all interactions.
+ * @param td The ThingDescription to generate from.
+ * @param schemaLocation The file location where the generated schemas will be saved.
+ * @param logMode True if logMode is enabled, false otherwise.
+ */
 export function generateSchemas(td: wot.ThingDescription, schemaLocation: string, logMode: boolean): number {
     let schemaLocationReq = schemaLocation + "Requests/"
     let schemaLocationResp = schemaLocation + "Responses/"
@@ -206,11 +212,29 @@ export function generateSchemas(td: wot.ThingDescription, schemaLocation: string
     // event schemas:
     for (var key in td.events) {
         if (td.events.hasOwnProperty(key)) {
-            let dataSchema = extractSchema(td.events[key])
-            writeSchema(key, dataSchema, schemaLocationReq, "Event")
-            writeSchema(key, dataSchema, schemaLocationResp, "Event")
-            reqSchemaCount++
-            resSchemaCount++
+            if (td.events[key].hasOwnProperty("subscription")) {
+                writeSchema(key, JSON.stringify(td.events[key].subscription).slice(0, -1).substring(1), schemaLocationReq, "EventSubscription")
+                reqSchemaCount++
+                // Potential resSchema for subscription should be generated here. Perhaps something like this:
+                // if (td.events[key].subscription.hasOwnProperty("properties")) {
+                //     if (td.events[key].subscription.properties.hasOwnProperty("subscriptionID")) {
+                //         writeSchema(
+                //             key, JSON.stringify(td.events[key].subscription.properties.subscriptionID).slice(0, -1).substring(1),
+                //             schemaLocationResp, "SubscribeEvent"
+                //         )
+                //     }
+                // }
+                // resSchemaCount++
+            }
+            if (td.events[key].hasOwnProperty("data")) {
+                writeSchema(key, JSON.stringify(td.events[key].data).slice(0, -1).substring(1), schemaLocationResp, "EventData")
+                resSchemaCount++
+            }
+            if (td.events[key].hasOwnProperty("cancellation")) {
+                writeSchema(key, JSON.stringify(td.events[key].cancellation).slice(0, -1).substring(1), schemaLocationReq, "EventCancellation")
+                reqSchemaCount++
+                // Potential resSchema for cancellation should be generated here
+            }
         }
     }
     if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* ", reqSchemaCount + " request schemas and " + resSchemaCount + " response schemas have been created")
