@@ -84,7 +84,17 @@ export class CodeGenerator {
             for (var j = 0; j < testConf.Scenarios; j++) {
                 let dataPair = {}
                 dataPair["interactionName"] = key
-                dataPair["interactionValue"] = this.createRequest(key, testConf.SchemaLocation, "Event")
+                dataPair["interactionValue"] = this.createRequest(key, testConf.SchemaLocation, "EventSubscription")
+                scenarioList.push(dataPair)
+            }
+            requestList.push(scenarioList)
+        }
+        for (var key in tdesc.events) {
+            let scenarioList = []
+            for (var j = 0; j < testConf.Scenarios; j++) {
+                let dataPair = {}
+                dataPair["interactionName"] = key
+                dataPair["interactionValue"] = this.createRequest(key, testConf.SchemaLocation, "EventCancellation")
                 scenarioList.push(dataPair)
             }
             requestList.push(scenarioList)
