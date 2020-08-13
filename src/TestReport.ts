@@ -49,15 +49,23 @@ export class MiniTestReport {
     }
 }
 
+export class EventData extends Payload {
+    result: Result
+
+    constructor(timestamp: Date, payload: JSON, result: Result) {
+        super(timestamp, payload)
+        this.result = result
+    }
+}
+
 export class EventDataReport {
     passed: boolean
-    received: Array<Payload>
-    result: Result //resultID, errorMessage
+    received: Array<EventData>
+    result?: Result //resultID, errorMessage
 
     constructor() {
         this.passed = true
         this.received = []
-        this.result = new Result(200)
     }
 }
 
@@ -135,6 +143,8 @@ export class EventTestReportContainer extends InteractionTestReportContainer {
     getPrintableMessage() {
         delete this.testCycle
         delete this.testScenario
+        delete this.subscriptionReport.received
+        delete this.cancellationReport.received
         return this
     }
 }

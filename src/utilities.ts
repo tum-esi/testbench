@@ -30,10 +30,10 @@ export interface testConfig {
     EventAndObservePOptions: {
         // How many Event Data Packages the testbench will be adding to Report. Set to null for unlimited amount.
         MaxAmountRecvData: number | null
-        // MilliSeconds the testbench stays subscribed/observes and Event/Property during first Phase (synchronous).
-        MsListenSynchronous: number
-        // MilliSeconds the testbench stays subscribed/observes and Event/Property during second Phase (asynchronous).
+        // MilliSeconds the testbench stays subscribed/observes and Event/Property during first Phase (asynchronous).
         MsListenAsynchronous: number
+        // MilliSeconds the testbench stays subscribed/observes and Event/Property during second Phase (synchronous).
+        MsListenSynchronous: number
     }
     credentials?: any
 }
