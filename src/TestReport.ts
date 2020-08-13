@@ -49,6 +49,18 @@ export class MiniTestReport {
     }
 }
 
+export class EventDataReport {
+    passed: boolean
+    received: Array<Payload>
+    result: Result //resultID, errorMessage
+
+    constructor() {
+        this.passed = true
+        this.received = []
+        this.result = new Result(200)
+    }
+}
+
 export class ActionTestReportContainer extends InteractionTestReportContainer {
     report: MiniTestReport
 
@@ -105,13 +117,13 @@ export class PropertyTestReportContainer extends InteractionTestReportContainer 
 
 export class EventTestReportContainer extends InteractionTestReportContainer {
     subscribeEventReport: MiniTestReport //in and output
-    eventDataReport: MiniTestReport //only output
+    eventDataReport: EventDataReport //only output
     cancelEventReport: MiniTestReport //in and output
 
     constructor(testCycle: number, testScenario: number, name: string) {
         super(testCycle, testScenario, name)
         this.subscribeEventReport = new MiniTestReport()
-        this.eventDataReport = new MiniTestReport()
+        this.eventDataReport = new EventDataReport()
         this.cancelEventReport = new MiniTestReport()
     }
 
@@ -121,7 +133,6 @@ export class EventTestReportContainer extends InteractionTestReportContainer {
      * @return The restructured testReportContainer.
      */
     getPrintableMessage() {
-        delete this.eventDataReport.sent
         delete this.testCycle
         delete this.testScenario
         return this
@@ -129,7 +140,7 @@ export class EventTestReportContainer extends InteractionTestReportContainer {
 }
 
 export class TestReport {
-    private results: Array<any> //stores all the sent and received messages as well as the errors being produced
+    public results: Array<Array<any>> //stores all the sent and received messages as well as the errors being produced
     private testCycleCount: number //incremented at each repetition of a group of test scenarios
     private testScenarioCount: number //incremented at each addition of a new test scenario that contains different messages
     private maxTestScenario: number // the max number of test scenarios for a given repetition
@@ -176,9 +187,18 @@ export class TestReport {
     //this adds a message exchange
     //tha name of the message and the results of the exchange should be entered in the arguments
     //after getting all the arguments, these arguments are transformed into a JSON object that represents the exchange that has just occurred
-    public addMessage(testContainer: any): void {
+    public addMessage(
+        testCycle: number,
+        testScenario: number,
+        testContainer: ActionTestReportContainer | PropertyTestReportContainer | EventTestReportContainer
+    ): void {
         //filling the results
-        this.results[testContainer.testCycle][testContainer.testScenario].push(testContainer.getPrintableMessage())
+        this.results[testCycle].splice(testScenario, 1, testContainer.getPrintableMessage())
+        //this.results[testContainer.testCycle][testContainer.testScenario].push(testContainer.getPrintableMessage())
+    }
+
+    public addReceivedDataToMessage(testCycle, testScenario, receivedDataReport: MiniTestReport) {
+        this.results[testCycle][testScenario].eventDataReport = receivedDataReport
     }
 
     public printResults(): void {
