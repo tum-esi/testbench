@@ -77,49 +77,60 @@ export class Tester {
         //self.testReport.addMessage(container)
 
         return new Promise(function (resolve, reject) {
-            testEvent().then(() => {
-                self.testReport.addMessage(testCycle, testScenario, container)
-                //self.testReport.addMessage(testCycle, testScenario, container)
-                resolve(true)
-            })
+            testSubscribeEvent()
+                .then(() => {
+                    self.tut.unsubscribeEvent("not_enough").catch((error) => {
+                        container.passed = false
+                        container.cancelEventReport.result = new Result(20, "Problem unsubscribing from event " + eventName + ": " + error)
+                    })
+                })
+                .then(() => {
+                    self.testReport.addMessage(testCycle, testScenario, container)
+                    resolve(true)
+                })
         })
 
         function eventDataCallback(data: any) {
             let receivedTimeStamp = new Date()
-            if (interaction.hasOwnProperty("data")) {
-                container.eventDataReport.received.push(new Payload(receivedTimeStamp, data))
-                if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Received data [index: " + indexOfEventData + "]: ", JSON.stringify(data, null, " "))
-                try {
-                    let temp: JSON = data
-                } catch (jsonError) {
-                    if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Received data [index: " + indexOfEventData + "] is not in JSON format")
-                    container.passed = false
-                    container.eventDataReport.passed = false
-                    container.eventDataReport.result = new Result(15, "* Received data [index: " + indexOfEventData + "] is not in JSON format: " + jsonError)
-                }
-                //validating the response against its schema
-                let validationError: Array<any> = Utils.validateResponse(eventName, data, self.testConfig.SchemaLocation, "EventData")
-                if (validationError) {
-                    //meaning that there is a validation error
-                    if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Received data [index: " + indexOfEventData + "] is not valid for: " + eventName)
-                    container.passed = false
-                    container.eventDataReport.passed = false
-                    container.eventDataReport.result = new Result(
-                        16,
-                        "* Received data [index: " + indexOfEventData + "] is not valid, " + JSON.stringify(validationError)
-                    )
-                } else {
-                    if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Received data [index: " + indexOfEventData + "] is valid for: " + eventName)
-                    //if nothing is wrong, putting a good result
+            if (indexOfEventData < self.testConfig.EventAndObservePOptions.MaxAmountRecvData || self.testConfig.EventAndObservePOptions == null) {
+                if (interaction.hasOwnProperty("data")) {
+                    container.eventDataReport.received.push(new Payload(receivedTimeStamp, data))
+                    if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Received data [index: " + indexOfEventData + "]: ", JSON.stringify(data, null, " "))
+                    try {
+                        let temp: JSON = data
+                    } catch (jsonError) {
+                        if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Received data [index: " + indexOfEventData + "] is not in JSON format")
+                        container.passed = false
+                        container.eventDataReport.passed = false
+                        container.eventDataReport.result = new Result(
+                            15,
+                            "* Received data [index: " + indexOfEventData + "] is not in JSON format: " + jsonError
+                        )
+                    }
+                    //validating the response against its schema
+                    let validationError: Array<any> = Utils.validateResponse(eventName, data, self.testConfig.SchemaLocation, "EventData")
+                    if (validationError) {
+                        //meaning that there is a validation error
+                        if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Received data [index: " + indexOfEventData + "] is not valid for: " + eventName)
+                        container.passed = false
+                        container.eventDataReport.passed = false
+                        container.eventDataReport.result = new Result(
+                            16,
+                            "* Received data [index: " + indexOfEventData + "] is not valid, " + JSON.stringify(validationError)
+                        )
+                    } else {
+                        if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Received data [index: " + indexOfEventData + "] is valid for: " + eventName)
+                        //if nothing is wrong, putting a good result
+                    }
+                    ++indexOfEventData
                 }
             }
-            ++indexOfEventData
         }
 
-        function testEvent(): Promise<boolean> {
+        function testSubscribeEvent(): Promise<boolean> {
             return new Promise(function (resolve, reject) {
                 let toSend: JSON
-                //generating the message to send
+                // Generating the message to send.
                 try {
                     toSend = self.codeGen.findRequestValue(self.testConfig.TestDataLocation, testScenario, interactionIndex, eventName)
                     if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Created value to send :", JSON.stringify(toSend, null, " "))
@@ -129,10 +140,10 @@ export class Tester {
                     container.subscribeEventReport.result = new Result(12, "Cannot create message: " + Error)
                     resolve(true)
                 }
-                //validating request against a schema. Validator returns an array that describes the error. This array is empty when there is no error
-                //a first thinking would say that it shouldn't be necessary but since the requests are user written, there can be errors there as well.
+                // Validating the request against a schema. Validator returns an array that describes the error. This array is empty when there is no error.
+                // Necessary because the requests are user written and can contain errors.
                 if (toSend != null) {
-                    let errors: Array<any> = Utils.validateRequest(eventName, toSend, self.testConfig.SchemaLocation, "Action")
+                    let errors: Array<any> = Utils.validateRequest(eventName, toSend, self.testConfig.SchemaLocation, "EventSubscription")
                     if (errors) {
                         //meaning that there is a validation error
                         if (logMode)
@@ -147,51 +158,87 @@ export class Tester {
                         if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Created request is valid for: " + eventName)
                     }
                 }
-                //invoking the action
-                try {
-                    if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Invoking action " + eventName + " with data:", JSON.stringify(toSend, null, " "))
-                    // Try to invoke the action.
-                    //const invokedAction = self.tryToInvokeAction(eventName, toSend)
-                    let sendTimeStamp = new Date()
-                    self.tut
-                        .subscribeEvent("not_enough", (eventData) => {
-                            console.debug("not_enough; index: " + eventData)
-                            // run the “startMeasurement” action defined by TD
-                            eventDataCallback(eventData)
-                        })
-                        .then(() => {
-                            console.debug("########################BEFORE#################")
-                            console.debug(Date())
-                        })
-                        .then(() => {
-                            setTimeout(() => {
-                                self.tut
-                                    .unsubscribeEvent("not_enough")
-                                    .then(() => {
-                                        console.debug(Date())
-                                        console.debug("##############################AFTER################")
-                                    })
-                                    .then(() => {
-                                        resolve(true)
-                                    })
-                                // .catch((error) => {
-                                //     container.passed = false
-                                //     container.cancelEventReport.result = new Result(20, "Problem unsubscribing: " + error)
-                                // })
-                            }, 4000)
-                        })
-                        .catch((error) => {
-                            container.passed = false
-                            container.subscribeEventReport.result = new Result(10, "Problem subscribing: " + error)
+                // Subscribing to the Event
+                if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Subscribing to event " + eventName + " with data:", JSON.stringify(toSend, null, " "))
+                // Try to subscribe to the event.
+                let sendTimeStamp = new Date()
+                self.tut
+                    .subscribeEvent(eventName, (eventData) => {
+                        eventDataCallback(eventData)
+                    })
+                    .then(() => {
+                        setTimeout(() => {
                             resolve(true)
-                        })
+                        }, self.testConfig.EventAndObservePOptions.MsListenSynchronous)
+                    })
+                    .catch((error) => {
+                        container.passed = false
+                        container.subscribeEventReport.result = new Result(10, "Problem subscribing to event " + eventName + ": " + error)
+                        resolve(true)
+                    })
+            })
+        }
+
+        function testEvent(): Promise<boolean> {
+            return new Promise(function (resolve, reject) {
+                let toSend: JSON
+                // Generating the message to send.
+                try {
+                    toSend = self.codeGen.findRequestValue(self.testConfig.TestDataLocation, testScenario, interactionIndex, eventName)
+                    if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Created value to send :", JSON.stringify(toSend, null, " "))
                 } catch (Error) {
-                    // in case there is a problem with the invoke of the action
-                    if (logMode) console.log("* Response receiving for  " + eventName + "is unsuccessful, continuing with other scenarios")
+                    if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Cannot create for " + eventName + ", look at the previous message to identify the problem")
                     container.passed = false
-                    container.subscribeEventReport.result = new Result(10, "Problem invoking the action" + Error)
+                    container.subscribeEventReport.result = new Result(12, "Cannot create message: " + Error)
                     resolve(true)
                 }
+                // Validating the request against a schema. Validator returns an array that describes the error. This array is empty when there is no error.
+                // Necessary because the requests are user written and can contain errors.
+                if (toSend != null) {
+                    let errors: Array<any> = Utils.validateRequest(eventName, toSend, self.testConfig.SchemaLocation, "EventSubscription")
+                    if (errors) {
+                        //meaning that there is a validation error
+                        if (logMode)
+                            console.log(
+                                "\x1b[36m%s\x1b[0m",
+                                "* Created request is not valid for " + eventName + "\nMessage is " + toSend + "\nError is " + errors
+                            )
+                        container.passed = false
+                        container.subscribeEventReport.result = new Result(13, "Created message has bad format: " + JSON.stringify(errors))
+                        resolve(true)
+                    } else {
+                        if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Created request is valid for: " + eventName)
+                    }
+                }
+                // Subscribing to the Event
+                if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Subscribing to event " + eventName + " with data:", JSON.stringify(toSend, null, " "))
+                // Try to subscribe to the event.
+                let sendTimeStamp = new Date()
+                self.tut
+                    .subscribeEvent(eventName, (eventData) => {
+                        eventDataCallback(eventData)
+                    })
+                    .then(() => {
+                        console.debug(Date())
+                    })
+                    .then(() => {
+                        setTimeout(() => {
+                            self.tut
+                                .unsubscribeEvent("not_enough")
+                                .then(() => {
+                                    resolve(true)
+                                })
+                                .catch((error) => {
+                                    container.passed = false
+                                    container.cancelEventReport.result = new Result(20, "Problem unsubscribing from event " + eventName + ": " + error)
+                                })
+                        }, self.testConfig.EventAndObservePOptions.MsListenSynchronous)
+                    })
+                    .catch((error) => {
+                        container.passed = false
+                        container.subscribeEventReport.result = new Result(10, "Problem subscribing to event " + eventName + ": " + error)
+                        resolve(true)
+                    })
             })
         }
     }

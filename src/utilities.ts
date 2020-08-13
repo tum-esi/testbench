@@ -27,6 +27,14 @@ export interface testConfig {
     ActionTimeout?: number
     Scenarios?: number
     Repetitions?: number
+    EventAndObservePOptions: {
+        // How many Event Data Packages the testbench will be adding to Report. Set to null for unlimited amount.
+        MaxAmountRecvData: number | null
+        // MilliSeconds the testbench stays subscribed/observes and Event/Property during first Phase (synchronous).
+        MsListenSynchronous: number
+        // MilliSeconds the testbench stays subscribed/observes and Event/Property during second Phase (asynchronous).
+        MsListenAsynchronous: number
+    }
     credentials?: any
 }
 
