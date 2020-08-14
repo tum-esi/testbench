@@ -15,7 +15,7 @@
     "Repetitions": 1,
     "EventAndObservePOptions": {
         "MaxAmountRecvData": 10,
-        "MsListenAsynchronous": 1000,
+        "MsListenAsynchronous": 200,
         "MsListenSynchronous": 5000
     },
     "credentials": {}
