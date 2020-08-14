@@ -90,7 +90,7 @@ export class Tester {
         var passed = false
         var result = new Result(200)
         try {
-            toSend = this.codeGen.findRequestValue(this.testConfig.TestDataLocation, 9, interactionIndex, interactionName)
+            toSend = this.codeGen.findRequestValue(this.testConfig.TestDataLocation, testScenario, interactionIndex, interactionName)
             if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Successfully created payload: ", JSON.stringify(toSend, null, " "))
         } catch (Error) {
             if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Problem while trying to create payload: " + Error)
@@ -112,8 +112,7 @@ export class Tester {
         return new generatedTestDataContainer(toSend, passed, result)
     }
 
-    // -----TODO thing of timers to cause event
-    public testEvent(
+    public async testEvent(
         testCycle: number,
         eventName: string,
         interaction: any,
@@ -125,102 +124,89 @@ export class Tester {
         var container: EventTestReportContainer = new EventTestReportContainer(testCycle, testScenario, eventName)
         var indexOfEventData: number = 0
         var subscribed: boolean = false
-        //self.testReport.results[container.testCycle][container.testScenario].push(container.getPrintableMessage())
-        //self.testReport.addMessage(container)
 
-        return new Promise(function (resolve) {
-            testSubscribeEvent()
-                .then(() => testUnsubscribeEvent())
-                .then(() => {
-                    if (container.eventDataReport.received.length < 1) {
-                        container.eventDataReport.result = new Result(100, "Never received any data => No checks could be made.")
-                    }
-                })
-                .then(() => {
-                    if (container.passed == true) {
-                        if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Test for ", eventName + " was successful.")
-                    }
-                    self.testReport.addMessage(testCycle, testScenario, container)
-                    resolve(true)
-                })
-        })
+        await testSubscribeEvent()
+        await testUnsubscribeEvent()
+        if (container.eventDataReport.received.length < 1) {
+            container.eventDataReport.result = new Result(100, "Never received any data => No checks could be made.")
+        }
+        let messageAddition = "not "
+        if (container.passed == true) {
+            messageAddition = ""
+        }
+        if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Test for ", eventName + " was " + messageAddition + "passed.")
+        self.testReport.addMessage(testCycle, testScenario, container)
+        return true
 
         async function testUnsubscribeEvent(): Promise<boolean> {
-            return new Promise(async function (resolve) {
-                let toSend = null
-                // Trying to Unsubscribe from the Event
-                if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Trying to unsubscribe from " + eventName + " with data: ", JSON.stringify(toSend, null, " "))
-                // Testing cancellation only makes sense if subscription worked.
-                if (subscribed) {
-                    self.tut
-                        .unsubscribeEvent(eventName)
-                        .then(() => {
-                            console.log("\x1b[36m%s\x1b[0m", "* Successfully unsubscribed from " + eventName)
-                            container.cancellationReport.passed = true
-                            container.cancellationReport.result = new Result(200)
-                        })
-                        .catch((error) => {
-                            if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Problem when trying to unsubscribe from event: " + eventName + ": " + error)
-                            container.passed = false
-                            container.cancellationReport.result = new Result(20, "Problem when trying to unsubscribe from event: " + error)
-                        })
-                        .finally(() => {
-                            resolve(true)
-                        })
-                } else {
-                    // If Subscription failed Cancellation can not work.
-                    await handleNeverSubscribed()
-                    resolve(true)
-                    async function handleNeverSubscribed() {
-                        if (logMode)
-                            console.log(
-                                "\x1b[36m%s\x1b[0m",
-                                "* Problem when trying to unsubscribe from " +
-                                    eventName +
-                                    ": The testbench was never subscribed to the event (see previous messages and subscriptionReport)."
-                            )
-                        container.passed = false
-                        container.cancellationReport.passed = false
-                        container.cancellationReport.result = new Result(
-                            50,
-                            "Problem when trying to unsubscribe: The testbench was never subscribed to the event (see subscriptionReport)."
-                        )
-                    }
-                }
-            })
+            let toSend = null
+            // Trying to Unsubscribe from the Event
+            if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Trying to unsubscribe from " + eventName + " with data: ", JSON.stringify(toSend, null, " "))
+            // Testing cancellation only makes sense if subscription worked.
+            if (subscribed) {
+                await self.tut.unsubscribeEvent(eventName).catch((error) => {
+                    if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Problem when trying to unsubscribe from event: " + eventName + ": " + error)
+                    container.passed = false
+                    container.cancellationReport.passed = false
+                    container.cancellationReport.result = new Result(20, "Problem when trying to unsubscribe from event: " + error)
+                })
+                console.log("\x1b[36m%s\x1b[0m", "* Successfully unsubscribed from " + eventName)
+                container.cancellationReport.passed = true
+                container.cancellationReport.result = new Result(200)
+            } else {
+                // If Subscription failed Cancellation can not work.
+                if (logMode)
+                    console.log(
+                        "\x1b[36m%s\x1b[0m",
+                        "* Problem when trying to unsubscribe from " +
+                            eventName +
+                            ": The testbench was never subscribed to the event (see previous messages and subscriptionReport)."
+                    )
+                container.passed = false
+                container.cancellationReport.passed = false
+                container.cancellationReport.result = new Result(
+                    50,
+                    "Problem when trying to unsubscribe: The testbench was never subscribed to the event (see subscriptionReport)."
+                )
+            }
+            return true
         }
 
         function handleReceivedData(receivedData: any) {
             let receivedTimeStamp = new Date()
-            if (indexOfEventData < self.testConfig.EventAndObservePOptions.MaxAmountRecvData || self.testConfig.EventAndObservePOptions == null) {
-                if (interaction.hasOwnProperty("data")) {
-                    if (logMode)
-                        console.log("\x1b[36m%s%s\x1b[0m", "* Received event data [index: " + indexOfEventData + "]: ", JSON.stringify(receivedData, null, " "))
-                    try {
-                        let temp: JSON = receivedData
-                    } catch (jsonError) {
-                        if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Received event data [index: " + indexOfEventData + "] is not in JSON format")
-                        container.passed = false
-                        container.eventDataReport.passed = false
-                        let result = new Result(15, "* Received data [index: " + indexOfEventData + "] is not in JSON format: " + jsonError)
-                        container.eventDataReport.received.push(new EventData(receivedTimeStamp, receivedData, result))
-                        ++indexOfEventData
-                        return
-                    }
-                    //validating the response against its schema
-                    let validationError: Array<any> = Utils.validateResponse(eventName, receivedData, self.testConfig.SchemaLocation, "EventData")
-                    if (validationError) {
-                        //meaning that there is a validation error
-                        if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Received event data [index: " + indexOfEventData + "] is not valid.")
-                        container.passed = false
-                        container.eventDataReport.passed = false
-                        let result = new Result(16, "* Received data [index: " + indexOfEventData + "] is not valid: " + JSON.stringify(validationError))
-                        container.eventDataReport.received.push(new EventData(receivedTimeStamp, receivedData, result))
-                    } else {
-                        if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Received event data [index: " + indexOfEventData + "] is valid.")
-                        container.eventDataReport.received.push(new EventData(receivedTimeStamp, receivedData, new Result(200)))
-                    }
-                }
+            // Stop recording if maximum number of recorded EventData is reached.
+            if (indexOfEventData >= self.testConfig.EventAndObservePOptions.MaxAmountRecvData) {
+                return
+            }
+            // Stop handling if sent TD does not have "data"
+            if (!interaction.hasOwnProperty("data")) {
+                return
+            }
+            if (logMode)
+                console.log("\x1b[36m%s%s\x1b[0m", "* Received event data [index: " + indexOfEventData + "]: ", JSON.stringify(receivedData, null, " "))
+            try {
+                let temp: JSON = receivedData
+            } catch (jsonError) {
+                if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Received event data [index: " + indexOfEventData + "] is not in JSON format")
+                container.passed = false
+                container.eventDataReport.passed = false
+                let result = new Result(15, "* Received data [index: " + indexOfEventData + "] is not in JSON format: " + jsonError)
+                container.eventDataReport.received.push(new EventData(receivedTimeStamp, receivedData, result))
+                ++indexOfEventData
+                return
+            }
+            //validating the response against its schema
+            let validationError: Array<any> = Utils.validateResponse(eventName, receivedData, self.testConfig.SchemaLocation, "EventData")
+            if (validationError) {
+                //meaning that there is a validation error
+                if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Received event data [index: " + indexOfEventData + "] is not valid.")
+                container.passed = false
+                container.eventDataReport.passed = false
+                let result = new Result(16, "* Received data [index: " + indexOfEventData + "] is not valid: " + JSON.stringify(validationError))
+                container.eventDataReport.received.push(new EventData(receivedTimeStamp, receivedData, result))
+            } else {
+                if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Received event data [index: " + indexOfEventData + "] is valid.")
+                container.eventDataReport.received.push(new EventData(receivedTimeStamp, receivedData, new Result(200)))
             }
         }
 
@@ -243,10 +229,11 @@ export class Tester {
             } catch (error) {
                 if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Problem when trying to subscribe to event " + eventName + ": " + error)
                 container.passed = false
+                container.subscriptionReport.passed = false
                 container.subscriptionReport.result = new Result(10, "Problem when trying to subscribe: " + error)
                 return true
             }
-            container.subscriptionReport.sent = new Payload(sendTimeStamp, toSend)
+            //container.subscriptionReport.sent = new Payload(sendTimeStamp, toSend)
             if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Successfully subscribed to " + eventName + " with data: ", JSON.stringify(toSend, null, " "))
             subscribed = true
             container.subscriptionReport.passed = true
