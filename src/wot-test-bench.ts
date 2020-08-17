@@ -43,44 +43,43 @@ srv.start().then((WoT) => {
     WoT.produce({
         title: tbName,
         description:
-            "WoT Test Bench tests a Thing by getting its TD" +
-            "and executing all of its interactions with data" +
-            "generated in runtime. For simple use, invoke the" +
-            "fastTest action with the TD of your Thing as" +
-            "input data",
+            "WoT Test Bench tests a Thing by getting its TD and executing all of its interactions with data generated in runtime. " +
+            "For simple use, invoke the fastTest action with the TD of your Thing as input data",
         "@context": ["https://www.w3.org/2019/wot/td/v1", { cov: "http://www.example.org/coap-binding#" }],
         properties: {
             testConfig: {
                 type: "string",
-                writable: true,
+                writeOnly: false,
+                readOnly: false,
                 description:
-                    "(Optional) Writing to this property configures" +
-                    "the Test Bench. TDs with security schemes" +
-                    "require this property to contain the security" +
-                    "credentials",
+                    "(Optional) Writing to this property configures the Test Bench. TDs with security schemes require this property to " +
+                    "contain the security credentials",
             },
             testBenchStatus: {
                 type: "string",
-                writable: false,
-                description: "(not finished) Shows the status of the test" + "bench whether it is currently testing a device or not",
+                writeOnly: false,
+                readOnly: false,
+                description: "(not finished) Shows the status of the test bench whether it is currently testing a device or not",
             },
             thingUnderTestTD: {
                 type: "string",
-                writable: true,
-                description: "Write to this property in order to give the" + "TD of your Thing to test. Not necessary for fastTest",
+                writeOnly: false,
+                readOnly: false,
+                description: "Write to this property in order to give the TD of your Thing to test. Not necessary for fastTest",
             },
             testData: {
                 type: "string",
-                writable: true,
+                writeOnly: false,
+                readOnly: false,
                 description:
-                    "(Optional) This property contains all the data" +
-                    "that will be sent by the Test Bench to the Thing" +
-                    "under Test. You can also write in custom data",
+                    "(Optional) This property contains all the data that will be sent by the Test Bench to the Thing under Test. " +
+                    "You can also write in custom data",
             },
             testReport: {
                 type: "string",
-                writable: false,
-                description: "Contains all of the outputs of the testing." + "Not necessary for fastTest",
+                writeOnly: false,
+                readOnly: false,
+                description: "Contains all of the outputs of the testing. Not necessary for fastTest",
             },
         },
         actions: {
@@ -91,17 +90,16 @@ srv.start().then((WoT) => {
                 output: {
                     type: "string",
                 },
-                description: "Send a TD as input data and it will return" + "a test report once the test has finished",
+                description: "Send a TD as input data and it will return a test report once the test has finished",
             },
             initiate: {
                 input: {
                     type: "boolean",
-                }, // true sets logMode to active
+                },
                 output: {
                     type: "string",
                 },
-                description:
-                    "By invoking this action, the test bench consumes" + "the thing under test, generates data to be" + "sent. Not necessary for fastTest",
+                description: "By invoking this action, the test bench consumes the thing under test, generates data to be sent. Not necessary for fastTest",
             },
             testThing: {
                 input: {
@@ -110,7 +108,7 @@ srv.start().then((WoT) => {
                 output: {
                     type: "boolean",
                 },
-                description: "By invoking this action the testing starts" + "and produces a test report that can be read." + "Not necessary for fastTest",
+                description: "By invoking this action the testing starts and produces a test report that can be read. Not necessary for fastTest",
             },
         },
     })
