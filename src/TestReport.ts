@@ -27,9 +27,9 @@ export class Result {
 
 export class Payload {
     timestamp: Date
-    payload: JSON
+    payload?: JSON
 
-    constructor(timestamp: Date, payload: JSON) {
+    constructor(timestamp: Date, payload?: JSON) {
         this.timestamp = timestamp
         this.payload = payload
     }
@@ -143,8 +143,21 @@ export class EventTestReportContainer extends InteractionTestReportContainer {
     getPrintableMessage() {
         delete this.testCycle
         delete this.testScenario
-        delete this.subscriptionReport.received
-        delete this.cancellationReport.received
+        if (this.subscriptionReport.received != null) {
+            delete this.subscriptionReport.received.payload
+        }
+        if (this.cancellationReport.received != null) {
+            delete this.cancellationReport.received.payload
+        }
+        if (this.subscriptionReport.received == null) {
+            delete this.subscriptionReport.received
+        }
+        if (this.cancellationReport.received == null) {
+            delete this.cancellationReport.received
+        }
+        if (this.cancellationReport.sent == null) {
+            delete this.cancellationReport.sent
+        }
         return this
     }
 }
@@ -203,8 +216,8 @@ export class TestReport {
         testContainer: ActionTestReportContainer | PropertyTestReportContainer | EventTestReportContainer
     ): void {
         //filling the results
-        this.results[testCycle].splice(testScenario, 1, testContainer.getPrintableMessage())
-        //this.results[testContainer.testCycle][testContainer.testScenario].push(testContainer.getPrintableMessage())
+        //this.results[testCycle].splice(testScenario, 1, testContainer.getPrintableMessage())
+        this.results[testCycle][testScenario].push(testContainer.getPrintableMessage())
     }
 
     public addReceivedDataToMessage(testCycle, testScenario, receivedDataReport: MiniTestReport) {

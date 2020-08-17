@@ -122,13 +122,13 @@ export class Tester {
     ): Promise<boolean> {
         var self = this
         var container: EventTestReportContainer = new EventTestReportContainer(testCycle, testScenario, eventName)
-        var indexOfEventData: number = 0
+        var indexOfEventData: number = -1
         var subscribed: boolean = false
 
         await testSubscribeEvent()
         await testUnsubscribeEvent()
         if (container.eventDataReport.received.length < 1) {
-            container.eventDataReport.result = new Result(100, "Never received any data => No checks could be made.")
+            container.eventDataReport.result = new Result(100, "Never received any data, thus no checks could be made.")
         }
         let messageAddition = "not "
         if (container.passed == true) {
@@ -144,12 +144,18 @@ export class Tester {
             if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Trying to unsubscribe from " + eventName + " with data: ", JSON.stringify(toSend, null, " "))
             // Testing cancellation only makes sense if subscription worked.
             if (subscribed) {
-                await self.tut.unsubscribeEvent(eventName).catch((error) => {
+                let sendTimeStamp = new Date()
+                container.cancellationReport.sent = new Payload(sendTimeStamp)
+                try {
+                    var error = await self.tut.unsubscribeEvent(eventName)
+                } catch {
                     if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Problem when trying to unsubscribe from event: " + eventName + ": " + error)
                     container.passed = false
                     container.cancellationReport.passed = false
                     container.cancellationReport.result = new Result(20, "Problem when trying to unsubscribe from event: " + error)
-                })
+                    return true
+                }
+                container.cancellationReport.received = new Payload(new Date())
                 console.log("\x1b[36m%s\x1b[0m", "* Successfully unsubscribed from " + eventName)
                 container.cancellationReport.passed = true
                 container.cancellationReport.result = new Result(200)
@@ -160,22 +166,24 @@ export class Tester {
                         "\x1b[36m%s\x1b[0m",
                         "* Problem when trying to unsubscribe from " +
                             eventName +
-                            ": The testbench was never subscribed to the event (see previous messages and subscriptionReport)."
+                            ": The testbench was never subscribed or was subscribed but never received any eventData (see previous messages, subscriptionReport and eventDataReport)."
                     )
-                container.passed = false
-                container.cancellationReport.passed = false
+                container.passed = true
+                container.cancellationReport.passed = true
                 container.cancellationReport.result = new Result(
-                    50,
-                    "Problem when trying to unsubscribe: The testbench was never subscribed to the event (see subscriptionReport)."
+                    100,
+                    "The testbench was never subscribed to the event or was subscribed but never received any eventData (see subscriptionReport and eventDataReport)."
                 )
             }
             return true
         }
 
-        function handleReceivedData(receivedData: any) {
+        async function handleReceivedData(receivedData: any): Promise<void> {
             let receivedTimeStamp = new Date()
+            ++indexOfEventData
             // Stop recording if maximum number of recorded EventData is reached.
             if (indexOfEventData >= self.testConfig.EventAndObservePOptions.MaxAmountRecvData) {
+                // TODO stop waiting for eventData
                 return
             }
             // Stop handling if sent TD does not have "data"
@@ -192,7 +200,6 @@ export class Tester {
                 container.eventDataReport.passed = false
                 let result = new Result(15, "* Received data [index: " + indexOfEventData + "] is not in JSON format: " + jsonError)
                 container.eventDataReport.received.push(new EventData(receivedTimeStamp, receivedData, result))
-                ++indexOfEventData
                 return
             }
             //validating the response against its schema
@@ -209,7 +216,13 @@ export class Tester {
                 container.eventDataReport.received.push(new EventData(receivedTimeStamp, receivedData, new Result(200)))
             }
         }
-
+        async function boolTimeout(ms: number): Promise<boolean> {
+            return new Promise(async function (reject) {
+                setTimeout(() => {
+                    reject(false)
+                }, 4000)
+            })
+        }
         async function testSubscribeEvent(): Promise<boolean> {
             let toSend = null
             // let generatedTestDataContainer = await self.generateTestData(eventName, testScenario, interactionIndex, logMode)
@@ -222,6 +235,42 @@ export class Tester {
             if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Trying to subscribe to " + eventName + " with data: ", JSON.stringify(toSend, null, " "))
             let sendTimeStamp = new Date()
             // Trying to Subscribe to the Event
+
+            container.subscriptionReport.sent = new Payload(new Date())
+            try {
+                subscribed = await Promise.race([subscribeEvent(sendTimeStamp), boolTimeout(2000)])
+            } catch (error) {
+                if (logMode)
+                    console.log(
+                        "\x1b[36m%s\x1b[0m",
+                        "* Timed out when trying to subscribe to " +
+                            eventName +
+                            ". Due to the design of node-wot this can mean either the subscription was unsuccessful or " +
+                            "the subscription was successful but no eventData was received."
+                    )
+                container.passed = true
+                container.subscriptionReport.passed = true
+                container.subscriptionReport.result = new Result(
+                    100,
+                    "Either subscription was unsuccessful or it was successful but no eventData was received."
+                )
+                return true
+            }
+            //container.subscriptionReport.sent = new Payload(sendTimeStamp, toSend)
+            if (subscribed) {
+                let receivedTimeStamp = new Date()
+                container.subscriptionReport.received = new Payload(receivedTimeStamp)
+                if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Successfully subscribed to " + eventName + " with data: ", JSON.stringify(toSend, null, " "))
+                subscribed = true
+                container.subscriptionReport.passed = true
+                container.subscriptionReport.result = new Result(200)
+                await sleep(self.testConfig.EventAndObservePOptions.MsListenAsynchronous)
+                //setTimeout(() => {}, self.testConfig.EventAndObservePOptions.MsListenAsynchronous)
+                return true
+            }
+        }
+
+        async function subscribeEvent(sendTimeStamp: Date): Promise<boolean> {
             try {
                 await self.tut.subscribeEvent(eventName, (eventData) => {
                     handleReceivedData(eventData)
@@ -231,15 +280,8 @@ export class Tester {
                 container.passed = false
                 container.subscriptionReport.passed = false
                 container.subscriptionReport.result = new Result(10, "Problem when trying to subscribe: " + error)
-                return true
+                return false
             }
-            //container.subscriptionReport.sent = new Payload(sendTimeStamp, toSend)
-            if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Successfully subscribed to " + eventName + " with data: ", JSON.stringify(toSend, null, " "))
-            subscribed = true
-            container.subscriptionReport.passed = true
-            container.subscriptionReport.result = new Result(200)
-            await sleep(self.testConfig.EventAndObservePOptions.MsListenAsynchronous)
-            //setTimeout(() => {}, self.testConfig.EventAndObservePOptions.MsListenAsynchronous)
             return true
         }
     }
