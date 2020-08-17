@@ -123,6 +123,7 @@ function allTestPassed(allTestCases) {
 describe("Action: fastTest", function () {
     describe("Test entire system", function () {
         it("Fast Test", function (done) {
+            this.timeout(10000)
             // Send some Form Data
             chai.request(app)
                 .post("/wot-test-bench/actions/fastTest")
@@ -385,12 +386,12 @@ describe("Action: fastTest", function () {
                                     href: "http://localhost:8081/TestServient/events/onChange",
                                     contentType: "application/json",
                                     subprotocol: "longpoll",
-                                    op: ["subscribeevent"],
+                                    op: ["subscribeevent", "unsubscribeevent"],
                                 },
                                 {
                                     href: "coap://localhost:8082/TestServient/events/onChange",
                                     contentType: "application/json",
-                                    op: "subscribeevent",
+                                    op: ["subscribeevent", "unsubscribeevent"],
                                 },
                             ],
                         },
@@ -415,8 +416,8 @@ describe("Action: fastTest", function () {
                 .end(function (err, res) {
                     let allTestCases = getAllTestCases(getTestResult(res))
                     //console.log(allTestCases); //Can be used to log TestResults for debugging purposes.
-                    expect(allTestCases.length).to.be.equal(20) //Check if all TestCases have been generated.
-                    expect(allTestPassed(allTestCases)).to.be.true //Check if all TestCases have passed.
+                    expect(allTestCases.length, "Did not report the correct amount of Testcases.").to.be.equal(11) //Check if all TestCases have been generated.
+                    expect(allTestPassed(allTestCases, "Not all Testcases passed for Action: fastTest.")).to.be.true //Check if all TestCases have passed.
                     expect(err).to.be.null
                     done()
                 })
