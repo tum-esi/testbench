@@ -25,7 +25,7 @@ import {
 import { testConfig } from "./utilities"
 
 function sleep(ms) {
-    return new Promise((resolve, reject) => setTimeout(resolve, ms))
+    return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 class generatedTestDataContainer {
@@ -259,16 +259,13 @@ export class Tester {
             // }
             // container.subscriptionReport.result = generatedTestDataContainer.result
             if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Trying to subscribe to " + eventName + " with data: ", JSON.stringify(toSend, null, " "))
-            let sendTimeStamp = new Date()
-            // Trying to Subscribe to the Event
 
-            container.subscriptionReport.sent = new Payload(new Date())
-            var subscriptionError = null
             async function boolTimeout(ms: number): Promise<SubscriptionStatus> {
                 await sleep(4000)
                 return SubscriptionStatus.Timeout
             }
-            async function subscribeEvent(sendTimeStamp: Date): Promise<SubscriptionStatus> {
+            var subscriptionError = null
+            async function subscribeEvent(): Promise<SubscriptionStatus> {
                 try {
                     await self.tut.subscribeEvent(eventName, (eventData) => {
                         handleReceivedData(eventData)
@@ -280,7 +277,9 @@ export class Tester {
                 return SubscriptionStatus.Successful
             }
 
-            subscriptionStatus = await Promise.race([subscribeEvent(sendTimeStamp), boolTimeout(2000)])
+            container.subscriptionReport.sent = new Payload(new Date())
+            // Trying to Subscribe to the Event
+            subscriptionStatus = await Promise.race([subscribeEvent(), boolTimeout(2000)])
             switch (subscriptionStatus) {
                 case SubscriptionStatus.Error:
                     if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Problem when trying to subscribe to event " + eventName + ": " + subscriptionError)
@@ -312,7 +311,6 @@ export class Tester {
                     container.subscriptionReport.passed = true
                     container.subscriptionReport.result = new Result(200)
                     await sleep(self.testConfig.EventAndObservePOptions.MsListenAsynchronous)
-                    //setTimeout(() => {}, self.testConfig.EventAndObservePOptions.MsListenAsynchronous)
                     break
             }
             return
@@ -355,7 +353,7 @@ export class Tester {
         var self = this
         var container = new ActionTestReportContainer(testCycle, testScenario, actionName)
 
-        return new Promise(function (resolve, reject) {
+        return new Promise(function (resolve) {
             testAction().then(() => {
                 self.testReport.addMessage(testCycle, testScenario, container)
                 if (container.passed == true) {
