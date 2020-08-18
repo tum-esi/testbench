@@ -471,7 +471,6 @@ export class Tester {
                 .catch((error) => {
                     container.passed = false
                     self.testReport.addMessage(testCycle, testScenario, container)
-                    self.log("* " + error.stack)
                     reject(error)
                 })
         })
@@ -516,7 +515,7 @@ export class Tester {
                             container.passed = false
                             container.readPropertyReport.passed = false
                             container.readPropertyReport.result = new Result(30, "Could not fetch property")
-                            reject(new Error("Problem in the node-wot level (see previous messages)."))
+                            reject(new Error("Problem in the node-wot level."))
                         })
                 } else {
                     resolve(true)
@@ -630,7 +629,7 @@ export class Tester {
                                         container.passed = false
                                         container.writePropertyReport.passed = false
                                         container.writePropertyReport.result = new Result(31, "Could not fetch property in the second get" + error)
-                                        reject(new Error("Problem in the node-wot level (see previous messages)."))
+                                        reject(new Error("Problem in the node-wot level."))
                                     })
                             }
                         })
@@ -687,7 +686,7 @@ export class Tester {
             await this.testAllInteractionsOfType(testCycle, testScenario, Utils.InteractionType.Action)
             await this.testAllInteractionsOfType(testCycle, testScenario, Utils.InteractionType.Event)
         } catch (error) {
-            self.log("* Error in Test Scenario " + testScenario + " (see previous messages).")
+            self.log("* Error in Test Scenario " + testScenario + " (see previous messages):\n  " + error.stack)
             throw error
         }
         return
