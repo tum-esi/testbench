@@ -162,7 +162,7 @@ export class Tester {
                     container.cancellationReport.passed = true
                     container.cancellationReport.result = new Result(
                         100,
-                        "The testbench was never subscribed to the event due to a subscription error (see subscriptionReport)."
+                        "Subscription cancellation test not possible: The testbench was never subscribed to the event due to a subscription error (see subscriptionReport)."
                     )
                     break
                 case SubscriptionStatus.Timeout:
@@ -179,10 +179,10 @@ export class Tester {
                     container.cancellationReport.passed = true
                     container.cancellationReport.result = new Result(
                         100,
-                        "The testbench was never subscribed to the event or was subscribed but never received any eventData (see subscriptionReport and eventDataReport)."
+                        "Subscription cancellation test not possible: Timeout during subscription (see subscriptionReport)."
                     )
                     try {
-                        // Necessary in case subscription was successful but subscription provider started emitting only after the subscribeTimeout was resolved.
+                        // Necessary in case subscription was successful but subscription provider started emitting only after the subscribeTimeout was reached.
                         // The testbench would still be subscribed and thus receiving the events.
                         await self.tut.unsubscribeEvent(eventName)
                     } catch (error) {}
@@ -195,14 +195,14 @@ export class Tester {
                         // Trying to Unsubscribe from the Event
                         var error = await self.tut.unsubscribeEvent(eventName)
                     } catch {
-                        if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Problem when trying to unsubscribe from event: " + eventName + ": " + error)
+                        if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Error while canceling subscription from event: " + eventName + ": " + error)
                         container.passed = false
                         container.cancellationReport.passed = false
-                        container.cancellationReport.result = new Result(20, "Problem when trying to unsubscribe from event: " + error)
+                        container.cancellationReport.result = new Result(20, "Error while canceling subscription: " + error)
                         return true
                     }
                     container.cancellationReport.received = new Payload(new Date())
-                    console.log("\x1b[36m%s\x1b[0m", "* Successfully unsubscribed from " + eventName)
+                    console.log("\x1b[36m%s\x1b[0m", "* Successfully cancelled subscription from " + eventName)
                     container.cancellationReport.passed = true
                     container.cancellationReport.result = new Result(200)
                     break
@@ -300,7 +300,7 @@ export class Tester {
                     container.subscriptionReport.passed = true
                     container.subscriptionReport.result = new Result(
                         100,
-                        "Either subscription was unsuccessful or it was successful but no eventData was received."
+                        "Timeout when subscribing: Due to the design of node-wot this can mean either the subscription was unsuccessful or it was successful but no eventData was received."
                     )
                     break
                 case SubscriptionStatus.Successful:
