@@ -38,6 +38,13 @@ export interface testConfig {
     }
     credentials?: any
 }
+
+export enum InteractionType {
+    Property = "Property",
+    Action = "Action",
+    Event = "Event",
+}
+
 export enum SchemaType {
     Property = "Property",
     Action = "Action",
@@ -45,6 +52,7 @@ export enum SchemaType {
     EventData = "EventData",
     EventCancellation = "EventCancellation",
 }
+
 // -------------------------- FAKE DATA GENERATION ---------------------------------
 export class CodeGenerator {
     private td: wot.ThingDescription

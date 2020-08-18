@@ -46,7 +46,7 @@ export class Tester {
     public codeGen: Utils.CodeGenerator //this will generate the requests to be sent to the tut
     public testReport: TestReport //after the testing, this will contain the bare results
     private tut: wot.ConsumedThing // the thing under test
-    private logMode: boolean // True if logMode is enabled, false otherwise
+    private logMode: boolean // True if logMode is enabled, false otherwise.
 
     /**
      * This is a basic constructor, it is planned to change to incorporate more things into the initiate function.
@@ -96,9 +96,9 @@ export class Tester {
         try {
             toSend = this.codeGen.findRequestValue(this.testConfig.TestDataLocation, testScenario, schemaType, interactionName)
             this.log("* Successfully created payload: " + JSON.stringify(toSend, null, " "))
-        } catch (Error) {
-            this.log("* Problem while trying to create payload: " + Error)
-            result = new Result(12, "Cannot create payload: " + Error)
+        } catch (error) {
+            this.log("* Problem while trying to create payload:\n  " + error)
+            result = new Result(12, "Cannot create payload: " + error)
         }
         // Validating the request against a schema. Validator returns an array that describes the error. This array is empty when there is no error.
         // Necessary because the requests are user written and can contain errors.
@@ -116,7 +116,7 @@ export class Tester {
         return new generatedTestDataContainer(toSend, passed, result)
     }
 
-    public async testEvent(testCycle: number, eventName: string, interaction: any, testScenario: number): Promise<boolean> {
+    public async testEvent(testCycle: number, testScenario: number, eventName: string, interaction: any): Promise<boolean> {
         enum SubscriptionStatus {
             Timeout,
             Error,
@@ -189,9 +189,9 @@ export class Tester {
                     container.cancellationReport.sent = new Payload(sendTimeStamp)
                     try {
                         // Trying to Unsubscribe from the Event
-                        var error = await self.tut.unsubscribeEvent(eventName)
-                    } catch {
-                        self.log("* Error while canceling subscription from event: " + eventName + ": " + error)
+                        await self.tut.unsubscribeEvent(eventName)
+                    } catch (error) {
+                        self.log("* Error while canceling subscription from event: " + eventName + ":\n  " + error)
                         container.passed = false
                         container.cancellationReport.passed = false
                         container.cancellationReport.result = new Result(20, "Error while canceling subscription: " + error)
@@ -332,7 +332,7 @@ export class Tester {
      * @param interaction An interaction object containing further information about the tested interaction.
      * @param testScenario The number indicating the testScenario.
      */
-    public testAction(testCycle: number, actionName: string, interaction: any, testScenario: number): Promise<boolean> {
+    public testAction(testCycle: number, testScenario: number, actionName: string, interaction: any): Promise<boolean> {
         var self = this
         var container = new ActionTestReportContainer(testCycle, testScenario, actionName)
 
@@ -418,7 +418,7 @@ export class Tester {
                             }
                         })
                         .catch((error) => {
-                            self.log("* Problem when trying to invoke action " + actionName + ": " + error)
+                            self.log("* Problem when trying to invoke action " + actionName + ":\n  " + error)
                             container.passed = false
                             container.report.result = new Result(999, "Invoke Action Error: " + error)
                             resolve(true)
@@ -447,16 +447,16 @@ export class Tester {
      * @param interaction An interaction object containing further information about the tested interaction.
      * @param testScenario The number indicating the testScenario.
      */
-    public testProperty(testCycle: number, propertyName: string, interaction: any, testScenario: number): Promise<boolean> {
+    public testProperty(testCycle: number, testScenario: number, propertyName: string, interaction: any): Promise<boolean> {
         var self = this
         var container = new PropertyTestReportContainer(testCycle, testScenario, propertyName)
         let isWritable: boolean = !interaction.readOnly
         let isReadable: boolean = !interaction.writeOnly
 
         if (isReadable) self.log("* Property is readable")
-        if (!isReadable) self.log("* Property is not readable")
+        else self.log("* Property is not readable")
         if (isWritable) self.log("* Property is writable")
-        if (!isWritable) self.log("* Property is not writable")
+        else self.log("* Property is not writable")
 
         return new Promise(function (resolve, reject) {
             testReadProperty()
@@ -468,10 +468,11 @@ export class Tester {
                     }
                     resolve(true)
                 })
-                .catch((curBool) => {
+                .catch((error) => {
                     container.passed = false
                     self.testReport.addMessage(testCycle, testScenario, container)
-                    reject(curBool)
+                    self.log("* " + error.stack)
+                    reject(error)
                 })
         })
 
@@ -511,12 +512,11 @@ export class Tester {
                         })
                         .catch((error: any) => {
                             //problem in the node-wot level
-                            self.log("* Problem fetching first time property: " + propertyName)
-                            self.log("ERROR is: " + error)
+                            self.log("* Error when fetching property " + propertyName + " for the first time: \n  " + error)
                             container.passed = false
                             container.readPropertyReport.passed = false
                             container.readPropertyReport.result = new Result(30, "Could not fetch property")
-                            reject(true)
+                            reject(new Error("Problem in the node-wot level (see previous messages)."))
                         })
                 } else {
                     resolve(true)
@@ -574,7 +574,7 @@ export class Tester {
                                 resolve(true)
                             } else {
                                 //now reading and hoping to get the same value
-                                let curPropertyData2: any = self.tut
+                                self.tut
                                     .readProperty(propertyName)
                                     .then((res2: any) => {
                                         let responseTimeStamp = new Date()
@@ -609,13 +609,13 @@ export class Tester {
                                                     "* The return value of the second get property (after writing) did match the write for: " + propertyName
                                                 )
                                                 container.writePropertyReport.received = new Payload(responseTimeStamp, data2)
-                                                container.writePropertyReport.result = new Result(201)
+                                                container.writePropertyReport.result = new Result(200)
                                             } else {
                                                 //maybe the value changed between two requests...
                                                 self.log("* Write functionality test of " + propertyName + " is successful: write works, fetch not matching")
                                                 container.writePropertyReport.received = new Payload(responseTimeStamp, data2)
                                                 container.writePropertyReport.result = new Result(
-                                                    46,
+                                                    100,
                                                     "The return value of the second get property (after writing) did not match the write"
                                                 )
                                             }
@@ -625,12 +625,12 @@ export class Tester {
                                         resolve(true)
                                     })
                                     .catch((error: any) => {
-                                        //problem in the node-wot level
-                                        self.log("* Problem second time fetching property " + propertyName + "in the second get")
+                                        // Problem in the node-wot level.
+                                        self.log("* Error when fetching property " + propertyName + " for the second time: \n  " + error)
                                         container.passed = false
                                         container.writePropertyReport.passed = false
                                         container.writePropertyReport.result = new Result(31, "Could not fetch property in the second get" + error)
-                                        reject(true)
+                                        reject(new Error("Problem in the node-wot level (see previous messages)."))
                                     })
                             }
                         })
@@ -638,7 +638,7 @@ export class Tester {
                             self.log("* Couldn't set the property: " + propertyName)
                             container.passed = false
                             container.writePropertyReport.passed = false
-                            container.writePropertyReport.result = new Result(32, "Problem setting property" + Error)
+                            container.writePropertyReport.result = new Result(32, "Problem setting property" + error)
                             resolve(true)
                         })
                 } else {
@@ -648,50 +648,29 @@ export class Tester {
         }
     }
 
-    async startTest(interactionName: string): Promise<[string, any]> {
-        let interaction = Utils.getInteractionByName(this.tutTd, interactionName)
-        if (this.logMode) console.log("interaction pattern:", interaction[0], "interaction:", interaction[1])
-        this.log("* ..................... Testing Action:" + interactionName + ".................")
-        return interaction
-    }
+    async testAllInteractionsOfType(testCycle: number, testScenario: number, interactionType: Utils.InteractionType) {
+        // Get all interactions for type.
+        let interactionList: Array<string> = []
+        if (interactionType == Utils.InteractionType.Property) interactionList = Object.keys(this.tutTd.properties)
+        else if (interactionType == Utils.InteractionType.Action) interactionList = Object.keys(this.tutTd.actions)
+        else if (interactionType == Utils.InteractionType.Event) interactionList = Object.keys(this.tutTd.events)
 
-    async testAllActions(testCycle, testScenario, actionList: Array<string>) {
-        for (let [index, interactionName] of actionList.entries()) {
-            let interaction = await this.startTest(interactionName)
+        // Call correct test function for all interactions and handle results.
+        for (let interactionName of interactionList) {
+            let interaction = Utils.getInteractionByName(this.tutTd, interactionName)
+            if (this.logMode) console.log("interaction pattern of " + interactionType + ":", interaction[1])
+            this.log("* ..................... Testing " + interactionType + ":" + interactionName + ".................")
             try {
-                var curBool = await this.testAction(testCycle, interactionName, interaction[1], testScenario)
-            } catch {
-                this.log("* Error in testing action " + interactionName + ", check previous messages")
-                throw curBool
+                if (interactionType == Utils.InteractionType.Property) await this.testProperty(testCycle, testScenario, interactionName, interaction[1])
+                else if (interactionType == Utils.InteractionType.Action) await this.testAction(testCycle, testScenario, interactionName, interaction[1])
+                else if (interactionType == Utils.InteractionType.Event) await this.testEvent(testCycle, testScenario, interactionName, interaction[1])
+            } catch (error) {
+                this.log("* Error when testing " + interactionType + " " + interactionName + " (see previous messages).")
+                throw error
             }
-            this.log("* ..................... End Testing Action:" + interactionName + ".................")
+            this.log("* ..................... End Testing " + interactionType + ":" + interactionName + ".................")
         }
-    }
-
-    async testAllProperties(testCycle, testScenario, propertyList: Array<string>) {
-        for (let [index, interactionName] of propertyList.entries()) {
-            let interaction = await this.startTest(interactionName)
-            try {
-                var curBool = await this.testProperty(testCycle, interactionName, interaction[1], testScenario)
-            } catch {
-                this.log("* Error in testing property " + interactionName + ", check previous messages")
-                throw curBool
-            }
-            this.log("* ..................... End Testing Property:" + interactionName + ".................")
-        }
-    }
-
-    async testAllEvents(testCycle, testScenario, eventList: Array<string>) {
-        for (let [index, interactionName] of eventList.entries()) {
-            let interaction = await this.startTest(interactionName)
-            try {
-                var curBool = await this.testEvent(testCycle, interactionName, interaction[1], testScenario)
-            } catch {
-                this.log("* Error in testing event " + interactionName + ", check previous messages")
-                throw curBool
-            }
-            this.log("* ..................... End Testing Event:" + interactionName + ".................")
-        }
+        return
     }
 
     /**
@@ -700,29 +679,15 @@ export class Tester {
      * The return value needs to be changed and made into a Promise
      * @param testCycle The number indicating the testCycle.
      * @param testScenario The number indicating the testScenario.
-     * @param logMode True if logMode is enabled, false otherwise.
      */
     public async testScenario(testCycle: number, testScenario: number): Promise<any> {
         var self = this
-        let actionList: Array<string> = []
-        let propertyList: Array<string> = []
-        let eventList: Array<string> = []
-
-        for (var key in self.tutTd.properties) {
-            propertyList.push(key)
-        }
-        for (var key in self.tutTd.actions) {
-            actionList.push(key)
-        }
-        for (var key in self.tutTd.events) {
-            eventList.push(key)
-        }
         try {
-            await this.testAllProperties(testCycle, testScenario, propertyList)
-            await this.testAllActions(testCycle, testScenario, actionList)
-            await this.testAllEvents(testCycle, testScenario, eventList)
+            await this.testAllInteractionsOfType(testCycle, testScenario, Utils.InteractionType.Property)
+            await this.testAllInteractionsOfType(testCycle, testScenario, Utils.InteractionType.Action)
+            await this.testAllInteractionsOfType(testCycle, testScenario, Utils.InteractionType.Event)
         } catch (error) {
-            self.log("* Test Scenario nb" + testScenario + " has finished with an error:" + error)
+            self.log("* Error in Test Scenario " + testScenario + " (see previous messages).")
             throw error
         }
         return
@@ -745,11 +710,11 @@ export class Tester {
             })
             promise
                 .then(() => {
-                    self.log("* Test Cycle nb" + cycleNumber + " has finished without an error")
+                    self.log("* Test Cycle " + cycleNumber + " has finished without an error.")
                     resolve()
                 })
                 .catch(() => {
-                    self.log("* Test Cycle nb" + cycleNumber + " has finished with an error")
+                    self.log("* Error in Test Cycle " + cycleNumber + " (see previous messages).")
                     reject()
                 })
         })
@@ -783,11 +748,11 @@ export class Tester {
             })
             promise
                 .then(() => {
-                    self.log("* Testing the Thing has finished without an error")
+                    self.log("* Testing the Thing has finished without an error.")
                     resolve(self.testReport)
                 })
                 .catch(() => {
-                    self.log("* Testing the Thing has finished with an error")
+                    self.log("* Testing the Thing has finished with an error (see previous messages).")
                     reject()
                 })
         })
