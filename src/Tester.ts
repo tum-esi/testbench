@@ -84,13 +84,13 @@ export class Tester {
         return check
     }
 
-    async generateTestData(interactionName: string, testScenario: number, interactionIndex: number, logMode: boolean): Promise<generatedTestDataContainer> {
+    async generateTestData(interactionName: string, testScenario: number, interactionType: string, logMode: boolean): Promise<generatedTestDataContainer> {
         let toSend: JSON
         // Generating the message to send.
         var passed = false
         var result = new Result(200)
         try {
-            toSend = this.codeGen.findRequestValue(this.testConfig.TestDataLocation, testScenario, interactionIndex, interactionName)
+            toSend = this.codeGen.findRequestValue(this.testConfig.TestDataLocation, testScenario, interactionType, interactionName)
             if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Successfully created payload: ", JSON.stringify(toSend, null, " "))
         } catch (Error) {
             if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Problem while trying to create payload: " + Error)
@@ -125,7 +125,6 @@ export class Tester {
             Error,
             Successful,
         }
-
         var self = this
         var container: EventTestReportContainer = new EventTestReportContainer(testCycle, testScenario, eventName)
         var indexOfEventData: number = -1
@@ -260,7 +259,7 @@ export class Tester {
             // container.subscriptionReport.result = generatedTestDataContainer.result
             if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Trying to subscribe to " + eventName + " with data: ", JSON.stringify(toSend, null, " "))
 
-            async function boolTimeout(ms: number): Promise<SubscriptionStatus> {
+            async function timeout(ms: number): Promise<SubscriptionStatus> {
                 await sleep(4000)
                 return SubscriptionStatus.Timeout
             }
@@ -279,7 +278,7 @@ export class Tester {
 
             container.subscriptionReport.sent = new Payload(new Date())
             // Trying to Subscribe to the Event
-            subscriptionStatus = await Promise.race([subscribeEvent(), boolTimeout(2000)])
+            subscriptionStatus = await Promise.race([subscribeEvent(), timeout(2000)])
             switch (subscriptionStatus) {
                 case SubscriptionStatus.Error:
                     if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Problem when trying to subscribe to event " + eventName + ": " + subscriptionError)
@@ -368,7 +367,7 @@ export class Tester {
                 let toSend: JSON
                 //generating the message to send
                 try {
-                    toSend = self.codeGen.findRequestValue(self.testConfig.TestDataLocation, testScenario, interactionIndex, actionName)
+                    toSend = self.codeGen.findRequestValue(self.testConfig.TestDataLocation, testScenario, "actions", actionName)
                     if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Created value to send :", JSON.stringify(toSend, null, " "))
                 } catch (Error) {
                     if (logMode)
@@ -579,7 +578,7 @@ export class Tester {
                     container.writePropertyReport = new MiniTestReport(false)
                     //generating the message to send
                     try {
-                        toSend = self.codeGen.findRequestValue(self.testConfig.TestDataLocation, testScenario, interactionIndex, propertyName)
+                        toSend = self.codeGen.findRequestValue(self.testConfig.TestDataLocation, testScenario, "properties", propertyName)
                         if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Created value to send: ", JSON.stringify(toSend, null, " "))
                     } catch (Error) {
                         if (logMode)
@@ -706,49 +705,54 @@ export class Tester {
         }
     }
 
-    private testInteraction(testCycle: number, testScenario: number, interactionIndex: number, interactionName: string, logMode: boolean): Promise<any> {
+    async startTest(interactionName: string, logMode: boolean): Promise<[string, any]> {
         var self = this
-        return new Promise(function (resolve, reject) {
-            let interaction = Utils.getInteractionByName(self.tutTd, interactionName)
-            console.log("interaction pattern:", interaction[0], "interaction:", interaction[1])
-            if (interaction[0] == "Property") {
-                if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* ..................... Testing Property:", interactionName, ".................")
-                self.testProperty(testCycle, interactionName, interaction[1], testScenario, interactionIndex, logMode)
-                    .then((curBool) => {
-                        if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* ..................... End Testing Property:", interactionName, ".................")
-                        resolve(curBool)
-                    })
-                    .catch((curBool) => {
-                        if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* Error in testing property ", interactionName, ", check previous messages")
-                        reject(curBool)
-                    })
-            } else if (interaction[0] == "Action") {
-                if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* ..................... Testing Action:", interactionName, ".................")
-                self.testAction(testCycle, interactionName, interaction[1], testScenario, interactionIndex, logMode)
-                    .then((curBool) => {
-                        if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* ..................... End Testing Action:", interactionName, ".................")
-                        resolve(curBool)
-                    })
-                    .catch((curBool) => {
-                        if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* Error in testing action ", interactionName, ", check previous messages")
-                        reject(curBool)
-                    })
-            } else if (interaction[0] == "Event") {
-                if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* ..................... Testing Event: ", interactionName, ".................")
-                self.testEvent(testCycle, interactionName, interaction[1], testScenario, interactionIndex, logMode)
-                    .then((curBool) => {
-                        if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* ..................... End Testing Event: ", interactionName, ".................")
-                        resolve(curBool)
-                    })
-                    .catch((curBool) => {
-                        if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* Error in testing event ", interactionName, ", check previous messages")
-                        reject(curBool)
-                    })
-            } else {
-                if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Asked for something other than Action or Property or Event")
-                reject(false)
+        let interaction = Utils.getInteractionByName(self.tutTd, interactionName)
+        console.log("interaction pattern:", interaction[0], "interaction:", interaction[1])
+        if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* ..................... Testing Action:", interactionName, ".................")
+        return interaction
+    }
+
+    async testAllActions(testCycle, testScenario, logMode: boolean, actionList: Array<string>) {
+        var self = this
+        for (let [index, interactionName] of actionList.entries()) {
+            let interaction = await this.startTest(interactionName, logMode)
+            try {
+                var curBool = await self.testAction(testCycle, interactionName, interaction[1], testScenario, index, logMode)
+            } catch {
+                if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* Error in testing action ", interactionName, ", check previous messages")
+                throw curBool
             }
-        })
+            if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* ..................... End Testing Action:", interactionName, ".................")
+        }
+    }
+
+    async testAllProperties(testCycle, testScenario, logMode: boolean, propertyList: Array<string>) {
+        var self = this
+        for (let [index, interactionName] of propertyList.entries()) {
+            let interaction = await this.startTest(interactionName, logMode)
+            try {
+                var curBool = await self.testAction(testCycle, interactionName, interaction[1], testScenario, index, logMode)
+            } catch {
+                if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* Error in testing property ", interactionName, ", check previous messages")
+                throw curBool
+            }
+            if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* ..................... End Testing Property:", interactionName, ".................")
+        }
+    }
+
+    async testAllEvents(testCycle, testScenario, logMode: boolean, eventList: Array<string>) {
+        var self = this
+        for (let [index, interactionName] of eventList.entries()) {
+            let interaction = await this.startTest(interactionName, logMode)
+            try {
+                var curBool = await self.testAction(testCycle, interactionName, interaction[1], testScenario, index, logMode)
+            } catch {
+                if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* Error in testing event ", interactionName, ", check previous messages")
+                throw curBool
+            }
+            if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* ..................... End Testing Event:", interactionName, ".................")
+        }
     }
 
     /**
@@ -759,37 +763,30 @@ export class Tester {
      * @param testScenario The number indicating the testScenario.
      * @param logMode True if logMode is enabled, false otherwise.
      */
-    public testScenario(testCycle: number, testScenario: number, logMode: boolean): Promise<any> {
+    public async testScenario(testCycle: number, testScenario: number, logMode: boolean): Promise<any> {
         var self = this
-        let interactionList: Array<string> = []
+        let actionList: Array<string> = []
+        let propertyList: Array<string> = []
+        let eventList: Array<string> = []
+
         for (var key in self.tutTd.properties) {
-            interactionList.push(key)
+            propertyList.push(key)
         }
         for (var key in self.tutTd.actions) {
-            interactionList.push(key)
+            actionList.push(key)
         }
         for (var key in self.tutTd.events) {
-            interactionList.push(key)
+            eventList.push(key)
         }
-
-        return new Promise(function (resolve, reject) {
-            let promise: Promise<any> = Promise.resolve()
-            interactionList.forEach((interactionName, index) => {
-                promise = promise.then(() => {
-                    return self.testInteraction(testCycle, testScenario, index, interactionName, logMode)
-                })
-            })
-            //in the end the return value indicates if at least one interaction failed
-            promise
-                .then(() => {
-                    if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* ------------- Test Scenario nb", testScenario, " has finished -------------")
-                    resolve()
-                })
-                .catch((error: Error) => {
-                    if (logMode) console.log("\x1b[36m%s%s%s%s\x1b[0m", "* Test Scenario nb", testScenario, " has finished with an error:", error)
-                    reject(error)
-                })
-        })
+        try {
+            await this.testAllProperties(testCycle, testScenario, logMode, propertyList)
+            await this.testAllActions(testCycle, testScenario, logMode, actionList)
+            await this.testAllEvents(testCycle, testScenario, logMode, eventList)
+        } catch (error) {
+            if (logMode) console.log("\x1b[36m%s%s%s%s\x1b[0m", "* Test Scenario nb", testScenario, " has finished with an error:", error)
+            throw error
+        }
+        return
     }
 
     public testCycle(cycleNumber: number, scenarioNumber: number, logMode: boolean): Promise<any> {

@@ -55,56 +55,46 @@ export class CodeGenerator {
             return null
         }
     }
+
     // generates fake data and stores it to config TestDataLocation location
-    public generateFakeData(testConf: any, tdesc: wot.ThingDescription) {
+    public async generateFakeData(testConf: any, tdesc: wot.ThingDescription) {
         // create interaction list: no optimized solution: -----------
-        let requestList = []
+        var requests = {
+            properties: {},
+            actions: {},
+            eventSubscription: {},
+            eventCancellation: {},
+        }
+
         for (var key in tdesc.properties) {
-            let scenarioList = []
+            requests.properties[key] = []
             for (var j = 0; j < testConf.Scenarios; j++) {
-                let dataPair = {}
-                dataPair["interactionName"] = key
-                dataPair["interactionValue"] = this.createRequest(key, testConf.SchemaLocation, "Property")
-                scenarioList.push(dataPair)
+                requests.properties[key].push(this.createRequest(key, testConf.SchemaLocation, "Property"))
             }
-            requestList.push(scenarioList)
         }
+
         for (var key in tdesc.actions) {
-            let scenarioList = []
+            requests.actions[key] = []
             for (var j = 0; j < testConf.Scenarios; j++) {
-                let dataPair = {}
-                dataPair["interactionName"] = key
-                dataPair["interactionValue"] = this.createRequest(key, testConf.SchemaLocation, "Action")
-                scenarioList.push(dataPair)
+                requests.actions[key].push(this.createRequest(key, testConf.SchemaLocation, "Action"))
             }
-            requestList.push(scenarioList)
         }
+
         for (var key in tdesc.events) {
-            let scenarioList = []
+            requests.eventSubscription[key] = []
+            requests.eventCancellation[key] = []
             for (var j = 0; j < testConf.Scenarios; j++) {
-                let dataPair = {}
-                dataPair["interactionName"] = key
-                dataPair["interactionValue"] = this.createRequest(key, testConf.SchemaLocation, "EventSubscription")
-                scenarioList.push(dataPair)
+                requests.eventSubscription[key].push(this.createRequest(key, testConf.SchemaLocation, "EventSubscription"))
+                requests.eventCancellation[key].push(this.createRequest(key, testConf.SchemaLocation, "EventCancellation"))
             }
-            requestList.push(scenarioList)
         }
-        for (var key in tdesc.events) {
-            let scenarioList = []
-            for (var j = 0; j < testConf.Scenarios; j++) {
-                let dataPair = {}
-                dataPair["interactionName"] = key
-                dataPair["interactionValue"] = this.createRequest(key, testConf.SchemaLocation, "EventCancellation")
-                scenarioList.push(dataPair)
-            }
-            requestList.push(scenarioList)
-        }
-        fs.writeFileSync(testConf.TestDataLocation, JSON.stringify(requestList, null, " "))
+
+        fs.writeFileSync(testConf.TestDataLocation, JSON.stringify(requests, null, " "))
     }
     // helper function finds created data:
-    public findRequestValue(requestsLoc, testScenario, interactionIndex, propertyName) {
+    public findRequestValue(requestsLoc, testScenario, interactionType: string, interactionName: string) {
         let requests = JSON.parse(fs.readFileSync(requestsLoc, "utf8"))
-        return requests[interactionIndex][testScenario]["interactionValue"]
+        return requests[interactionType][interactionName][testScenario]
     }
     public getRequests(requestsLoc) {
         return JSON.parse(fs.readFileSync(requestsLoc, "utf8"))
