@@ -84,13 +84,13 @@ export class Tester {
         return check
     }
 
-    async generateTestData(interactionName: string, testScenario: number, interactionType: string, logMode: boolean): Promise<generatedTestDataContainer> {
+    async generateTestData(interactionName: string, testScenario: number, schemaType: Utils.SchemaType, logMode: boolean): Promise<generatedTestDataContainer> {
         let toSend: JSON
         // Generating the message to send.
         var passed = false
         var result = new Result(200)
         try {
-            toSend = this.codeGen.findRequestValue(this.testConfig.TestDataLocation, testScenario, interactionType, interactionName)
+            toSend = this.codeGen.findRequestValue(this.testConfig.TestDataLocation, testScenario, schemaType, interactionName)
             if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Successfully created payload: ", JSON.stringify(toSend, null, " "))
         } catch (Error) {
             if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Problem while trying to create payload: " + Error)
@@ -121,7 +121,7 @@ export class Tester {
         logMode: boolean
     ): Promise<boolean> {
         enum SubscriptionStatus {
-            Timeout = 1,
+            Timeout,
             Error,
             Successful,
         }
@@ -183,6 +183,12 @@ export class Tester {
                     try {
                         // Necessary in case subscription was successful but subscription provider started emitting only after the subscribeTimeout was reached.
                         // The testbench would still be subscribed and thus receiving the events.
+                        if (logMode)
+                            console.log(
+                                "\x1b[36m%s\x1b[0m",
+                                "* The following output of node-wot describes unsubscribing from the event but this output is identical for " +
+                                    "unsuccessful subscription and successful subscription with no emitted event."
+                            )
                         await self.tut.unsubscribeEvent(eventName)
                     } catch (error) {}
                     break
@@ -367,7 +373,7 @@ export class Tester {
                 let toSend: JSON
                 //generating the message to send
                 try {
-                    toSend = self.codeGen.findRequestValue(self.testConfig.TestDataLocation, testScenario, "actions", actionName)
+                    toSend = self.codeGen.findRequestValue(self.testConfig.TestDataLocation, testScenario, Utils.SchemaType.Action, actionName)
                     if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Created value to send :", JSON.stringify(toSend, null, " "))
                 } catch (Error) {
                     if (logMode)
@@ -379,7 +385,7 @@ export class Tester {
                 //validating request against a schema. Validator returns an array that describes the error. This array is empty when there is no error
                 //a first thinking would say that it shouldn't be necessary but since the requests are user written, there can be errors there as well.
                 if (toSend != null) {
-                    let errors: Array<any> = Utils.validateRequest(actionName, toSend, self.testConfig.SchemaLocation, "Action")
+                    let errors: Array<any> = Utils.validateRequest(actionName, toSend, self.testConfig.SchemaLocation, Utils.SchemaType.Action)
                     if (errors) {
                         //meaning that there is a validation error
                         if (logMode)
@@ -578,7 +584,7 @@ export class Tester {
                     container.writePropertyReport = new MiniTestReport(false)
                     //generating the message to send
                     try {
-                        toSend = self.codeGen.findRequestValue(self.testConfig.TestDataLocation, testScenario, "properties", propertyName)
+                        toSend = self.codeGen.findRequestValue(self.testConfig.TestDataLocation, testScenario, Utils.SchemaType.Property, propertyName)
                         if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Created value to send: ", JSON.stringify(toSend, null, " "))
                     } catch (Error) {
                         if (logMode)
@@ -706,19 +712,17 @@ export class Tester {
     }
 
     async startTest(interactionName: string, logMode: boolean): Promise<[string, any]> {
-        var self = this
-        let interaction = Utils.getInteractionByName(self.tutTd, interactionName)
+        let interaction = Utils.getInteractionByName(this.tutTd, interactionName)
         console.log("interaction pattern:", interaction[0], "interaction:", interaction[1])
         if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* ..................... Testing Action:", interactionName, ".................")
         return interaction
     }
 
     async testAllActions(testCycle, testScenario, logMode: boolean, actionList: Array<string>) {
-        var self = this
         for (let [index, interactionName] of actionList.entries()) {
             let interaction = await this.startTest(interactionName, logMode)
             try {
-                var curBool = await self.testAction(testCycle, interactionName, interaction[1], testScenario, index, logMode)
+                var curBool = await this.testAction(testCycle, interactionName, interaction[1], testScenario, index, logMode)
             } catch {
                 if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* Error in testing action ", interactionName, ", check previous messages")
                 throw curBool
@@ -728,11 +732,10 @@ export class Tester {
     }
 
     async testAllProperties(testCycle, testScenario, logMode: boolean, propertyList: Array<string>) {
-        var self = this
         for (let [index, interactionName] of propertyList.entries()) {
             let interaction = await this.startTest(interactionName, logMode)
             try {
-                var curBool = await self.testAction(testCycle, interactionName, interaction[1], testScenario, index, logMode)
+                var curBool = await this.testProperty(testCycle, interactionName, interaction[1], testScenario, index, logMode)
             } catch {
                 if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* Error in testing property ", interactionName, ", check previous messages")
                 throw curBool
@@ -742,11 +745,10 @@ export class Tester {
     }
 
     async testAllEvents(testCycle, testScenario, logMode: boolean, eventList: Array<string>) {
-        var self = this
         for (let [index, interactionName] of eventList.entries()) {
             let interaction = await this.startTest(interactionName, logMode)
             try {
-                var curBool = await self.testAction(testCycle, interactionName, interaction[1], testScenario, index, logMode)
+                var curBool = await this.testEvent(testCycle, interactionName, interaction[1], testScenario, index, logMode)
             } catch {
                 if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* Error in testing event ", interactionName, ", check previous messages")
                 throw curBool

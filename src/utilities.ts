@@ -1,4 +1,5 @@
 import * as wot from "wot-typescript-definitions"
+import { Schema } from "inspector"
 var fs = require("fs")
 var mkdirp = require("mkdirp")
 var jsf = require("json-schema-faker")
@@ -37,7 +38,13 @@ export interface testConfig {
     }
     credentials?: any
 }
-
+export enum SchemaType {
+    Property = "Property",
+    Action = "Action",
+    EventSubscription = "EventSubscription",
+    EventData = "EventData",
+    EventCancellation = "EventCancellation",
+}
 // -------------------------- FAKE DATA GENERATION ---------------------------------
 export class CodeGenerator {
     private td: wot.ThingDescription
@@ -59,42 +66,41 @@ export class CodeGenerator {
     // generates fake data and stores it to config TestDataLocation location
     public async generateFakeData(testConf: any, tdesc: wot.ThingDescription) {
         // create interaction list: no optimized solution: -----------
-        var requests = {
-            properties: {},
-            actions: {},
-            eventSubscription: {},
-            eventCancellation: {},
-        }
+        var requests = {}
+        requests[SchemaType.Property] = {}
+        requests[SchemaType.Action] = {}
+        requests[SchemaType.EventSubscription] = {}
+        requests[SchemaType.EventCancellation] = {}
 
-        for (var key in tdesc.properties) {
-            requests.properties[key] = []
-            for (var j = 0; j < testConf.Scenarios; j++) {
-                requests.properties[key].push(this.createRequest(key, testConf.SchemaLocation, "Property"))
+        for (let property in tdesc.properties) {
+            requests[SchemaType.Property][property] = []
+            for (let scenario = 0; scenario < testConf.Scenarios; scenario++) {
+                requests[SchemaType.Property][property].push(this.createRequest(property, testConf.SchemaLocation, SchemaType.Property))
             }
         }
 
-        for (var key in tdesc.actions) {
-            requests.actions[key] = []
-            for (var j = 0; j < testConf.Scenarios; j++) {
-                requests.actions[key].push(this.createRequest(key, testConf.SchemaLocation, "Action"))
+        for (let action in tdesc.actions) {
+            requests[SchemaType.Action][action] = []
+            for (let scenario = 0; scenario < testConf.Scenarios; scenario++) {
+                requests[SchemaType.Action][action].push(this.createRequest(action, testConf.SchemaLocation, SchemaType.Action))
             }
         }
 
-        for (var key in tdesc.events) {
-            requests.eventSubscription[key] = []
-            requests.eventCancellation[key] = []
-            for (var j = 0; j < testConf.Scenarios; j++) {
-                requests.eventSubscription[key].push(this.createRequest(key, testConf.SchemaLocation, "EventSubscription"))
-                requests.eventCancellation[key].push(this.createRequest(key, testConf.SchemaLocation, "EventCancellation"))
+        for (let event in tdesc.events) {
+            requests[SchemaType.EventSubscription][event] = []
+            requests[SchemaType.EventCancellation][event] = []
+            for (let scenario = 0; scenario < testConf.Scenarios; scenario++) {
+                requests[SchemaType.EventSubscription][event].push(this.createRequest(event, testConf.SchemaLocation, SchemaType.EventSubscription))
+                requests[SchemaType.EventCancellation][event].push(this.createRequest(event, testConf.SchemaLocation, SchemaType.EventCancellation))
             }
         }
 
         fs.writeFileSync(testConf.TestDataLocation, JSON.stringify(requests, null, " "))
     }
     // helper function finds created data:
-    public findRequestValue(requestsLoc, testScenario, interactionType: string, interactionName: string) {
+    public findRequestValue(requestsLoc, testScenario, schemaType: SchemaType, interactionName: string) {
         let requests = JSON.parse(fs.readFileSync(requestsLoc, "utf8"))
-        return requests[interactionType][interactionName][testScenario]
+        return requests[schemaType][interactionName][testScenario]
     }
     public getRequests(requestsLoc) {
         return JSON.parse(fs.readFileSync(requestsLoc, "utf8"))
@@ -162,9 +168,9 @@ function extractSchema(fragment: any) {
     return extractedSchema
 }
 // writes extracted schema to file
-function writeSchema(name, dataSchema, schemaLocationR, interaction) {
+function writeSchema(name, dataSchema, schemaLocation, schemaType: SchemaType) {
     let schema: string = '{\n\t"name":"' + name + '",\n\t' + dataSchema + "\n\t}"
-    let writeLoc: string = schemaLocationR + name + "-" + interaction + ".json"
+    let writeLoc: string = schemaLocation + name + "-" + schemaType + ".json"
     fs.writeFileSync(writeLoc, schema)
 }
 
@@ -189,15 +195,15 @@ export function generateSchemas(td: wot.ThingDescription, schemaLocation: string
             if (!td.properties[key].readOnly) {
                 // create request schema:
                 let dataSchema = extractSchema(td.properties[key])
-                writeSchema(key, dataSchema, schemaLocationReq, "Property")
+                writeSchema(key, dataSchema, schemaLocationReq, SchemaType.Property)
                 reqSchemaCount++
                 // response schema:
-                writeSchema(key, dataSchema, schemaLocationResp, "Property")
+                writeSchema(key, dataSchema, schemaLocationResp, SchemaType.Property)
                 resSchemaCount++
             } else {
                 // create response schema:
                 let dataSchema = extractSchema(td.properties[key])
-                writeSchema(key, dataSchema, schemaLocationResp, "Property")
+                writeSchema(key, dataSchema, schemaLocationResp, SchemaType.Property)
                 resSchemaCount++
             }
         }
@@ -207,12 +213,12 @@ export function generateSchemas(td: wot.ThingDescription, schemaLocation: string
         if (td.actions.hasOwnProperty(key)) {
             if (td.actions[key].hasOwnProperty("input")) {
                 // create request schema:
-                let dataSchema = writeSchema(key, JSON.stringify(td.actions[key].input).slice(0, -1).substring(1), schemaLocationReq, "Action")
+                let dataSchema = writeSchema(key, JSON.stringify(td.actions[key].input).slice(0, -1).substring(1), schemaLocationReq, SchemaType.Action)
                 reqSchemaCount++
             }
             if (td.actions[key].hasOwnProperty("output")) {
                 // create response schema:
-                writeSchema(key, JSON.stringify(td.actions[key].output).slice(0, -1).substring(1), schemaLocationResp, "Action")
+                writeSchema(key, JSON.stringify(td.actions[key].output).slice(0, -1).substring(1), schemaLocationResp, SchemaType.Action)
                 resSchemaCount++
             }
         }
@@ -221,7 +227,7 @@ export function generateSchemas(td: wot.ThingDescription, schemaLocation: string
     for (var key in td.events) {
         if (td.events.hasOwnProperty(key)) {
             if (td.events[key].hasOwnProperty("subscription")) {
-                writeSchema(key, JSON.stringify(td.events[key].subscription).slice(0, -1).substring(1), schemaLocationReq, "EventSubscription")
+                writeSchema(key, JSON.stringify(td.events[key].subscription).slice(0, -1).substring(1), schemaLocationReq, SchemaType.EventSubscription)
                 reqSchemaCount++
                 // Potential resSchema for subscription should be generated here. Perhaps something like this:
                 // if (td.events[key].subscription.hasOwnProperty("properties")) {
@@ -235,11 +241,11 @@ export function generateSchemas(td: wot.ThingDescription, schemaLocation: string
                 // resSchemaCount++
             }
             if (td.events[key].hasOwnProperty("data")) {
-                writeSchema(key, JSON.stringify(td.events[key].data).slice(0, -1).substring(1), schemaLocationResp, "EventData")
+                writeSchema(key, JSON.stringify(td.events[key].data).slice(0, -1).substring(1), schemaLocationResp, SchemaType.EventData)
                 resSchemaCount++
             }
             if (td.events[key].hasOwnProperty("cancellation")) {
-                writeSchema(key, JSON.stringify(td.events[key].cancellation).slice(0, -1).substring(1), schemaLocationReq, "EventCancellation")
+                writeSchema(key, JSON.stringify(td.events[key].cancellation).slice(0, -1).substring(1), schemaLocationReq, SchemaType.EventCancellation)
                 reqSchemaCount++
                 // Potential resSchema for cancellation should be generated here
             }
