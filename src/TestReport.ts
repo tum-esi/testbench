@@ -93,7 +93,7 @@ export class ActionTestReportContainer extends InteractionTestReportContainer {
 export class PropertyTestReportContainer extends InteractionTestReportContainer {
     readPropertyReport: MiniTestReport
     writePropertyReport: MiniTestReport
-    observePropertyReport: MiniTestReport
+    observePropertyReport: EventTestReportContainer
 
     constructor(testCycle: number, testScenario: number, name: string) {
         super(testCycle, testScenario, name)
@@ -110,6 +110,7 @@ export class PropertyTestReportContainer extends InteractionTestReportContainer 
     getPrintableMessage() {
         delete this.testCycle
         delete this.testScenario
+
         if (this.readPropertyReport == null) {
             delete this.readPropertyReport
         }
@@ -118,6 +119,11 @@ export class PropertyTestReportContainer extends InteractionTestReportContainer 
         }
         if (this.observePropertyReport == null) {
             delete this.observePropertyReport
+        } else {
+            delete this.observePropertyReport.testCycle
+            delete this.observePropertyReport.testScenario
+            delete this.observePropertyReport.name
+            this.observePropertyReport = this.observePropertyReport.getPrintableMessage()
         }
         return this
     }
@@ -149,12 +155,12 @@ export class EventTestReportContainer extends InteractionTestReportContainer {
         if (this.cancellationReport.received != null) {
             delete this.cancellationReport.received.payload
         }
-        if (this.subscriptionReport.received == null) {
-            delete this.subscriptionReport.received
-        }
-        if (this.cancellationReport.received == null) {
-            delete this.cancellationReport.received
-        }
+        // if (this.subscriptionReport.received == null) {
+        delete this.subscriptionReport.received
+        // }
+        // if (this.cancellationReport.received == null) {
+        delete this.cancellationReport.received
+        // }
         if (this.cancellationReport.sent == null) {
             delete this.cancellationReport.sent
         }
