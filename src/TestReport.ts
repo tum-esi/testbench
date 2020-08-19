@@ -124,6 +124,13 @@ export class PropertyTestReportContainer extends InteractionTestReportContainer 
             delete this.observePropertyReport.testScenario
             delete this.observePropertyReport.name
             this.observePropertyReport = this.observePropertyReport.getPrintableMessage()
+            // Renaming eventDataReport entry.
+            this.observePropertyReport["observedDataReport"] = this.observePropertyReport.eventDataReport
+            delete this.observePropertyReport.eventDataReport
+            // Append cancellation Report at the end for correct order.
+            let cancellationReport: MiniTestReport = this.observePropertyReport.cancellationReport
+            delete this.observePropertyReport.cancellationReport
+            this.observePropertyReport["cancellationReport"] = cancellationReport
         }
         return this
     }
@@ -183,10 +190,13 @@ export class TestReport {
     public getResults(): Array<any> {
         //basic getter
         let returnResults = this.results
+        return returnResults
+    }
+
+    public resetResults(): void {
         this.results = []
         this.testCycleCount = -1
         this.testScenarioCount = -1
-        return returnResults
     }
 
     //at each new test cycle this should be called
@@ -224,10 +234,6 @@ export class TestReport {
         //filling the results
         //this.results[testCycle].splice(testScenario, 1, testContainer.getPrintableMessage())
         this.results[testCycle][testScenario].push(testContainer.getPrintableMessage())
-    }
-
-    public addReceivedDataToMessage(testCycle, testScenario, receivedDataReport: MiniTestReport) {
-        this.results[testCycle][testScenario].eventDataReport = receivedDataReport
     }
 
     public printResults(): void {

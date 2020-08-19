@@ -14,8 +14,8 @@
     "Scenarios": 1,
     "Repetitions": 1,
     "EventAndObservePOptions": {
-        "MaxAmountRecvData": 1,
-        "MsListenAsynchronous": 4000,
+        "MaxAmountRecvData": 10,
+        "MsListenAsynchronous": 400,
         "MsListenSynchronous": 5000
     },
     "credentials": {}

@@ -214,7 +214,8 @@ export class Tester {
                             "* The following output of node-wot describes unsubscribing from the event but this output is identical for " +
                                 "unsuccessful subscription and successful subscription with no emitted event."
                         )
-                        await self.tut.unsubscribeEvent(eventName)
+                        if (testMode == Utils.InteractionType.Event) await self.tut.unsubscribeEvent(eventName)
+                        else await self.tut.unobserveProperty(eventName)
                     } catch (error) {}
                     break
                 case SubscriptionStatus.Successful:
@@ -295,7 +296,7 @@ export class Tester {
             self.log("* Trying to subscribe to " + eventName + " with data: " + JSON.stringify(toSend, null, " "))
 
             async function timeout(ms: number): Promise<SubscriptionStatus> {
-                await sleep(4000)
+                await sleep(1000)
                 return SubscriptionStatus.Timeout
             }
             var subscriptionError = null
@@ -639,7 +640,7 @@ export class Tester {
                                         self.log("* Received second response is valid for: " + propertyName)
                                         container.writePropertyReport.passed = true
                                         if (JSON.stringify(data2) == JSON.stringify(toSend)) {
-                                            // wohoo everything is fine
+                                            // Everything is fine.
                                             self.log(
                                                 "* Write functionality test of " +
                                                     propertyName +
@@ -683,27 +684,63 @@ export class Tester {
         }
     }
 
-    async testAllInteractionsOfType(testCycle: number, testScenario: number, interactionType: Utils.InteractionType) {
-        // Get all interactions for type.
+    getAllInteractionOfType(interactionType: Utils.InteractionType) {
         let interactionList: Array<string> = []
         if (interactionType == Utils.InteractionType.Property) interactionList = Object.keys(this.tutTd.properties)
         else if (interactionType == Utils.InteractionType.Action) interactionList = Object.keys(this.tutTd.actions)
         else if (interactionType == Utils.InteractionType.Event) interactionList = Object.keys(this.tutTd.events)
+        return interactionList
+    }
 
-        // Call correct test function for all interactions and handle results.
-        for (let interactionName of interactionList) {
-            let interaction = Utils.getInteractionByName(this.tutTd, interactionName)
-            if (this.logMode) console.log("interaction pattern of " + interactionType + ":", interaction[1])
-            this.log("* ..................... Testing " + interactionType + ":" + interactionName + ".................")
-            try {
-                if (interactionType == Utils.InteractionType.Property) await this.testProperty(testCycle, testScenario, interactionName, interaction[1])
-                else if (interactionType == Utils.InteractionType.Action) await this.testAction(testCycle, testScenario, interactionName, interaction[1])
-                else if (interactionType == Utils.InteractionType.Event) await this.testEvent(testCycle, testScenario, interactionName, interaction[1])
-            } catch (error) {
-                this.log("* Error when testing " + interactionType + " " + interactionName + " (see previous messages).")
-                throw error
+    async testInteraction(testCycle: number, testScenario: number, interactionName: string, interactionType: Utils.InteractionType) {
+        let interaction = Utils.getInteractionByName(this.tutTd, interactionName)
+        if (this.logMode) console.log("interaction pattern of " + interactionType + ":", interaction[1])
+        this.log("* ..................... Testing " + interactionType + ":" + interactionName + ".................")
+        try {
+            if (interactionType == Utils.InteractionType.Property) await this.testProperty(testCycle, testScenario, interactionName, interaction[1])
+            else if (interactionType == Utils.InteractionType.Action) await this.testAction(testCycle, testScenario, interactionName, interaction[1])
+            else if (interactionType == Utils.InteractionType.Event) await this.testEvent(testCycle, testScenario, interactionName, interaction[1])
+        } catch (error) {
+            this.log("* Error when testing " + interactionType + " " + interactionName + " (see previous messages).")
+            throw error
+        }
+        this.log("* ..................... End Testing " + interactionType + ":" + interactionName + ".................")
+        return
+    }
+
+    async secondTestingPhase(repetitionNumber: number) {
+        this.log("* ---------------------- Start of Second Test Phase: Synchronous Listening ---------------------------")
+        this.testReport.addTestCycle()
+        this.testReport.addTestScenario()
+        try {
+            // Generating List of testFunctions to run synchronously.
+            let interactionList: Array<Promise<any>> = []
+            let propertyList: Array<string> = this.getAllInteractionOfType(Utils.InteractionType.Property)
+            for (let interactionName of propertyList) {
+                interactionList.push(this.testInteraction(repetitionNumber, 0, interactionName, Utils.InteractionType.Property))
             }
-            this.log("* ..................... End Testing " + interactionType + ":" + interactionName + ".................")
+            let eventList: Array<string> = this.getAllInteractionOfType(Utils.InteractionType.Event)
+            for (let interactionName of eventList) {
+                interactionList.push(this.testInteraction(repetitionNumber, 0, interactionName, Utils.InteractionType.Event))
+            }
+            // Awaiting all of those testFunctions.
+            await Promise.all(interactionList)
+        } catch (error) {
+            console.log(error)
+            this.log("* ------------------------- Error in second Test Phase -----------------------------------")
+            return
+        }
+        this.log("* ------------------------- Second Test Phase finished without an error. -----------------------------------")
+        return
+    }
+
+    async testAllInteractionsOfTypeSequentially(testCycle: number, testScenario: number, interactionType: Utils.InteractionType) {
+        // Get all interactions for type.
+        let interactionList: Array<string> = this.getAllInteractionOfType(interactionType)
+
+        // Test all interaction sequentially
+        for (let interactionName of interactionList) {
+            await this.testInteraction(testCycle, testScenario, interactionName, interactionType)
         }
         return
     }
@@ -718,9 +755,9 @@ export class Tester {
     public async testScenario(testCycle: number, testScenario: number): Promise<any> {
         var self = this
         try {
-            await this.testAllInteractionsOfType(testCycle, testScenario, Utils.InteractionType.Property)
-            await this.testAllInteractionsOfType(testCycle, testScenario, Utils.InteractionType.Action)
-            await this.testAllInteractionsOfType(testCycle, testScenario, Utils.InteractionType.Event)
+            await this.testAllInteractionsOfTypeSequentially(testCycle, testScenario, Utils.InteractionType.Property)
+            await this.testAllInteractionsOfTypeSequentially(testCycle, testScenario, Utils.InteractionType.Action)
+            await this.testAllInteractionsOfTypeSequentially(testCycle, testScenario, Utils.InteractionType.Event)
         } catch (error) {
             self.log("* Error in Test Scenario " + testScenario + " (see previous messages):\n  " + error.stack)
             throw error
@@ -783,7 +820,7 @@ export class Tester {
             })
             promise
                 .then(() => {
-                    self.log("* Testing the Thing has finished without an error.")
+                    self.log("* First Test Phase has finished without an error.")
                     resolve(self.testReport)
                 })
                 .catch(() => {

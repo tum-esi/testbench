@@ -11,6 +11,7 @@ import { CoapsClientFactory } from "@node-wot/binding-coap"
 import { Tester } from "./Tester"
 import { testConfig } from "./utilities"
 import { parseArgs, configPath, tdPaths } from "./config"
+import { resolve } from "path"
 const fs = require("fs")
 var configFile = "default-config.json"
 if (process.argv.length > 2) {
@@ -203,11 +204,22 @@ srv.start().then((WoT) => {
                             .testThing(testConfig.Repetitions, testConfig.Scenarios, logMode)
                             .then((testReport) => {
                                 testReport.printResults()
-                                testReport.storeReport(testConfig.TestReportsLocation, tutName)
-                                return TestBenchT.writeProperty("testReport", testReport.getResults()).then(
-                                    () => true,
-                                    () => false
-                                )
+                                return TestBenchT.writeProperty("testReport", testReport.getResults())
+                                    .then(
+                                        () => true,
+                                        () => false
+                                    )
+                                    .then(() => {
+                                        tester
+                                            .secondTestingPhase(testConfig.Repetitions)
+                                            .then(() => {
+                                                testReport.storeReport(testConfig.TestReportsLocation, tutName)
+                                                TestBenchT.writeProperty("testReport", testReport.getResults())
+                                            })
+                                            .then(() => {
+                                                testReport.resetResults()
+                                            })
+                                    })
                             })
                             .catch(() => {
                                 console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR::::: TestThing" + "method went wrong")
@@ -219,6 +231,36 @@ srv.start().then((WoT) => {
                         return false
                     })
             })
+
+            // TestBenchT.setActionHandler("testThing", blubb)
+
+            // async function blubb(logMode: boolean): Promise<boolean> {
+            //     let data = TestBenchT.readProperty("testData")
+            //     try {
+            //         await fs.writeFileSync(testConfig.TestDataLocation, JSON.stringify(data, null, " "))
+            //         console.log("\x1b[36m%s\x1b[0m", "* ------ START OF TESTTHING METHOD ------")
+            //         try {
+            //             let testReport = await tester.testThing(testConfig.Repetitions, testConfig.Scenarios, logMode)
+            //             testReport.printResults()
+            //             await TestBenchT.writeProperty("testReport", testReport.getResults())
+            //             secondTestingPhase(testReport)
+            //             return true
+            //         } catch {
+            //             console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR::::: TestThing" + "method went wrong")
+            //             return false
+            //         }
+            //     } catch {
+            //         console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR::::: TestThing: Get" + "test data property failed")
+            //         return false
+            //     }
+
+            //     async function secondTestingPhase(testReport) {
+            //         await tester.secondTestingPhase(testConfig.Repetitions)
+            //         testReport.storeReport(testConfig.TestReportsLocation, tutName)
+            //         await TestBenchT.writeProperty("testReport", testReport.getResults())
+            //         testReport.resetResults()
+            //     }
+            // }
 
             TestBenchT.expose().then(() => {
                 console.info(TestBenchT.getThingDescription().title + " ready")
