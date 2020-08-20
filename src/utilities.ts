@@ -1,5 +1,4 @@
 import * as wot from "wot-typescript-definitions"
-import { Schema } from "inspector"
 var fs = require("fs")
 var mkdirp = require("mkdirp")
 var jsf = require("json-schema-faker")
@@ -29,12 +28,22 @@ export interface testConfig {
     Scenarios?: number
     Repetitions?: number
     EventAndObservePOptions: {
-        // How many Event Data Packages the testbench will be adding to Report. Set to null for unlimited amount.
-        MaxAmountRecvData: number | null
-        // MilliSeconds the testbench stays subscribed/observes and Event/Property during first Phase (asynchronous).
-        MsListenAsynchronous: number
-        // MilliSeconds the testbench stays subscribed/observes and Event/Property during second Phase (synchronous).
-        MsListenSynchronous: number
+        Synchronous: {
+            // How many Data Packages the testbench will be receiving. Set to null for unlimited amount.
+            MaxAmountRecvData: number
+            // MilliSeconds the testbench stays subscribed/observes and Event/Property during second Phase (if data package cap is not hit before).
+            MsListen: number
+            // MilliSeconds until the testbench times out during subscription.
+            MsSubscribeTimeout: number
+        }
+        Asynchronous: {
+            // How many Data Packages the testbench will be receiving. Set to null for unlimited amount.
+            MaxAmountRecvData: number
+            // MilliSeconds the testbench stays subscribed/observes and Event/Property during second Phase (if data package cap is not hit before).
+            MsListen: number
+            // MilliSeconds until the testbench times out during subscription.
+            MsSubscribeTimeout: number
+        }
     }
     credentials?: any
 }

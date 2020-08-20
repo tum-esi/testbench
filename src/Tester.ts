@@ -21,8 +21,9 @@ import {
     InteractionTestReportContainer,
     EventData,
     EventDataReport,
+    ListeningType,
 } from "./TestReport"
-import { testConfig } from "./utilities"
+import { EventMessages, ObservePropertyMessages, RES_NO_DATA, RES_TIMEOUT_DURING_SUBSCRIPTION, RES_ERROR_CANCELING_SUBSCRIPTION } from "./constants"
 
 function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms))
@@ -62,7 +63,7 @@ class DeferredPromise {
 
 export class Tester {
     private tutTd: wot.ThingDescription //the TD that belongs to the Thing under Test
-    private testConfig: testConfig //the file that describes various locations of the files that are needed. Must be configured by the user
+    private testConfig: Utils.testConfig //the file that describes various locations of the files that are needed. Must be configured by the user
     public codeGen: Utils.CodeGenerator //this will generate the requests to be sent to the tut
     public testReport: TestReport //after the testing, this will contain the bare results
     private tut: wot.ConsumedThing // the thing under test
@@ -73,7 +74,7 @@ export class Tester {
      * @param tC The testConfig.
      * @param tut The Thing under test.
      */
-    constructor(tC: testConfig, tut: wot.ConsumedThing) {
+    constructor(tC: Utils.testConfig, tut: wot.ConsumedThing) {
         this.testConfig = tC
         this.tutTd = tut.getThingDescription()
         this.tut = tut
@@ -136,10 +137,10 @@ export class Tester {
         return new generatedTestDataContainer(toSend, passed, result)
     }
 
-    public async testEvent(testCycle: number, testScenario: number, eventName: string, interaction: any): Promise<boolean> {
+    public async testEvent(testCycle: number, testScenario: number, eventName: string, interaction: any, listeningType: ListeningType): Promise<boolean> {
         var self = this
         var container: EventTestReportContainer = new EventTestReportContainer(testCycle, testScenario, eventName)
-        container = await this.testObserveOrEvent(container, interaction, Utils.InteractionType.Event)
+        container = await this.testObserveOrEvent(container, interaction, Utils.InteractionType.Event, listeningType)
         let messageAddition = "not "
         if (container.passed == true) {
             messageAddition = ""
@@ -152,7 +153,8 @@ export class Tester {
     private async testObserveOrEvent(
         preContainer: EventTestReportContainer,
         interaction: any,
-        testMode: Utils.InteractionType.Event | Utils.InteractionType.Property
+        testMode: Utils.InteractionType.Event | Utils.InteractionType.Property,
+        listeningType: ListeningType
     ): Promise<EventTestReportContainer> {
         enum SubscriptionStatus {
             Timeout,
@@ -160,7 +162,14 @@ export class Tester {
             Successful,
         }
         var self = this
-        const eventName = preContainer.name
+        // Get correct configuration.
+        if (listeningType == ListeningType.Asynchronous) var eventConfig = self.testConfig.EventAndObservePOptions.Asynchronous
+        else var eventConfig = self.testConfig.EventAndObservePOptions.Synchronous
+        // Get correct messages.
+        if (testMode == Utils.InteractionType.Event) var messages = new EventMessages()
+        else var messages = new ObservePropertyMessages()
+
+        const interactionName = preContainer.name
         var container: EventTestReportContainer = preContainer
         var indexOfEventData: number = -1
         var subscriptionStatus: SubscriptionStatus = SubscriptionStatus.Error
@@ -169,54 +178,48 @@ export class Tester {
         await testSubscribeEvent()
         await testUnsubscribeEvent()
         if (container.eventDataReport.received.length < 1) {
-            container.eventDataReport.result = new Result(100, "Never received any data, thus no checks could be made.")
+            container.eventDataReport.result = new Result(100, RES_NO_DATA)
         }
         var postContainer = preContainer
         return postContainer
 
         async function testUnsubscribeEvent(): Promise<boolean> {
             let toSend = null
-            self.log("* Trying to unsubscribe from " + eventName + " with data: " + JSON.stringify(toSend, null, " "))
+            self.log("* Trying to unsubscribe from " + interactionName + " with data: " + JSON.stringify(toSend, null, " "))
 
             switch (subscriptionStatus) {
                 case SubscriptionStatus.Error:
                     // If Subscription failed Cancellation can not work.
                     self.log(
                         "* Problem when trying to unsubscribe from " +
-                            eventName +
+                            interactionName +
                             ": The testbench was never subscribed due to a subscription error (see previous messages and subscriptionReport)."
                     )
                     container.passed = true
                     container.cancellationReport.passed = true
-                    container.cancellationReport.result = new Result(
-                        100,
-                        "Subscription cancellation test not possible: The testbench was never subscribed to the event due to a subscription error (see subscriptionReport)."
-                    )
+                    container.cancellationReport.result = new Result(100, messages.RES_NEVER_SUBSCRIBED)
                     break
                 case SubscriptionStatus.Timeout:
                     // Due to not knowing if subscription failed or subscription was successful but no events were emitted, this case needs
                     // his own handling.
                     self.log(
                         "* Problem when trying to unsubscribe from " +
-                            eventName +
+                            interactionName +
                             ": The testbench was never subscribed or was subscribed but never received any eventData (see previous messages, subscriptionReport and eventDataReport)."
                     )
                     container.passed = true
                     container.cancellationReport.passed = true
-                    container.cancellationReport.result = new Result(
-                        100,
-                        "Subscription cancellation test not possible: Timeout during subscription (see subscriptionReport)."
-                    )
+                    container.cancellationReport.result = new Result(100, RES_TIMEOUT_DURING_SUBSCRIPTION)
                     try {
                         // Necessary in case subscription was successful but subscription provider started emitting only after the subscribeTimeout was reached.
                         // The testbench would still be subscribed and thus receiving the events.
-                        this.log(
-                            "* The following output of node-wot describes unsubscribing from the event but this output is identical for " +
+                        self.log(
+                            "* The following output of node-wot describes unsubscribing from the event but due to the design of node-wot this output is identical for " +
                                 "unsuccessful subscription and successful subscription with no emitted event."
                         )
-                        if (testMode == Utils.InteractionType.Event) await self.tut.unsubscribeEvent(eventName)
-                        else await self.tut.unobserveProperty(eventName)
-                    } catch (error) {}
+                        if (testMode == Utils.InteractionType.Event) await self.tut.unsubscribeEvent(interactionName)
+                        else await self.tut.unobserveProperty(interactionName)
+                    } catch {}
                     break
                 case SubscriptionStatus.Successful:
                     // Testing cancellation only makes sense if subscription worked.
@@ -224,17 +227,17 @@ export class Tester {
                     container.cancellationReport.sent = new Payload(sendTimeStamp)
                     try {
                         // Trying to Unsubscribe/Stop observing from the event/property.
-                        if (testMode == Utils.InteractionType.Event) await self.tut.unsubscribeEvent(eventName)
-                        else await self.tut.unobserveProperty(eventName)
+                        if (testMode == Utils.InteractionType.Event) await self.tut.unsubscribeEvent(interactionName)
+                        else await self.tut.unobserveProperty(interactionName)
                     } catch (error) {
-                        self.log("* Error while canceling subscription from event: " + eventName + ":\n  " + error)
+                        self.log("* Error while canceling subscription from event: " + interactionName + ":\n  " + error)
                         container.passed = false
                         container.cancellationReport.passed = false
-                        container.cancellationReport.result = new Result(20, "Error while canceling subscription: " + error)
+                        container.cancellationReport.result = new Result(20, RES_ERROR_CANCELING_SUBSCRIPTION + error)
                         return true
                     }
                     container.cancellationReport.received = new Payload(new Date())
-                    self.log("* Successfully cancelled subscription from " + eventName)
+                    self.log("* Successfully cancelled subscription from " + interactionName)
                     container.cancellationReport.passed = true
                     container.cancellationReport.result = new Result(200)
                     break
@@ -246,10 +249,12 @@ export class Tester {
             let receivedTimeStamp = new Date()
             ++indexOfEventData
             // Stop recording if maximum number of recorded EventData is reached.
-            if (indexOfEventData >= self.testConfig.EventAndObservePOptions.MaxAmountRecvData) {
-                // Stop Listening for Data.
-                earlyListenTimeout.resolve()
-                return
+            if (eventConfig.MaxAmountRecvData != null) {
+                if (indexOfEventData >= eventConfig.MaxAmountRecvData) {
+                    // Stop Listening for Data.
+                    earlyListenTimeout.resolve()
+                    return
+                }
             }
             // Stop handling if sent TD does not have "data"
             if (testMode == Utils.InteractionType.Event && !interaction.hasOwnProperty("data")) {
@@ -269,8 +274,8 @@ export class Tester {
             //validating the response against its schema
             var validationError: Array<any>
             if (testMode == Utils.InteractionType.Event)
-                validationError = Utils.validateResponse(eventName, receivedData, self.testConfig.SchemaLocation, Utils.SchemaType.EventData)
-            else validationError = Utils.validateResponse(eventName, receivedData, self.testConfig.SchemaLocation, Utils.SchemaType.Property)
+                validationError = Utils.validateResponse(interactionName, receivedData, self.testConfig.SchemaLocation, Utils.SchemaType.EventData)
+            else validationError = Utils.validateResponse(interactionName, receivedData, self.testConfig.SchemaLocation, Utils.SchemaType.Property)
             if (validationError) {
                 //meaning that there is a validation error
                 self.log("* Received event data [index: " + indexOfEventData + "] is not valid.")
@@ -293,21 +298,21 @@ export class Tester {
             //     // TODO deal with not able to generate needed data for subscription
             // }
             // container.subscriptionReport.result = generatedTestDataContainer.result
-            self.log("* Trying to subscribe to " + eventName + " with data: " + JSON.stringify(toSend, null, " "))
+            self.log("* Trying to subscribe to " + interactionName + " with data: " + JSON.stringify(toSend, null, " "))
 
             async function timeout(ms: number): Promise<SubscriptionStatus> {
-                await sleep(1000)
+                await sleep(eventConfig.MsSubscribeTimeout)
                 return SubscriptionStatus.Timeout
             }
             var subscriptionError = null
             async function subscribeEvent(): Promise<SubscriptionStatus> {
                 try {
                     if (testMode == Utils.InteractionType.Event) {
-                        await self.tut.subscribeEvent(eventName, (eventData) => {
+                        await self.tut.subscribeEvent(interactionName, (eventData) => {
                             handleReceivedData(eventData)
                         })
                     } else {
-                        await self.tut.observeProperty(eventName, (eventData) => {
+                        await self.tut.observeProperty(interactionName, (eventData) => {
                             handleReceivedData(eventData)
                         })
                     }
@@ -323,7 +328,7 @@ export class Tester {
             subscriptionStatus = await Promise.race([subscribeEvent(), timeout(2000)])
             switch (subscriptionStatus) {
                 case SubscriptionStatus.Error:
-                    self.log("* Problem when trying to subscribe to event " + eventName + ": " + subscriptionError)
+                    self.log("* Problem when trying to subscribe to event " + interactionName + ": " + subscriptionError)
                     container.passed = false
                     container.subscriptionReport.passed = false
                     container.subscriptionReport.result = new Result(10, "Problem when trying to subscribe: " + subscriptionError)
@@ -331,7 +336,7 @@ export class Tester {
                 case SubscriptionStatus.Timeout:
                     self.log(
                         "* Timed out when trying to subscribe to " +
-                            eventName +
+                            interactionName +
                             ". Due to the design of node-wot this can mean either the subscription was unsuccessful or " +
                             "the subscription was successful but no eventData was received."
                     )
@@ -345,11 +350,11 @@ export class Tester {
                 case SubscriptionStatus.Successful:
                     let receivedTimeStamp = new Date()
                     container.subscriptionReport.received = new Payload(receivedTimeStamp)
-                    self.log("* Successfully subscribed to " + eventName + " with data: " + JSON.stringify(toSend, null, " "))
+                    self.log("* Successfully subscribed to " + interactionName + " with data: " + JSON.stringify(toSend, null, " "))
                     container.subscriptionReport.passed = true
                     container.subscriptionReport.result = new Result(200)
                     //await sleep(self.testConfig.EventAndObservePOptions.MsListenAsynchronous)
-                    await Promise.race([sleep(self.testConfig.EventAndObservePOptions.MsListenAsynchronous), earlyListenTimeout])
+                    await Promise.race([sleep(eventConfig.MsListen), earlyListenTimeout])
                     break
             }
             return
@@ -494,7 +499,7 @@ export class Tester {
      * @param interaction An interaction object containing further information about the tested interaction.
      * @param testScenario The number indicating the testScenario.
      */
-    public async testProperty(testCycle: number, testScenario: number, propertyName: string, interaction: any): Promise<boolean> {
+    public async testProperty(testCycle: number, testScenario: number, propertyName: string, interaction: any, listeningType: ListeningType): Promise<boolean> {
         var self = this
         var container = new PropertyTestReportContainer(testCycle, testScenario, propertyName)
         let isWritable: boolean = !interaction.readOnly
@@ -510,7 +515,8 @@ export class Tester {
         try {
             if (isReadable) await testReadProperty()
             if (isWritable) await testWriteProperty()
-            if (isObservable) container.observePropertyReport = await this.testObserveOrEvent(preContainer, interaction, Utils.InteractionType.Property)
+            if (isObservable)
+                container.observePropertyReport = await this.testObserveOrEvent(preContainer, interaction, Utils.InteractionType.Property, listeningType)
         } catch (error) {
             container.passed = false
             self.testReport.addMessage(testCycle, testScenario, container)
@@ -692,46 +698,63 @@ export class Tester {
         return interactionList
     }
 
-    async testInteraction(testCycle: number, testScenario: number, interactionName: string, interactionType: Utils.InteractionType) {
+    async testInteraction(
+        testCycle: number,
+        testScenario: number,
+        interactionName: string,
+        interactionType: Utils.InteractionType,
+        listeningType: ListeningType
+    ) {
         let interaction = Utils.getInteractionByName(this.tutTd, interactionName)
-        if (this.logMode) console.log("interaction pattern of " + interactionType + ":", interaction[1])
-        this.log("* ..................... Testing " + interactionType + ":" + interactionName + ".................")
+        if (this.logMode && listeningType == ListeningType.Asynchronous) console.log("interaction pattern of " + interactionType + ":", interaction[1])
+        this.log("* ..................... Testing " + interactionType + ": " + interactionName + ".................")
         try {
-            if (interactionType == Utils.InteractionType.Property) await this.testProperty(testCycle, testScenario, interactionName, interaction[1])
+            if (interactionType == Utils.InteractionType.Property)
+                await this.testProperty(testCycle, testScenario, interactionName, interaction[1], listeningType)
             else if (interactionType == Utils.InteractionType.Action) await this.testAction(testCycle, testScenario, interactionName, interaction[1])
-            else if (interactionType == Utils.InteractionType.Event) await this.testEvent(testCycle, testScenario, interactionName, interaction[1])
+            else if (interactionType == Utils.InteractionType.Event)
+                await this.testEvent(testCycle, testScenario, interactionName, interaction[1], listeningType)
         } catch (error) {
             this.log("* Error when testing " + interactionType + " " + interactionName + " (see previous messages).")
             throw error
         }
-        this.log("* ..................... End Testing " + interactionType + ":" + interactionName + ".................")
+        this.log("* ..................... End Testing " + interactionType + ": " + interactionName + ".................")
         return
     }
 
-    async secondTestingPhase(repetitionNumber: number) {
+    async secondTestingPhase(repetitionNumber: number): Promise<boolean> {
+        var propertyWithObserveList: Array<string> = []
+        // Check if at least one observable property exists.
+        for (let interactionName of this.getAllInteractionOfType(Utils.InteractionType.Property)) {
+            let interaction = Utils.getInteractionByName(this.tutTd, interactionName)[1]
+            if (interaction.observable) propertyWithObserveList.push(interactionName)
+        }
+        var eventList: Array<string> = this.getAllInteractionOfType(Utils.InteractionType.Event)
+        // Nothing to do if no events and no observable properties exist.
+        if (!propertyWithObserveList.length && !eventList.length) {
+            return false
+        }
         this.log("* ---------------------- Start of Second Test Phase: Synchronous Listening ---------------------------")
         this.testReport.addTestCycle()
         this.testReport.addTestScenario()
         try {
             // Generating List of testFunctions to run synchronously.
             let interactionList: Array<Promise<any>> = []
-            let propertyList: Array<string> = this.getAllInteractionOfType(Utils.InteractionType.Property)
-            for (let interactionName of propertyList) {
-                interactionList.push(this.testInteraction(repetitionNumber, 0, interactionName, Utils.InteractionType.Property))
+            for (let propertyName of propertyWithObserveList) {
+                interactionList.push(this.testInteraction(repetitionNumber, 0, propertyName, Utils.InteractionType.Property, ListeningType.Synchronous))
             }
-            let eventList: Array<string> = this.getAllInteractionOfType(Utils.InteractionType.Event)
-            for (let interactionName of eventList) {
-                interactionList.push(this.testInteraction(repetitionNumber, 0, interactionName, Utils.InteractionType.Event))
+            for (let eventName of eventList) {
+                interactionList.push(this.testInteraction(repetitionNumber, 0, eventName, Utils.InteractionType.Event, ListeningType.Synchronous))
             }
             // Awaiting all of those testFunctions.
             await Promise.all(interactionList)
         } catch (error) {
             console.log(error)
             this.log("* ------------------------- Error in second Test Phase -----------------------------------")
-            return
+            return true
         }
         this.log("* ------------------------- Second Test Phase finished without an error. -----------------------------------")
-        return
+        return true
     }
 
     async testAllInteractionsOfTypeSequentially(testCycle: number, testScenario: number, interactionType: Utils.InteractionType) {
@@ -740,7 +763,7 @@ export class Tester {
 
         // Test all interaction sequentially
         for (let interactionName of interactionList) {
-            await this.testInteraction(testCycle, testScenario, interactionName, interactionType)
+            await this.testInteraction(testCycle, testScenario, interactionName, interactionType, ListeningType.Asynchronous)
         }
         return
     }

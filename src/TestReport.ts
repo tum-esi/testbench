@@ -15,6 +15,11 @@ export class InteractionTestReportContainer {
     }
 }
 
+export enum ListeningType {
+    Asynchronous = 1,
+    Synchronous = 2,
+}
+
 export class Result {
     id: number
     message?: string
@@ -236,7 +241,7 @@ export class TestReport {
         this.results[testCycle][testScenario].push(testContainer.getPrintableMessage())
     }
 
-    public printResults(): void {
+    public printResults(testingPhase: ListeningType): void {
         console.log("Results of the last test with Errors/TotalTests")
         process.stdout.write("Test Scenario Number > ")
         for (var i = 0; i <= this.maxTestScenario; i++) {
@@ -246,7 +251,8 @@ export class TestReport {
 
         //printing the results
         for (var i = 0; i <= this.testCycleCount; i++) {
-            process.stdout.write("TC" + i + "\t \t \t")
+            if (testingPhase == ListeningType.Synchronous && i == this.testCycleCount) process.stdout.write("Listening Phase\t\t")
+            else process.stdout.write("TC" + i + "\t\t\t")
             for (var j = 0; j <= this.maxTestScenario; j++) {
                 //summing up the fails for this one scenario
 
