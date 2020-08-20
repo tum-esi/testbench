@@ -242,17 +242,17 @@ export class TestReport {
     }
 
     public printResults(testingPhase: ListeningType): void {
-        console.log("Results of the last test with Errors/TotalTests")
-        process.stdout.write("Test Scenario Number > ")
+        writeInGreen("Results of the test with Errors/TotalTests\n")
+        writeInGreen("Test Scenario Number > ")
         for (var i = 0; i <= this.maxTestScenario; i++) {
-            process.stdout.write("TS" + i + "\t")
+            writeInGreen("TS" + i + "\t")
         }
-        console.log("Test Cycle Nb:")
+        writeInGreen("Test Cycle Nb:\n")
 
         //printing the results
         for (var i = 0; i <= this.testCycleCount; i++) {
-            if (testingPhase == ListeningType.Synchronous && i == this.testCycleCount) process.stdout.write("Listening Phase\t\t")
-            else process.stdout.write("TC" + i + "\t\t\t")
+            if (testingPhase == ListeningType.Synchronous && i == this.testCycleCount) writeInGreen("Listening Phase\t\t")
+            else writeInGreen("TC" + i + "\t\t\t")
             for (var j = 0; j <= this.maxTestScenario; j++) {
                 //summing up the fails for this one scenario
 
@@ -272,12 +272,16 @@ export class TestReport {
                         }
                     }
 
-                    process.stdout.write(fails + "/" + curSceLength + "\t") //this is used for displaying how many failures are there for one scenario
+                    writeInGreen(fails + "/" + curSceLength + "\t") //this is used for displaying how many failures are there for one scenario
                 } catch (Error) {
-                    process.stdout.write(fails + "/" + curSceLength + "\t")
+                    writeInGreen(fails + "/" + curSceLength + "\t")
                 }
             }
             console.log()
+        }
+
+        function writeInGreen(message: string) {
+            process.stdout.write("\x1b[32m" + message + "\x1b[0m")
         }
     }
     public storeReport(location: string, tutName: string) {
