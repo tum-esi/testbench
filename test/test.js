@@ -145,7 +145,7 @@ describe("Action: fastTest", function () {
                                 {
                                     href: "http://localhost:8081/TestServient/properties/display/observable",
                                     contentType: "application/json",
-                                    op: ["observeproperty"],
+                                    op: ["observeproperty", "unobserveproperty"],
                                     subprotocol: "longpoll",
                                 },
                                 {
@@ -169,7 +169,7 @@ describe("Action: fastTest", function () {
                                 {
                                     href: "http://localhost:8081/TestServient/properties/counter/observable",
                                     contentType: "application/json",
-                                    op: ["observeproperty"],
+                                    op: ["observeproperty", "unobserveproperty"],
                                     subprotocol: "longpoll",
                                 },
                                 {
@@ -194,7 +194,7 @@ describe("Action: fastTest", function () {
                                 {
                                     href: "http://localhost:8081/TestServient/properties/temperature/observable",
                                     contentType: "application/json",
-                                    op: ["observeproperty"],
+                                    op: ["observeproperty", "unobserveproperty"],
                                     subprotocol: "longpoll",
                                 },
                                 {
