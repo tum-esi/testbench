@@ -48,24 +48,10 @@ export interface testConfig {
     credentials?: any
 }
 
-export class DeferredPromise {
-    resolve
-    reject
-    _promise
-    then
-    catch
-    constructor() {
-        this._promise = new Promise((resolve, reject) => {
-            // assign the resolve and reject functions to `this`
-            // making them usable on the class instance
-            this.resolve = resolve
-            this.reject = reject
-        })
-        // bind `then` and `catch` to implement the same interface as Promise
-        this.then = this._promise.then.bind(this._promise)
-        this.catch = this._promise.catch.bind(this._promise)
-        this[Symbol.toStringTag] = "Promise"
-    }
+// -------------------------- Control Logic Enums ---------------------------------
+export enum ListeningType {
+    Asynchronous = 1,
+    Synchronous = 2,
 }
 
 export enum InteractionType {
@@ -101,13 +87,14 @@ export class CodeGenerator {
     }
 
     // generates fake data and stores it to config TestDataLocation location
-    public async generateFakeData(testConf: any, tdesc: wot.ThingDescription) {
+    public generateFakeData(testConf: any, tdesc: wot.ThingDescription) {
         // create interaction list: no optimized solution: -----------
-        var requests = {}
-        requests[SchemaType.Property] = {}
-        requests[SchemaType.Action] = {}
-        requests[SchemaType.EventSubscription] = {}
-        requests[SchemaType.EventCancellation] = {}
+        var requests = {
+            [SchemaType.Property]: {},
+            [SchemaType.Action]: {},
+            [SchemaType.EventSubscription]: {},
+            [SchemaType.EventCancellation]: {},
+        }
 
         for (let property in tdesc.properties) {
             requests[SchemaType.Property][property] = []
@@ -325,4 +312,28 @@ export function promiseTimeout(ms, promise) {
     })
     // Returns a race between our timeout and the passed in promise
     return Promise.race([promise, timeout])
+}
+
+export function sleepInMs(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+export class DeferredPromise {
+    resolve
+    reject
+    _promise
+    then
+    catch
+    constructor() {
+        this._promise = new Promise((resolve, reject) => {
+            // assign the resolve and reject functions to `this`
+            // making them usable on the class instance
+            this.resolve = resolve
+            this.reject = reject
+        })
+        // bind `then` and `catch` to implement the same interface as Promise
+        this.then = this._promise.then.bind(this._promise)
+        this.catch = this._promise.catch.bind(this._promise)
+        this[Symbol.toStringTag] = "Promise"
+    }
 }

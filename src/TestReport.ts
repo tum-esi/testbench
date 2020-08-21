@@ -1,24 +1,6 @@
 import fs = require("fs")
 var mkdirp = require("mkdirp")
-
-export class InteractionTestReportContainer {
-    testCycle: number
-    testScenario: number
-    name: string
-    passed: boolean
-
-    constructor(testCycle: number, testScenario: number, name: string) {
-        this.testCycle = testCycle
-        this.testScenario = testScenario
-        this.name = name
-        this.passed = true
-    }
-}
-
-export enum ListeningType {
-    Asynchronous = 1,
-    Synchronous = 2,
-}
+import { ListeningType } from "./utilities"
 
 export class Result {
     id: number
@@ -40,11 +22,31 @@ export class Payload {
     }
 }
 
+export class MicroTestReport {
+    passed: boolean
+    sendTimestamp: Date
+    received: Payload
+    result: Result
+
+    constructor() {
+        this.passed = false
+        this.sendTimestamp = null
+        this.received = null
+        this.result = null
+    }
+
+    getPrintableMessage() {
+        if (this.sendTimestamp == null) delete this.sendTimestamp
+        if (this.received == null) delete this.received
+        return this
+    }
+}
+
 export class MiniTestReport {
-    passed: boolean | null //If used for PropertyTesting each subTest (read, write, subscribe) can fail individually.
-    sent: Payload | null //timestamp, sentMessage
-    received: Payload | null //timestamp, receivedMessage
-    result: Result //resultID, errorMessage
+    passed: boolean
+    sent: Payload
+    received: Payload
+    result: Result
 
     constructor(passed: boolean = null) {
         this.passed = passed
@@ -54,23 +56,17 @@ export class MiniTestReport {
     }
 }
 
-export class EventData extends Payload {
-    result: Result
-
-    constructor(timestamp: Date, payload: JSON, result: Result) {
-        super(timestamp, payload)
-        this.result = result
-    }
-}
-
-export class EventDataReport {
+export class InteractionTestReportContainer {
+    testCycle: number
+    testScenario: number
+    name: string
     passed: boolean
-    received: Array<EventData>
-    result?: Result //resultID, errorMessage
 
-    constructor() {
+    constructor(testCycle: number, testScenario: number, name: string) {
+        this.testCycle = testCycle
+        this.testScenario = testScenario
+        this.name = name
         this.passed = true
-        this.received = []
     }
 }
 
@@ -96,87 +92,87 @@ export class ActionTestReportContainer extends InteractionTestReportContainer {
 }
 
 export class PropertyTestReportContainer extends InteractionTestReportContainer {
-    readPropertyReport: MiniTestReport
+    readPropertyReport: MicroTestReport
     writePropertyReport: MiniTestReport
     observePropertyReport: EventTestReportContainer
 
     constructor(testCycle: number, testScenario: number, name: string) {
         super(testCycle, testScenario, name)
-        this.readPropertyReport = null
-        this.writePropertyReport = null
-        this.observePropertyReport = null
     }
 
     /**
-     * Restructures the ReportContainer to match the structure of the printed Message. Potentially a new JSON object
-     * could be created and returned here if in the future the originally formatted container is needed for further processing.
+     * Restructures the ReportContainer to match the structure of the printed Message.
      * @return The restructured testReportContainer.
      */
     getPrintableMessage() {
         delete this.testCycle
         delete this.testScenario
 
-        if (this.readPropertyReport == null) {
-            delete this.readPropertyReport
+        let toReturn = { name: this.name, passed: this.passed }
+        if (this.readPropertyReport != null) toReturn["readPropertyReport"] = this.readPropertyReport.getPrintableMessage()
+        if (this.readPropertyReport != null) toReturn["writePropertyReport"] = this.writePropertyReport
+        if (this.observePropertyReport != null) {
+            let observePropertyReport = {
+                subscriptionReport: this.observePropertyReport.subscriptionReport.getPrintableMessage(),
+                observedDataReport: this.observePropertyReport.eventDataReport.getPrintableMessage(),
+                cancellationReport: this.observePropertyReport.cancellationReport.getPrintableMessage(),
+            }
+            toReturn["observePropertyReport"] = observePropertyReport
         }
-        if (this.writePropertyReport == null) {
-            delete this.writePropertyReport
-        }
-        if (this.observePropertyReport == null) {
-            delete this.observePropertyReport
-        } else {
-            delete this.observePropertyReport.testCycle
-            delete this.observePropertyReport.testScenario
-            delete this.observePropertyReport.name
-            this.observePropertyReport = this.observePropertyReport.getPrintableMessage()
-            // Renaming eventDataReport entry.
-            this.observePropertyReport["observedDataReport"] = this.observePropertyReport.eventDataReport
-            delete this.observePropertyReport.eventDataReport
-            // Append cancellation Report at the end for correct order.
-            let cancellationReport: MiniTestReport = this.observePropertyReport.cancellationReport
-            delete this.observePropertyReport.cancellationReport
-            this.observePropertyReport["cancellationReport"] = cancellationReport
-        }
+        return toReturn
+    }
+}
+
+export class EventData extends Payload {
+    result: Result
+
+    constructor(timestamp: Date, payload: JSON, result: Result) {
+        super(timestamp, payload)
+        this.result = result
+    }
+}
+
+class EventDataReport {
+    passed: boolean
+    received: Array<EventData>
+    result: Result
+
+    constructor() {
+        this.passed = true
+        this.received = []
+        this.result = null
+    }
+
+    getPrintableMessage() {
+        if (this.result == null) delete this.result
         return this
     }
 }
 
 export class EventTestReportContainer extends InteractionTestReportContainer {
-    subscriptionReport: MiniTestReport //in and output
-    eventDataReport: EventDataReport //only output
-    cancellationReport: MiniTestReport //in and output
+    subscriptionReport: MicroTestReport
+    eventDataReport: EventDataReport
+    cancellationReport: MicroTestReport
 
     constructor(testCycle: number, testScenario: number, name: string) {
         super(testCycle, testScenario, name)
-        this.subscriptionReport = new MiniTestReport()
+        this.subscriptionReport = new MicroTestReport()
         this.eventDataReport = new EventDataReport()
-        this.cancellationReport = new MiniTestReport()
+        this.cancellationReport = new MicroTestReport()
     }
 
     /**
-     * Restructures the ReportContainer to match the structure of the printed Message. Potentially a new JSON object
-     * could be created and returned here if in the future the originally formatted container is needed for further processing.
+     * Restructures the ReportContainer to match the structure of the printed Message.
      * @return The restructured testReportContainer.
      */
     getPrintableMessage() {
-        delete this.testCycle
-        delete this.testScenario
-        if (this.subscriptionReport.received != null) {
-            delete this.subscriptionReport.received.payload
+        return {
+            name: this.name,
+            passed: this.passed,
+            subscriptionReport: this.subscriptionReport.getPrintableMessage(),
+            eventDataReport: this.eventDataReport.getPrintableMessage(),
+            cancellationReport: this.cancellationReport.getPrintableMessage(),
         }
-        if (this.cancellationReport.received != null) {
-            delete this.cancellationReport.received.payload
-        }
-        // if (this.subscriptionReport.received == null) {
-        delete this.subscriptionReport.received
-        // }
-        // if (this.cancellationReport.received == null) {
-        delete this.cancellationReport.received
-        // }
-        if (this.cancellationReport.sent == null) {
-            delete this.cancellationReport.sent
-        }
-        return this
     }
 }
 
@@ -204,8 +200,9 @@ export class TestReport {
         this.testScenarioCount = -1
     }
 
-    //at each new test cycle this should be called
-    //it creates a new empty array that will be later on filled with test scenarios
+    /**
+     * at each new test cycle this should be called it creates a new empty array that will be later on filled with test scenarios
+     */
     public addTestCycle(): void {
         this.testCycleCount++
         this.testScenarioCount = -1
@@ -216,8 +213,10 @@ export class TestReport {
         this.results[this.testCycleCount] = []
     }
 
-    //at each new test scenario that has different message exchanges this should be called
-    //it creates a new empty array that will be later on filled with objects that represent message exchanges
+    /**
+     * at each new test scenario that has different message exchanges this should be called it creates a new empty array that will be later
+     * on filled with objects that represent message exchanges
+     */
     public addTestScenario(/*tester:Tester,callback:Function*/): void {
         this.testScenarioCount++
         if (this.testScenarioCount > this.maxTestScenario) {

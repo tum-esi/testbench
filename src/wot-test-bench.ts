@@ -10,8 +10,7 @@ import { CoapClientFactory } from "@node-wot/binding-coap"
 import { CoapsClientFactory } from "@node-wot/binding-coap"
 import { Tester } from "./Tester"
 import { parseArgs, configPath, tdPaths } from "./config"
-import { testConfig } from "utilities"
-import { ListeningType } from "./TestReport"
+import { testConfig, ListeningType } from "./utilities"
 const fs = require("fs")
 var configFile = "default-config.json"
 if (process.argv.length > 2) {
