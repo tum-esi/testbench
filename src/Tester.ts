@@ -131,6 +131,13 @@ export class Tester {
         return true
     }
 
+    /**
+     * Tests an Event or observeProperty. At first the the subscription is tested
+     * @param container
+     * @param interaction
+     * @param testMode
+     * @param listeningType
+     */
     private async testObserveOrEvent(
         container: EventTestReportContainer,
         interaction: any,
@@ -144,12 +151,6 @@ export class Tester {
         else var eventConfig = self.testConfig.EventAndObservePOptions.Synchronous
         var indexOfEventData: number = -1
         var earlyListenTimeout = new Utils.DeferredPromise()
-        enum SubscriptionStatus {
-            Timeout,
-            Error,
-            Successful,
-        }
-        var subscriptionStatus: SubscriptionStatus = SubscriptionStatus.Error
 
         // Initialize message strings.
         const interactionName = container.name
@@ -157,6 +158,12 @@ export class Tester {
         var receivedDataMsg = "Received data for " + testMode + " " + interactionName + " "
 
         // Run Tests.
+        enum SubscriptionStatus {
+            Timeout,
+            Error,
+            Successful,
+        }
+        var subscriptionStatus: SubscriptionStatus = SubscriptionStatus.Error
         await testSubscribeEvent()
         await testUnsubscribeEvent()
 
@@ -165,6 +172,110 @@ export class Tester {
             container.eventDataReport.result = new Result(100, "Never received any data, thus no checks could be made.")
         }
         return container
+
+        async function testSubscribeEvent(): Promise<boolean> {
+            self.log("* Trying to subscribe to " + interactionSpecifier + ".")
+
+            async function timeout(): Promise<SubscriptionStatus> {
+                await Utils.sleepInMs(eventConfig.MsSubscribeTimeout)
+                return SubscriptionStatus.Timeout
+            }
+            var subscriptionError = null
+            async function subscribeEvent(): Promise<SubscriptionStatus> {
+                try {
+                    if (testMode == Utils.InteractionType.Event) {
+                        await self.tut.subscribeEvent(interactionName, (eventData) => {
+                            handleReceivedData(eventData)
+                        })
+                    } else {
+                        await self.tut.observeProperty(interactionName, (eventData) => {
+                            handleReceivedData(eventData)
+                        })
+                    }
+                } catch (error) {
+                    subscriptionError = error
+                    return SubscriptionStatus.Error
+                }
+                return SubscriptionStatus.Successful
+            }
+
+            container.subscriptionReport.sendTimestamp = new Date()
+            // Trying to Subscribe to the Event
+            subscriptionStatus = await Promise.race([subscribeEvent(), timeout()])
+            switch (subscriptionStatus) {
+                case SubscriptionStatus.Error:
+                    self.log("* Problem when trying to subscribe to " + interactionSpecifier + ": " + subscriptionError)
+                    container.passed = false
+                    container.subscriptionReport.passed = false
+                    container.subscriptionReport.result = new Result(10, "Problem when trying to subscribe: " + subscriptionError)
+                    break
+                case SubscriptionStatus.Timeout:
+                    self.log(
+                        "* Timed out when trying to subscribe to " +
+                            interactionSpecifier +
+                            ". Due to the design of node-wot this can mean either the subscription was unsuccessful or " +
+                            "the subscription was successful but no data was received."
+                    )
+                    container.passed = true
+                    container.subscriptionReport.passed = true
+                    container.subscriptionReport.result = new Result(
+                        100,
+                        "Timeout when subscribing: Due to the design of node-wot this can mean either the subscription was unsuccessful or it was successful but no data was received."
+                    )
+                    break
+                case SubscriptionStatus.Successful:
+                    self.log("* Successfully subscribed to " + interactionSpecifier + ".")
+                    container.subscriptionReport.passed = true
+                    container.subscriptionReport.result = new Result(200)
+                    await Promise.race([Utils.sleepInMs(eventConfig.MsListen), earlyListenTimeout])
+                    break
+            }
+            return
+        }
+
+        async function handleReceivedData(receivedData: any): Promise<void> {
+            let receivedTimeStamp = new Date()
+            ++indexOfEventData
+            // Stop recording if maximum number of recorded EventData is reached.
+            if (eventConfig.MaxAmountRecvData != null) {
+                if (indexOfEventData >= eventConfig.MaxAmountRecvData) {
+                    // Stop Listening for Data.
+                    earlyListenTimeout.resolve()
+                    return
+                }
+            }
+            // Stop handling if sent TD does not have "data"
+            if (testMode == Utils.InteractionType.Event && !interaction.hasOwnProperty("data")) {
+                return
+            }
+            self.log("* " + receivedDataMsg + "[index: " + indexOfEventData + "]: " + JSON.stringify(receivedData, null, " "))
+            try {
+                let temp: JSON = receivedData
+            } catch (jsonError) {
+                self.log("* " + receivedDataMsg + "[index: " + indexOfEventData + "] is not in JSON format")
+                container.passed = false
+                container.eventDataReport.passed = false
+                let result = new Result(15, "* Received data [index: " + indexOfEventData + "] is not in JSON format: " + jsonError)
+                container.eventDataReport.received.push(new EventData(receivedTimeStamp, receivedData, result))
+                return
+            }
+            //validating the response against its schema
+            var validationError: Array<any>
+            if (testMode == Utils.InteractionType.Event)
+                validationError = Utils.validateResponse(interactionName, receivedData, self.testConfig.SchemaLocation, Utils.SchemaType.EventData)
+            else validationError = Utils.validateResponse(interactionName, receivedData, self.testConfig.SchemaLocation, Utils.SchemaType.Property)
+            if (validationError) {
+                //meaning that there is a validation error
+                self.log("* " + receivedDataMsg + "[index: " + indexOfEventData + "] is not valid.")
+                container.passed = false
+                container.eventDataReport.passed = false
+                let result = new Result(16, "* Received data [index: " + indexOfEventData + "] is not valid: " + JSON.stringify(validationError))
+                container.eventDataReport.received.push(new EventData(receivedTimeStamp, receivedData, result))
+            } else {
+                self.log("* " + receivedDataMsg + "[index: " + indexOfEventData + "] is valid.")
+                container.eventDataReport.received.push(new EventData(receivedTimeStamp, receivedData, new Result(200)))
+            }
+        }
 
         async function testUnsubscribeEvent(): Promise<boolean> {
             self.log("* Trying to unsubscribe from " + interactionSpecifier + ".")
@@ -231,110 +342,6 @@ export class Tester {
                     container.cancellationReport.sendTimestamp = sendTimeStamp
                     container.cancellationReport.passed = true
                     container.cancellationReport.result = new Result(200)
-                    break
-            }
-            return
-        }
-
-        async function handleReceivedData(receivedData: any): Promise<void> {
-            let receivedTimeStamp = new Date()
-            ++indexOfEventData
-            // Stop recording if maximum number of recorded EventData is reached.
-            if (eventConfig.MaxAmountRecvData != null) {
-                if (indexOfEventData >= eventConfig.MaxAmountRecvData) {
-                    // Stop Listening for Data.
-                    earlyListenTimeout.resolve()
-                    return
-                }
-            }
-            // Stop handling if sent TD does not have "data"
-            if (testMode == Utils.InteractionType.Event && !interaction.hasOwnProperty("data")) {
-                return
-            }
-            self.log("* " + receivedDataMsg + "[index: " + indexOfEventData + "]: " + JSON.stringify(receivedData, null, " "))
-            try {
-                let temp: JSON = receivedData
-            } catch (jsonError) {
-                self.log("* " + receivedDataMsg + "[index: " + indexOfEventData + "] is not in JSON format")
-                container.passed = false
-                container.eventDataReport.passed = false
-                let result = new Result(15, "* Received data [index: " + indexOfEventData + "] is not in JSON format: " + jsonError)
-                container.eventDataReport.received.push(new EventData(receivedTimeStamp, receivedData, result))
-                return
-            }
-            //validating the response against its schema
-            var validationError: Array<any>
-            if (testMode == Utils.InteractionType.Event)
-                validationError = Utils.validateResponse(interactionName, receivedData, self.testConfig.SchemaLocation, Utils.SchemaType.EventData)
-            else validationError = Utils.validateResponse(interactionName, receivedData, self.testConfig.SchemaLocation, Utils.SchemaType.Property)
-            if (validationError) {
-                //meaning that there is a validation error
-                self.log("* " + receivedDataMsg + "[index: " + indexOfEventData + "] is not valid.")
-                container.passed = false
-                container.eventDataReport.passed = false
-                let result = new Result(16, "* Received data [index: " + indexOfEventData + "] is not valid: " + JSON.stringify(validationError))
-                container.eventDataReport.received.push(new EventData(receivedTimeStamp, receivedData, result))
-            } else {
-                self.log("* " + receivedDataMsg + "[index: " + indexOfEventData + "] is valid.")
-                container.eventDataReport.received.push(new EventData(receivedTimeStamp, receivedData, new Result(200)))
-            }
-        }
-
-        async function testSubscribeEvent(): Promise<boolean> {
-            self.log("* Trying to subscribe to " + interactionSpecifier + ".")
-
-            async function timeout(): Promise<SubscriptionStatus> {
-                await Utils.sleepInMs(eventConfig.MsSubscribeTimeout)
-                return SubscriptionStatus.Timeout
-            }
-            var subscriptionError = null
-            async function subscribeEvent(): Promise<SubscriptionStatus> {
-                try {
-                    if (testMode == Utils.InteractionType.Event) {
-                        await self.tut.subscribeEvent(interactionName, (eventData) => {
-                            handleReceivedData(eventData)
-                        })
-                    } else {
-                        await self.tut.observeProperty(interactionName, (eventData) => {
-                            handleReceivedData(eventData)
-                        })
-                    }
-                } catch (error) {
-                    subscriptionError = error
-                    return SubscriptionStatus.Error
-                }
-                return SubscriptionStatus.Successful
-            }
-
-            container.subscriptionReport.sendTimestamp = new Date()
-            // Trying to Subscribe to the Event
-            subscriptionStatus = await Promise.race([subscribeEvent(), timeout()])
-            switch (subscriptionStatus) {
-                case SubscriptionStatus.Error:
-                    self.log("* Problem when trying to subscribe to " + interactionSpecifier + ": " + subscriptionError)
-                    container.passed = false
-                    container.subscriptionReport.passed = false
-                    container.subscriptionReport.result = new Result(10, "Problem when trying to subscribe: " + subscriptionError)
-                    break
-                case SubscriptionStatus.Timeout:
-                    self.log(
-                        "* Timed out when trying to subscribe to " +
-                            interactionSpecifier +
-                            ". Due to the design of node-wot this can mean either the subscription was unsuccessful or " +
-                            "the subscription was successful but no data was received."
-                    )
-                    container.passed = true
-                    container.subscriptionReport.passed = true
-                    container.subscriptionReport.result = new Result(
-                        100,
-                        "Timeout when subscribing: Due to the design of node-wot this can mean either the subscription was unsuccessful or it was successful but no data was received."
-                    )
-                    break
-                case SubscriptionStatus.Successful:
-                    self.log("* Successfully subscribed to " + interactionSpecifier + ".")
-                    container.subscriptionReport.passed = true
-                    container.subscriptionReport.result = new Result(200)
-                    await Promise.race([Utils.sleepInMs(eventConfig.MsListen), earlyListenTimeout])
                     break
             }
             return
