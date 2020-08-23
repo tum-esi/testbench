@@ -41,6 +41,10 @@ export class Tester {
         this.tut = tut
     }
 
+    /**
+     * Logs a message in blue.
+     * @param message The message to log.
+     */
     private log(message: string): void {
         if (this.logMode) console.log("\x1b[36m%s\x1b[0m", message)
     }
@@ -71,14 +75,20 @@ export class Tester {
         return check
     }
 
-    async generateTestData(
+    /**
+     * Returns the generated Test Data. Logs the entire process. Returns a Tuple. First Tuple element is a Result object containing a
+     * resultMessage and a resultID in case of failure. Result object is null otherwise. Second Tuple element is the generated Payload.
+     * @param schemaType The SchemaType of the generated TestData to get.
+     * @returns A Tuple. First Tuple element is a Result object containing a resultMessage and a resultID in case of failure. Result
+     * object is null otherwise. Second Tuple element is the generated Payload.
+     */
+    async getGeneratedTestData(
         container: PropertyTestReportContainer | EventTestReportContainer | ActionTestReportContainer,
         schemaType: Utils.SchemaType
-    ): Promise<[Result, boolean, JSON]> {
+    ): Promise<[Result, JSON]> {
         let toSend: JSON
         // Generating the message to send.
-        var passed = false
-        var result = new Result(200)
+        var result = null
         try {
             toSend = this.codeGen.findRequestValue(this.testConfig.TestDataLocation, container.testScenario, schemaType, container.name)
             this.log("* Successfully created " + schemaType + " payload for " + container.name + ": " + JSON.stringify(toSend, null, " "))
@@ -88,24 +98,30 @@ export class Tester {
         }
         // Validating the request against a schema. Validator returns an array that describes the error. This array is empty when there is no error.
         // Necessary because the requests are user written and can contain errors.
-        if (toSend != null) {
-            let errors: Array<any> = Utils.validateRequest(container.name, toSend, this.testConfig.SchemaLocation, "EventSubscription")
+        if (toSend != null || schemaType != Utils.SchemaType.Action) {
+            let errors: Array<any> = Utils.validateRequest(container.name, toSend, this.testConfig.SchemaLocation, schemaType)
             if (errors) {
                 //meaning that there is a validation error
                 this.log("* Created " + schemaType + " payload for " + container.name + " is not valid: Created Payload: " + toSend + "Errors: " + errors)
                 result = new Result(13, "Created payload was invalid: " + JSON.stringify(errors))
             } else {
                 this.log("* Created " + schemaType + " payload for " + container.name + " is valid")
-                passed = true
             }
         }
-        return [result, passed, toSend]
+        return [result, toSend]
     }
 
+    /**
+     * Tests an event. Logs the entire testing process. Adds a message containing the test results to the testReport.
+     * @param testCycle The testCycle of the event to test.
+     * @param testScenario The testScenario of the event to test.
+     * @param eventName The name of the event to test.
+     * @param interaction The interaction Object of the event to test.
+     * @param listeningType The Listening Type (Either Synchronously or Asynchronously).
+     */
     public async testEvent(testCycle: number, testScenario: number, eventName: string, interaction: any, listeningType: Utils.ListeningType): Promise<boolean> {
         var container: EventTestReportContainer = new EventTestReportContainer(testCycle, testScenario, eventName)
         container = await this.testObserveOrEvent(container, interaction, Utils.InteractionType.Event, listeningType)
-        //await this.testObserveOrEvent(container, interaction, Utils.InteractionType.Event, listeningType)
         let messageAddition = "not "
         if (container.passed == true) {
             messageAddition = ""
@@ -359,30 +375,10 @@ export class Tester {
         return
 
         async function testAction(): Promise<void> {
-            let toSend: JSON
-            //generating the message to send
-            try {
-                toSend = await self.codeGen.findRequestValue(self.testConfig.TestDataLocation, testScenario, Utils.SchemaType.Action, actionName)
-                self.log("* Created value to send :" + JSON.stringify(toSend, null, " "))
-            } catch (Error) {
-                self.log("* Cannot create for " + actionName + ", look at the previous message to identify the problem")
+            const [result, toSend] = await self.getGeneratedTestData(container, Utils.SchemaType.Action)
+            if (result != null) {
+                container.report.result = result
                 container.passed = false
-                container.report.result = new Result(12, "Cannot create message: " + Error)
-                return
-            }
-            //validating request against a schema. Validator returns an array that describes the error. This array is empty when there is no error
-            //a first thinking would say that it shouldn't be necessary but since the requests are user written, there can be errors there as well.
-            if (toSend != null) {
-                let errors: Array<any> = Utils.validateRequest(actionName, toSend, self.testConfig.SchemaLocation, Utils.SchemaType.Action)
-                if (errors) {
-                    //meaning that there is a validation error
-                    self.log("* Created request is not valid for " + actionName + "\nMessage is " + toSend + "\nError is " + errors)
-                    container.passed = false
-                    container.report.result = new Result(13, "Created message has bad format: " + JSON.stringify(errors))
-                    return
-                } else {
-                    self.log("* Created request is valid for: " + actionName)
-                }
             }
             //invoking the action
             try {
@@ -540,31 +536,13 @@ export class Tester {
             //if we can write into the property, it means that we can test whether we can write and get back the same type
             //the same value will be expected but a special error case will be written if it is not the same since maybe the value is changing very fast
 
-            let data2: JSON
-            let toSend: JSON
             self.log("* Testing the write functionality for Property: " + propertyName)
             container.writePropertyReport = new MiniTestReport(false)
             //generating the message to send
-            try {
-                toSend = self.codeGen.findRequestValue(self.testConfig.TestDataLocation, testScenario, Utils.SchemaType.Property, propertyName)
-                self.log("* Created value to send for Property " + propertyName + ": " + JSON.stringify(toSend, null, " "))
-            } catch (Error) {
-                self.log("* Cannot create message for Property " + propertyName + ", look at the previous message to identify the problem")
+            const [result, toSend] = await self.getGeneratedTestData(container, Utils.SchemaType.Property)
+            if (result != null) {
+                container.writePropertyReport.result = result
                 container.passed = false
-                container.writePropertyReport.result = new Result(40, "Cannot create message: " + Error)
-                return
-            }
-            //validating request against a schema, same as the action. Since the requests are written by the user there can be errors
-            //Pay attention that validateResponse is called because writing to a property is based on its outputData
-            let errors: Array<any> = Utils.validateResponse(propertyName, toSend, self.testConfig.SchemaLocation, "Property")
-            if (errors) {
-                //meaning that there is a validation error
-                self.log("* Created request is not valid for Property " + propertyName + "\nMessage is " + toSend + "\nError is " + errors)
-                container.passed = false
-                container.readPropertyReport.result = new Result(41, "Created message has bad format: " + JSON.stringify(errors))
-                return
-            } else {
-                self.log("* Created request is valid for Property: " + propertyName)
             }
 
             //setting the property, aka writing into it
@@ -599,7 +577,7 @@ export class Tester {
             }
 
             let responseTimeStamp = new Date()
-            data2 = res2
+            let data2: JSON = res2
             self.log("* Data after second read property for " + propertyName + ": " + JSON.stringify(data2, null, " "))
             //validating the gotten value (this shouldn't be necessary since the first time was correct but it is here nonetheless)
 
