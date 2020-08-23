@@ -416,7 +416,7 @@ describe("Action: fastTest", function () {
                 .end(function (err, res) {
                     let allTestCases = getAllTestCases(getTestResult(res))
                     //console.log(allTestCases); //Can be used to log TestResults for debugging purposes.
-                    expect(allTestCases.length, "Did not report the correct amount of Testcases.").to.be.equal(11) //Check if all TestCases have been generated.
+                    expect(allTestCases.length, "Did not report the correct amount of Testcases.").to.be.equal(22) //Check if all TestCases have been generated.
                     expect(allTestPassed(allTestCases, "Not all Testcases passed for Action: fastTest.")).to.be.true //Check if all TestCases have passed.
                     expect(err).to.be.null
                     done()

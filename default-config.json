@@ -10,8 +10,8 @@
     "SchemaLocation": "Resources/InteractionSchemas/",
     "TestReportsLocation": "Reports/",
     "TestDataLocation": "Resources/fake-data.json",
-    "ActionTimeout": 1000,
-    "Scenarios": 1,
+    "ActionTimeout": 4000,
+    "Scenarios": 2,
     "Repetitions": 1,
     "EventAndObservePOptions": {
         "Asynchronous": {
