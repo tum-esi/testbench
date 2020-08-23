@@ -662,15 +662,13 @@ export class Tester {
         interactionType: Utils.InteractionType,
         listeningType: Utils.ListeningType
     ) {
-        let interaction = Utils.getInteractionByName(this.tutTd, interactionName)
-        if (this.logMode && listeningType == Utils.ListeningType.Asynchronous) console.log("interaction pattern of " + interactionType + ":", interaction[1])
+        let interaction = Utils.getInteractionByName(this.tutTd, interactionType, interactionName)
+        if (this.logMode && listeningType == Utils.ListeningType.Asynchronous) console.log("interaction pattern of " + interactionType + ":", interaction)
         this.log("* ..................... Testing " + interactionType + ": " + interactionName + ".................")
         try {
-            if (interactionType == Utils.InteractionType.Property)
-                await this.testProperty(testCycle, testScenario, interactionName, interaction[1], listeningType)
-            else if (interactionType == Utils.InteractionType.Action) await this.testAction(testCycle, testScenario, interactionName, interaction[1])
-            else if (interactionType == Utils.InteractionType.Event)
-                await this.testEvent(testCycle, testScenario, interactionName, interaction[1], listeningType)
+            if (interactionType == Utils.InteractionType.Property) await this.testProperty(testCycle, testScenario, interactionName, interaction, listeningType)
+            else if (interactionType == Utils.InteractionType.Action) await this.testAction(testCycle, testScenario, interactionName, interaction)
+            else if (interactionType == Utils.InteractionType.Event) await this.testEvent(testCycle, testScenario, interactionName, interaction, listeningType)
         } catch (error) {
             this.log("* Error when testing " + interactionType + " " + interactionName + " (see previous messages).")
             throw error
@@ -689,7 +687,7 @@ export class Tester {
         var propertyWithObserveList: Array<string> = []
         // Check if at least one observable property exists.
         for (let interactionName of this.getAllInteractionOfType(Utils.InteractionType.Property)) {
-            let interaction = Utils.getInteractionByName(this.tutTd, interactionName)[1]
+            let interaction: any = Utils.getInteractionByName(this.tutTd, Utils.InteractionType.Property, interactionName)
             if (interaction.observable) propertyWithObserveList.push(interactionName)
         }
         var eventList: Array<string> = this.getAllInteractionOfType(Utils.InteractionType.Event)

@@ -314,21 +314,15 @@ export function generateSchemas(td: wot.ThingDescription, schemaLocation: string
  * @param td The Thing description.
  * @param name The name of the interaction.
  */
-export function getInteractionByName(td: wot.ThingDescription, name: string): [string, any] {
-    for (var key in td.properties) {
-        if (key == name) {
-            return ["Property", td.properties[key]]
-        }
-    }
-    for (var key in td.actions) {
-        if (key == name) {
-            return ["Action", td.actions[key]]
-        }
-    }
-    for (var key in td.events) {
-        if (key == name) {
-            return ["Event", td.events[key]]
-        }
+export function getInteractionByName(td: wot.ThingDescription, interactionType: InteractionType, name: string): [any] {
+    if (interactionType == InteractionType.Property) var interactionList = Object.keys(td.properties)
+    else if (interactionType == InteractionType.Action) var interactionList = Object.keys(td.actions)
+    else if (interactionType == InteractionType.Event) var interactionList = Object.keys(td.events)
+
+    if (interactionList.includes(name)) {
+        if (interactionType == InteractionType.Property) return td.properties[name]
+        else if (interactionType == InteractionType.Action) return td.actions[name]
+        else if (interactionType == InteractionType.Event) return td.events[name]
     }
 }
 
