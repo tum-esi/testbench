@@ -11,7 +11,10 @@ console.log = function () {
     logFile.write(util.format.apply(null, arguments) + "\n")
     logStdout.write(util.format.apply(null, arguments) + "\n")
 }
-// a test config file is always configured like this
+
+/**
+ * A test config file is always configured like this.
+ */
 export interface testConfig {
     TBname?: string
     http?: {
@@ -49,17 +52,26 @@ export interface testConfig {
 }
 
 // -------------------------- Control Logic Enums ---------------------------------
+/**
+ * An enum defining the listening type of an observeProperty or event test.
+ */
 export enum ListeningType {
     Asynchronous = 1,
     Synchronous = 2,
 }
 
+/**
+ * An enum defining the type of an interaction.
+ */
 export enum InteractionType {
     Property = "Property",
     Action = "Action",
     Event = "Event",
 }
 
+/**
+ * An enum defining the type of an interaction schema.
+ */
 export enum SchemaType {
     Property = "Property",
     Action = "Action",
@@ -135,19 +147,22 @@ export class CodeGenerator {
 var ajv = new ajValidator({ allErrors: true })
 export function validateRequest(requestName: string, request: JSON, schemaLoc: string, styp: string): Array<any> {
     let reqSchema: any = fs.readFileSync(schemaLoc + "Requests/" + requestName + "-" + styp + ".json", "utf8")
-    var valid = ajv.validate(JSON.parse(reqSchema), request)
+    ajv.validate(JSON.parse(reqSchema), request)
     return ajv.errors
 }
 
 export function validateResponse(responseName: string, response: JSON, schemaLoc: string, styp: string): Array<any> {
     let resSchema: any = fs.readFileSync(schemaLoc + "Responses/" + responseName + "-" + styp + ".json", "utf8")
-    var valid = ajv.validate(JSON.parse(resSchema), response)
+    ajv.validate(JSON.parse(resSchema), response)
     return ajv.errors
 }
 
 // ------------------------ SCHEMA GENERATION ------------------------------------
 
-// extracts json schema from property
+/**
+ * extracts json schema from property.
+ * @param fragment The interaction fragment to extract the schema from.
+ */
 function extractSchema(fragment: any) {
     let extractedSchema
     if (fragment.type == "object") {
@@ -191,7 +206,14 @@ function extractSchema(fragment: any) {
     }
     return extractedSchema
 }
-// writes extracted schema to file
+
+/**
+ * Writes extracted schema to a file.
+ * @param name The name of an interaction.
+ * @param dataSchema The schema to write.
+ * @param schemaLocation The file location where the schema will be saved.
+ * @param schemaType The type of the schema.
+ */
 function writeSchema(name, dataSchema, schemaLocation, schemaType: SchemaType) {
     let schema: string = '{\n\t"name":"' + name + '",\n\t' + dataSchema + "\n\t}"
     let writeLoc: string = schemaLocation + name + "-" + schemaType + ".json"
@@ -212,7 +234,7 @@ export function generateSchemas(td: wot.ThingDescription, schemaLocation: string
     mkdirp.sync(schemaLocationReq)
     mkdirp.sync(schemaLocationResp)
 
-    // property schemas:
+    // Property schemas:
     for (var key in td.properties) {
         if (td.properties.hasOwnProperty(key)) {
             // checks if writable:
@@ -232,7 +254,8 @@ export function generateSchemas(td: wot.ThingDescription, schemaLocation: string
             }
         }
     }
-    // action schemas:
+
+    // Action schemas:
     for (var key in td.actions) {
         if (td.actions.hasOwnProperty(key)) {
             if (td.actions[key].hasOwnProperty("input")) {
@@ -247,7 +270,8 @@ export function generateSchemas(td: wot.ThingDescription, schemaLocation: string
             }
         }
     }
-    // event schemas:
+
+    // Event schemas:
     for (var key in td.events) {
         if (td.events.hasOwnProperty(key)) {
             if (td.events[key].hasOwnProperty("subscription")) {
@@ -275,6 +299,7 @@ export function generateSchemas(td: wot.ThingDescription, schemaLocation: string
             }
         }
     }
+
     if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* ", reqSchemaCount + " request schemas and " + resSchemaCount + " response schemas have been created")
     if (reqSchemaCount == 0 && resSchemaCount == 0) {
         if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* !!! WARNING !!! NO INTERACTIONS FOUND")
@@ -284,6 +309,11 @@ export function generateSchemas(td: wot.ThingDescription, schemaLocation: string
 }
 
 // --------------------------- UTILITY FUNCTIONS -------------------------------------
+/**
+ * Returns the interaction object corresponding to the interaction name.
+ * @param td The Thing description.
+ * @param name The name of the interaction.
+ */
 export function getInteractionByName(td: wot.ThingDescription, name: string): [string, any] {
     for (var key in td.properties) {
         if (key == name) {
@@ -302,7 +332,12 @@ export function getInteractionByName(td: wot.ThingDescription, name: string): [s
     }
 }
 
-export function promiseTimeout(ms, promise) {
+/**
+ * Returns an wrapped Promise that races between the provided promise and an internal timeout.
+ * @param ms The number indicating the length of the internal timeout in ms.
+ * @param promise The promise the timeout shall race against.
+ */
+export function promiseTimeout(ms: number, promise: Promise<any>) {
     // Create a promise that rejects in <ms> milliseconds
     let timeout = new Promise((resolve, reject) => {
         let id = setTimeout(() => {
@@ -314,10 +349,17 @@ export function promiseTimeout(ms, promise) {
     return Promise.race([promise, timeout])
 }
 
-export function sleepInMs(ms) {
+/**
+ * Sleeps the specified amount of time.
+ * @param ms The number indicating the time to sleep in ms.
+ */
+export function sleepInMs(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+/**
+ * A deferred promise object that can be resolved and rejected from another function.
+ */
 export class DeferredPromise {
     resolve
     reject
@@ -326,12 +368,11 @@ export class DeferredPromise {
     catch
     constructor() {
         this._promise = new Promise((resolve, reject) => {
-            // assign the resolve and reject functions to `this`
-            // making them usable on the class instance
+            // assign the resolve and reject functions to "this" making them usable on the class instance
             this.resolve = resolve
             this.reject = reject
         })
-        // bind `then` and `catch` to implement the same interface as Promise
+        // bind "then" and "catch" to implement the same interface as Promise
         this.then = this._promise.then.bind(this._promise)
         this.catch = this._promise.catch.bind(this._promise)
         this[Symbol.toStringTag] = "Promise"

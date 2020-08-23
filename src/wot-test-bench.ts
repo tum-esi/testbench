@@ -209,6 +209,7 @@ srv.start().then((WoT) => {
                                         () => false
                                     )
                                     .then(() => {
+                                        // Starting the second testing phase.
                                         tester
                                             .secondTestingPhase(testConfig.Repetitions)
                                             .then((testReportHasChanged) => {

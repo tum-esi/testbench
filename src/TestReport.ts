@@ -2,6 +2,9 @@ import fs = require("fs")
 var mkdirp = require("mkdirp")
 import { ListeningType } from "./utilities"
 
+/**
+ * A single subTest result containing a resultId and an optional resultMessage.
+ */
 export class Result {
     id: number
     message?: string
@@ -12,16 +15,23 @@ export class Result {
     }
 }
 
+/**
+ * A payload report class containing a timestamp and a payload JSON object.
+ */
 export class Payload {
     timestamp: Date
-    payload?: JSON
+    payload: JSON
 
-    constructor(timestamp: Date, payload?: JSON) {
+    constructor(timestamp: Date, payload: JSON) {
         this.timestamp = timestamp
         this.payload = payload
     }
 }
 
+/**
+ * A micro test report only containing a passed boolean, a timestamp defining when the interaction was started, a payload object defining
+ * defining the received payload and a result object.
+ */
 export class MicroTestReport {
     passed: boolean
     sendTimestamp: Date
@@ -35,6 +45,10 @@ export class MicroTestReport {
         this.result = null
     }
 
+    /**
+     * Creates a new object to ensure correct format when printing/storing the container.
+     * @return A correctly formatted object containing the needed data.
+     */
     getPrintableMessage() {
         if (this.sendTimestamp == null) delete this.sendTimestamp
         if (this.received == null) delete this.received
@@ -42,6 +56,9 @@ export class MicroTestReport {
     }
 }
 
+/**
+ * A mini test report only containing a passed boolean, two payload objects, containing the sent and received payload and a testResult object.
+ */
 export class MiniTestReport {
     passed: boolean
     sent: Payload
@@ -56,6 +73,9 @@ export class MiniTestReport {
     }
 }
 
+/**
+ * An InteractionTestReportContainer containing the results of an interaction test.
+ */
 export class InteractionTestReportContainer {
     testCycle: number
     testScenario: number
@@ -70,6 +90,9 @@ export class InteractionTestReportContainer {
     }
 }
 
+/**
+ * An ActionTestReportContainer containing the results of an action test.
+ */
 export class ActionTestReportContainer extends InteractionTestReportContainer {
     report: MiniTestReport
 
@@ -91,6 +114,9 @@ export class ActionTestReportContainer extends InteractionTestReportContainer {
     }
 }
 
+/**
+ * An PropertyTestReportContainer containing the results of a property test.
+ */
 export class PropertyTestReportContainer extends InteractionTestReportContainer {
     readPropertyReport: MicroTestReport
     writePropertyReport: MiniTestReport
@@ -101,8 +127,8 @@ export class PropertyTestReportContainer extends InteractionTestReportContainer 
     }
 
     /**
-     * Restructures the ReportContainer to match the structure of the printed Message.
-     * @return The restructured testReportContainer.
+     * Creates a new object to ensure correct format when printing/storing the container.
+     * @return A correctly formatted object containing the needed data.
      */
     getPrintableMessage() {
         delete this.testCycle
@@ -110,9 +136,10 @@ export class PropertyTestReportContainer extends InteractionTestReportContainer 
 
         let toReturn = { name: this.name, passed: this.passed }
         if (this.readPropertyReport != null) toReturn["readPropertyReport"] = this.readPropertyReport.getPrintableMessage()
-        if (this.readPropertyReport != null) toReturn["writePropertyReport"] = this.writePropertyReport
+        if (this.writePropertyReport != null) toReturn["writePropertyReport"] = this.writePropertyReport
         if (this.observePropertyReport != null) {
             let observePropertyReport = {
+                passed: this.observePropertyReport.passed,
                 subscriptionReport: this.observePropertyReport.subscriptionReport.getPrintableMessage(),
                 observedDataReport: this.observePropertyReport.eventDataReport.getPrintableMessage(),
                 cancellationReport: this.observePropertyReport.cancellationReport.getPrintableMessage(),
@@ -123,6 +150,10 @@ export class PropertyTestReportContainer extends InteractionTestReportContainer 
     }
 }
 
+/**
+ * An EventData object containing a passed boolean, a timestamp defining when the data was received an a result object specifying if this
+ * data package is valid.
+ */
 export class EventData extends Payload {
     result: Result
 
@@ -132,6 +163,10 @@ export class EventData extends Payload {
     }
 }
 
+/**
+ * An EventDataReport object containing an passed boolean, an Array of received data packages and a result object specifying if the any of
+ * contained data packages is invalid.
+ */
 class EventDataReport {
     passed: boolean
     received: Array<EventData>
@@ -143,12 +178,19 @@ class EventDataReport {
         this.result = null
     }
 
+    /**
+     * Creates a new object to ensure correct format when printing/storing the container.
+     * @return A correctly formatted object containing the needed data.
+     */
     getPrintableMessage() {
         if (this.result == null) delete this.result
         return this
     }
 }
 
+/**
+ * An EventTestReportContainer containing the results of an event test.
+ */
 export class EventTestReportContainer extends InteractionTestReportContainer {
     subscriptionReport: MicroTestReport
     eventDataReport: EventDataReport
@@ -162,8 +204,8 @@ export class EventTestReportContainer extends InteractionTestReportContainer {
     }
 
     /**
-     * Restructures the ReportContainer to match the structure of the printed Message.
-     * @return The restructured testReportContainer.
+     * Creates a new object to ensure correct format when printing/storing the container.
+     * @return A correctly formatted object containing the needed data.
      */
     getPrintableMessage() {
         return {
@@ -176,6 +218,9 @@ export class EventTestReportContainer extends InteractionTestReportContainer {
     }
 }
 
+/**
+ * Contains the results of each subTest concatenated in single testReport object.
+ */
 export class TestReport {
     public results: Array<Array<any>> //stores all the sent and received messages as well as the errors being produced
     private testCycleCount: number //incremented at each repetition of a group of test scenarios
@@ -188,12 +233,18 @@ export class TestReport {
         this.testScenarioCount = -1
         this.maxTestScenario = 0
     }
+
+    /**
+     * Returns the results of the current test run.
+     */
     public getResults(): Array<any> {
-        //basic getter
         let returnResults = this.results
         return returnResults
     }
 
+    /**
+     * Resets the results of a test run.
+     */
     public resetResults(): void {
         this.results = []
         this.testCycleCount = -1
@@ -240,18 +291,22 @@ export class TestReport {
         this.results[testCycle][testScenario].push(testContainer.getPrintableMessage())
     }
 
+    /**
+     * Logs a test summary to the cli.
+     * @param testingPhase the testing phase.
+     */
     public printResults(testingPhase: ListeningType): void {
-        writeInGreen("Results of the test with Errors/TotalTests\n")
-        writeInGreen("Test Scenario Number > ")
+        LogInGreen("Results of the test with Errors/TotalTests\n")
+        LogInGreen("Test Scenario Number > ")
         for (var i = 0; i <= this.maxTestScenario; i++) {
-            writeInGreen("TS" + i + "\t")
+            LogInGreen("TS" + i + "\t")
         }
-        writeInGreen("Test Cycle Nb:\n")
+        LogInGreen("Test Cycle Nb:\n")
 
         //printing the results
         for (var i = 0; i <= this.testCycleCount; i++) {
-            if (testingPhase == ListeningType.Synchronous && i == this.testCycleCount) writeInGreen("Listening Phase\t\t")
-            else writeInGreen("TC" + i + "\t\t\t")
+            if (testingPhase == ListeningType.Synchronous && i == this.testCycleCount) LogInGreen("Listening Phase\t\t")
+            else LogInGreen("TC" + i + "\t\t\t")
             for (var j = 0; j <= this.maxTestScenario; j++) {
                 //summing up the fails for this one scenario
 
@@ -271,18 +326,28 @@ export class TestReport {
                         }
                     }
 
-                    writeInGreen(fails + "/" + curSceLength + "\t") //this is used for displaying how many failures are there for one scenario
+                    LogInGreen(fails + "/" + curSceLength + "\t") //this is used for displaying how many failures are there for one scenario
                 } catch (Error) {
-                    writeInGreen(fails + "/" + curSceLength + "\t")
+                    LogInGreen(fails + "/" + curSceLength + "\t")
                 }
             }
             console.log()
         }
 
-        function writeInGreen(message: string) {
+        /**
+         * Logs a single line in green.
+         * @param message The message to log.
+         */
+        function LogInGreen(message: string) {
             process.stdout.write("\x1b[32m" + message + "\x1b[0m")
         }
     }
+
+    /**
+     * Stores the testReport in the file system.
+     * @param location The location where the testReport is to be stored.
+     * @param tutName The name of the tested Thing.
+     */
     public storeReport(location: string, tutName: string) {
         try {
             mkdirp(location)
