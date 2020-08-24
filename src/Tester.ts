@@ -405,6 +405,7 @@ export class Tester {
             if (result != null) {
                 container.report.result = result
                 container.passed = false
+                return
             }
             try {
                 self.log("* Trying to invoke action " + actionName + " with data:" + JSON.stringify(toSend, null, " "))
@@ -567,9 +568,10 @@ export class Tester {
             if (result != null) {
                 container.writePropertyReport.result = result
                 container.passed = false
+                return
             }
 
-            // Trying to writing the property.
+            // Trying to write the property.
             self.log("* Writing to property " + propertyName + " with data: " + JSON.stringify(toSend, null, " "))
             let sendTimeStamp = new Date()
             try {

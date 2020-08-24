@@ -292,27 +292,31 @@ export class TestReport {
     }
 
     /**
-     * Logs a test summary to the cli.
+     * Logs a test summary in the cli.
      * @param testingPhase the testing phase.
      */
     public printResults(testingPhase: ListeningType): void {
         LogInGreen("Results of the test with Errors/TotalTests\n")
         LogInGreen("Test Scenario Number > ")
-        for (var i = 0; i <= this.maxTestScenario; i++) {
-            LogInGreen("TS" + i + "\t")
+        for (var testCycle = 0; testCycle <= this.maxTestScenario; testCycle++) {
+            LogInGreen("TS" + testCycle + "\t")
         }
         LogInGreen("Test Cycle Nb:\n")
 
-        //printing the results
-        for (var i = 0; i <= this.testCycleCount; i++) {
-            if (testingPhase == ListeningType.Synchronous && i == this.testCycleCount) LogInGreen("Listening Phase\t\t")
-            else LogInGreen("TC" + i + "\t\t\t")
-            for (var j = 0; j <= this.maxTestScenario; j++) {
-                //summing up the fails for this one scenario
+        // Printing the results.
+        for (var testCycle = 0; testCycle <= this.testCycleCount; testCycle++) {
+            if (testingPhase == ListeningType.Synchronous && testCycle == this.testCycleCount) LogInGreen("Listening Phase\t\t")
+            else LogInGreen("TC" + testCycle + "\t\t\t")
+            for (var testScenario = 0; testScenario <= this.maxTestScenario; testScenario++) {
+                // In the listening Phase only first testScenario exists, thus no further testScenarios can be logged.
+                if (testingPhase == ListeningType.Synchronous && testScenario == 1 && testCycle == this.testCycleCount) {
+                    break
+                }
 
+                //summing up the fails for this one scenario
                 //this try catch exists because not every scenario is obligated to have the same number of messages
                 //this is of course not necessary for the current state of the test bench
-                let currentScenario: any = this.results[i][j]
+                let currentScenario: any = this.results[testCycle][testScenario]
                 let curSceLength: number = currentScenario.length
 
                 let fails: number = 0
