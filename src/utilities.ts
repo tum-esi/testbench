@@ -145,14 +145,14 @@ export class CodeGenerator {
 
 // ------------------------ SCHEMA VALIDATION -----------------------------------
 var ajv = new ajValidator({ allErrors: true })
-export function validateRequest(requestName: string, request: JSON, schemaLoc: string, styp: string): Array<any> {
-    let reqSchema: any = fs.readFileSync(schemaLoc + "Requests/" + requestName + "-" + styp + ".json", "utf8")
+export function validateRequest(requestName: string, request: JSON, schemaLoc: string, schemaType: SchemaType): Array<any> {
+    let reqSchema: any = fs.readFileSync(schemaLoc + "Requests/" + requestName + "-" + schemaType + ".json", "utf8")
     ajv.validate(JSON.parse(reqSchema), request)
     return ajv.errors
 }
 
-export function validateResponse(responseName: string, response: JSON, schemaLoc: string, styp: string): Array<any> {
-    let resSchema: any = fs.readFileSync(schemaLoc + "Responses/" + responseName + "-" + styp + ".json", "utf8")
+export function validateResponse(responseName: string, response: JSON, schemaLoc: string, schemaType: SchemaType): Array<any> {
+    let resSchema: any = fs.readFileSync(schemaLoc + "Responses/" + responseName + "-" + schemaType + ".json", "utf8")
     ajv.validate(JSON.parse(resSchema), response)
     return ajv.errors
 }

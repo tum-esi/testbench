@@ -45,8 +45,8 @@ export class Tester {
      * Logs a message in blue.
      * @param message The message to log.
      */
-    private log(message: string): void {
-        if (this.logMode) console.log("\x1b[36m%s\x1b[0m", message)
+    private log(message: string, prefix: string = "* ", color: string = "\x1b[36m%s\x1b[0m"): void {
+        if (this.logMode) console.log(color, prefix + message)
     }
 
     /**
@@ -54,24 +54,25 @@ export class Tester {
      * @param logMode True if logMode is enabled, false otherwise.
      */
     public initiate(logMode: boolean): number {
-        this.log("* Initiation has started")
+        this.log("Initiation has started")
+        this.logMode = logMode
         let check = 0
         try {
             check = Utils.generateSchemas(this.tutTd, this.testConfig.SchemaLocation, logMode)
-            this.log("* Finished schema generation.")
+            this.log("Finished schema generation.")
         } catch (Error) {
             this.log("Schema Generation Error" + Error)
         }
         try {
             this.codeGen = new Utils.CodeGenerator(this.tutTd, this.testConfig)
-            this.log("* Finished code generation")
+            this.log("Finished code generation")
         } catch (Error) {
-            if (logMode) console.log("Utils.CodeGenerator Initialization Error" + Error)
+            this.log("Utils.CodeGenerator Initialization Error" + Error)
         }
         //The test report gets initialized and the first cycle and scenarios are added
         //This means that single tests are possible to be seen in the test report
         this.testReport = new TestReport()
-        this.log("* Initialization finished")
+        this.log("Initialization finished")
         return check
     }
 
@@ -91,9 +92,9 @@ export class Tester {
         var result = null
         try {
             toSend = this.codeGen.findRequestValue(this.testConfig.TestDataLocation, container.testScenario, schemaType, container.name)
-            this.log("* Successfully created " + schemaType + " payload for " + container.name + ": " + JSON.stringify(toSend, null, " "))
+            this.log("Successfully created " + schemaType + " payload for " + container.name + ": " + JSON.stringify(toSend, null, " "))
         } catch (error) {
-            this.log("* Problem while trying to create " + schemaType + " payload for " + container.name + ":\n  " + error)
+            this.log("Problem while trying to create " + schemaType + " payload for " + container.name + ":\n  " + error)
             result = new Result(12, "Cannot create payload: " + error)
         }
         // Validating the request against a schema. Validator returns an array that describes the error. This array is empty when there is no error.
@@ -102,10 +103,10 @@ export class Tester {
             let errors: Array<any> = Utils.validateRequest(container.name, toSend, this.testConfig.SchemaLocation, schemaType)
             if (errors) {
                 //meaning that there is a validation error
-                this.log("* Created " + schemaType + " payload for " + container.name + " is not valid: Created Payload: " + toSend + "Errors: " + errors)
+                this.log("Created " + schemaType + " payload for " + container.name + " is not valid: Created Payload: " + toSend + "Errors: " + errors)
                 result = new Result(13, "Created payload was invalid: " + JSON.stringify(errors))
             } else {
-                this.log("* Created " + schemaType + " payload for " + container.name + " is valid")
+                this.log("Created " + schemaType + " payload for " + container.name + " is valid")
             }
         }
         return [result, toSend]
@@ -126,7 +127,7 @@ export class Tester {
         if (container.passed == true) {
             messageAddition = ""
         }
-        this.log("* Test for Event " + eventName + " was " + messageAddition + "passed.")
+        this.log("Test for Event " + eventName + " was " + messageAddition + "passed.")
         this.testReport.addMessage(testCycle, testScenario, container)
         return true
     }
@@ -180,7 +181,7 @@ export class Tester {
          * Tests the subscribe functionality.
          */
         async function testSubscribe(): Promise<boolean> {
-            self.log("* Trying to subscribe to " + interactionSpecifier + ".")
+            self.log("Trying to subscribe to " + interactionSpecifier + ".")
 
             async function timeout(): Promise<SubscriptionStatus> {
                 await Utils.sleepInMs(eventConfig.MsSubscribeTimeout)
@@ -210,14 +211,14 @@ export class Tester {
             subscriptionStatus = await Promise.race([subscribeEvent(), timeout()])
             switch (subscriptionStatus) {
                 case SubscriptionStatus.Error:
-                    self.log("* Problem when trying to subscribe to " + interactionSpecifier + ": " + subscriptionError)
+                    self.log("Problem when trying to subscribe to " + interactionSpecifier + ": " + subscriptionError)
                     container.passed = false
                     container.subscriptionReport.passed = false
                     container.subscriptionReport.result = new Result(10, "Problem when trying to subscribe: " + subscriptionError)
                     break
                 case SubscriptionStatus.Timeout:
                     self.log(
-                        "* Timed out when trying to subscribe to " +
+                        "Timed out when trying to subscribe to " +
                             interactionSpecifier +
                             ". Due to the design of node-wot this can mean either the subscription was unsuccessful or " +
                             "the subscription was successful but no data was received."
@@ -230,7 +231,7 @@ export class Tester {
                     )
                     break
                 case SubscriptionStatus.Successful:
-                    self.log("* Successfully subscribed to " + interactionSpecifier + ".")
+                    self.log("Successfully subscribed to " + interactionSpecifier + ".")
                     container.subscriptionReport.passed = true
                     container.subscriptionReport.result = new Result(200)
                     await Promise.race([Utils.sleepInMs(eventConfig.MsListen), earlyListenTimeout])
@@ -258,15 +259,15 @@ export class Tester {
             if (testMode == Utils.InteractionType.Event && !interaction.hasOwnProperty("data")) {
                 return
             }
-            self.log("* " + receivedDataMsg + "[index: " + indexOfEventData + "]: " + JSON.stringify(receivedData, null, " "))
+            self.log(receivedDataMsg + "[index: " + indexOfEventData + "]: " + JSON.stringify(receivedData, null, " "))
             // Checking if data package has JSON format.
             try {
                 let temp: JSON = receivedData
             } catch (jsonError) {
-                self.log("* " + receivedDataMsg + "[index: " + indexOfEventData + "] is not in JSON format")
+                self.log(receivedDataMsg + "[index: " + indexOfEventData + "] is not in JSON format")
                 container.passed = false
                 container.eventDataReport.passed = false
-                let result = new Result(15, "* Received data [index: " + indexOfEventData + "] is not in JSON format: " + jsonError)
+                let result = new Result(15, "Received data [index: " + indexOfEventData + "] is not in JSON format: " + jsonError)
                 container.eventDataReport.received.push(new EventData(receivedTimeStamp, receivedData, result))
                 return
             }
@@ -276,14 +277,14 @@ export class Tester {
                 validationError = Utils.validateResponse(interactionName, receivedData, self.testConfig.SchemaLocation, Utils.SchemaType.EventData)
             else validationError = Utils.validateResponse(interactionName, receivedData, self.testConfig.SchemaLocation, Utils.SchemaType.Property)
             if (validationError) {
-                self.log("* " + receivedDataMsg + "[index: " + indexOfEventData + "] is not valid.")
+                self.log(receivedDataMsg + "[index: " + indexOfEventData + "] is not valid.")
                 container.passed = false
                 container.eventDataReport.passed = false
-                let result = new Result(16, "* Received data [index: " + indexOfEventData + "] is not valid: " + JSON.stringify(validationError))
+                let result = new Result(16, "Received data [index: " + indexOfEventData + "] is not valid: " + JSON.stringify(validationError))
                 container.eventDataReport.received.push(new EventData(receivedTimeStamp, receivedData, result))
             } else {
                 // Otherwise data package is valid.
-                self.log("* " + receivedDataMsg + "[index: " + indexOfEventData + "] is valid.")
+                self.log(receivedDataMsg + "[index: " + indexOfEventData + "] is valid.")
                 container.eventDataReport.received.push(new EventData(receivedTimeStamp, receivedData, new Result(200)))
             }
         }
@@ -292,14 +293,14 @@ export class Tester {
          * Tests the unsubscribe functionality.
          */
         async function testUnsubscribe(): Promise<boolean> {
-            self.log("* Trying to unsubscribe from " + interactionSpecifier + ".")
+            self.log("Trying to unsubscribe from " + interactionSpecifier + ".")
 
             // Different actions are needed depending on the subscriptionStatus.
             switch (subscriptionStatus) {
                 case SubscriptionStatus.Error:
                     // If Subscription failed Cancellation can not work.
                     self.log(
-                        "* Problem when trying to unsubscribe from " +
+                        "Problem when trying to unsubscribe from " +
                             interactionSpecifier +
                             ": The testbench was never subscribed due to a subscription error (see previous messages and subscriptionReport)."
                     )
@@ -316,7 +317,7 @@ export class Tester {
                     // Due to not knowing if subscription failed or subscription was successful but no events were emitted, this case needs
                     // his own handling.
                     self.log(
-                        "* Problem when trying to unsubscribe from " +
+                        "Problem when trying to unsubscribe from " +
                             interactionSpecifier +
                             ": The testbench was never subscribed or was subscribed but never received any data (see previous messages, subscriptionReport and eventDataReport/observedDataReport)."
                     )
@@ -331,7 +332,7 @@ export class Tester {
                         // provider starts emitting only after the subscribeTimeout was reached the testbench would still be subscribed and
                         // thus receiving the data packages.
                         self.log(
-                            "* The following output of node-wot describes unsubscribing from " +
+                            "The following output of node-wot describes unsubscribing from " +
                                 interactionSpecifier +
                                 " but due to the design of node-wot this output is identical for " +
                                 "unsuccessful subscription and successful subscription with no emitted event."
@@ -349,14 +350,14 @@ export class Tester {
                         else await self.tut.unobserveProperty(interactionName)
                     } catch (error) {
                         // If unsubscribing/unobserving threw an error.
-                        self.log("* Error while canceling subscription from " + interactionSpecifier + ":\n  " + error)
+                        self.log("Error while canceling subscription from " + interactionSpecifier + ":\n  " + error)
                         container.passed = false
                         container.cancellationReport.passed = false
                         container.cancellationReport.result = new Result(20, "Error while canceling subscription: " + error)
                         return true
                     }
                     // Successfully unsubscribed/unobserved.
-                    self.log("* Successfully cancelled subscription from " + interactionSpecifier)
+                    self.log("Successfully cancelled subscription from " + interactionSpecifier)
                     container.cancellationReport.sendTimestamp = sendTimeStamp
                     container.cancellationReport.passed = true
                     container.cancellationReport.result = new Result(200)
@@ -395,8 +396,8 @@ export class Tester {
 
         await testAction()
         self.testReport.addMessage(testCycle, testScenario, container)
-        if (container.passed == true) self.log("* Test for " + actionName + " was successful.")
-        else self.log("* Test for " + actionName + " was not successful.")
+        if (container.passed == true) self.log("Test for " + actionName + " was successful.")
+        else self.log("Test for " + actionName + " was not successful.")
         return
 
         async function testAction(): Promise<void> {
@@ -408,56 +409,56 @@ export class Tester {
                 return
             }
             try {
-                self.log("* Trying to invoke action " + actionName + " with data:" + JSON.stringify(toSend, null, " "))
+                self.log("Trying to invoke action " + actionName + " with data:" + JSON.stringify(toSend, null, " "))
                 // Try to invoke the action.
                 try {
                     var invokedAction = self.tryToInvokeAction(actionName, toSend)
                     var res = await invokedAction[1]
                 } catch (error) {
                     // Error when trying to invoke the action.
-                    self.log("* Problem when trying to invoke action " + actionName + ":\n  " + error)
+                    self.log("Problem when trying to invoke action " + actionName + ":\n  " + error)
                     container.passed = false
                     container.report.result = new Result(999, "Invoke Action Error: " + error)
                     return
                 }
                 let responseTimeStamp = new Date()
                 container.report.sent = new Payload(invokedAction[0], toSend) //sentTimeStamp, Payload
-                self.log("* Invoked action " + actionName + " with data: " + JSON.stringify(toSend, null, " "))
+                self.log("Invoked action " + actionName + " with data: " + JSON.stringify(toSend, null, " "))
                 if (!interaction.hasOwnProperty("output")) {
                     // If no answer is needed the test is passed.
-                    self.log("* " + actionName + " is successful without return value")
+                    self.log(actionName + " is successful without return value")
                     container.report.result = new Result(201, "no return value needed")
                     return
                 }
                 // Testing the invokeAction output.
                 let answer = res
                 container.report.received = new Payload(responseTimeStamp, answer)
-                self.log("* Answer is:" + JSON.stringify(answer, null, " "))
+                self.log("Answer is:" + JSON.stringify(answer, null, " "))
                 // Checking if data package has JSON format.
                 try {
                     let temp: JSON = answer
                 } catch (error) {
-                    self.log("* Response is not in JSON format")
+                    self.log("Response is not in JSON format")
                     container.passed = false
                     container.report.result = new Result(15, "Response is not in JSON format: " + error)
                     return
                 }
                 // Checking if data package validates against its schema.
-                let errorsRes: Array<any> = Utils.validateResponse(actionName, answer, self.testConfig.SchemaLocation, "Action")
+                let errorsRes: Array<any> = Utils.validateResponse(actionName, answer, self.testConfig.SchemaLocation, Utils.SchemaType.Action)
                 if (errorsRes) {
-                    self.log("* Received response is not valid for: " + actionName)
+                    self.log("Received response is not valid for: " + actionName)
                     container.passed = false
                     container.report.result = new Result(16, "Received response is not valid, " + JSON.stringify(errorsRes))
                     return
                 } else {
                     // Otherwise output is valid.
-                    self.log("* Received response is valid for: " + actionName)
+                    self.log("Received response is valid for: " + actionName)
                     container.report.result = new Result(200)
                     return
                 }
             } catch (Error) {
                 // In case there is a problem with the invoke of the action.
-                self.log("* Response receiving for  " + actionName + "is unsuccessful, continuing with other scenarios")
+                self.log("Response receiving for  " + actionName + "is unsuccessful, continuing with other scenarios")
                 container.passed = false
                 container.report.result = new Result(10, "Problem invoking the action" + Error)
                 return
@@ -488,12 +489,12 @@ export class Tester {
         let isReadable: boolean = !interaction.writeOnly
         let isObservable: boolean = interaction.observable
 
-        if (isReadable) self.log("* Property " + propertyName + " is readable")
-        else self.log("* Property " + propertyName + " is not readable")
-        if (isWritable) self.log("* Property " + propertyName + " is writable")
-        else self.log("* Property " + propertyName + " is not writable")
-        if (isObservable) self.log("* Property " + propertyName + " is observable")
-        else self.log("* Property " + propertyName + " is not observable")
+        if (isReadable) self.log("Property " + propertyName + " is readable")
+        else self.log("Property " + propertyName + " is not readable")
+        if (isWritable) self.log("Property " + propertyName + " is writable")
+        else self.log("Property " + propertyName + " is not writable")
+        if (isObservable) self.log("Property " + propertyName + " is observable")
+        else self.log("Property " + propertyName + " is not observable")
 
         try {
             // Test each property functionality if it is enabled.
@@ -511,7 +512,7 @@ export class Tester {
         }
         self.testReport.addMessage(testCycle, testScenario, container)
         if (container.passed == true) {
-            self.log("* Test for Property " + propertyName + " was successful.")
+            self.log("Test for Property " + propertyName + " was successful.")
         }
         return
 
@@ -522,7 +523,7 @@ export class Tester {
          */
         async function testReadProperty(): Promise<void> {
             let data: JSON
-            self.log("* Testing the read functionality for Property: " + propertyName)
+            self.log("Testing the read functionality for Property: " + propertyName)
             container.readPropertyReport = new MicroTestReport()
             container.readPropertyReport.sendTimestamp = new Date()
             // Trying to read the property.
@@ -532,27 +533,27 @@ export class Tester {
                 data = res
             } catch (error) {
                 // Error in the node-wot level.
-                self.log("* Error when fetching Property " + propertyName + " for the first time: \n  " + error)
+                self.log("Error when fetching Property " + propertyName + " for the first time: \n  " + error)
                 container.passed = false
                 container.readPropertyReport.passed = false
                 container.readPropertyReport.result = new Result(30, "Could not fetch property")
                 throw new Error("Problem in the node-wot level.")
             }
             container.readPropertyReport.received = new Payload(responseTimeStamp, res)
-            self.log("* Data after first read property: " + JSON.stringify(data, null, " "))
+            self.log("Data after first read property: " + JSON.stringify(data, null, " "))
             // Checking if data package validates against its schema.
-            let errorsProp: Array<any> = Utils.validateResponse(propertyName, data, self.testConfig.SchemaLocation, "Property")
+            let errorsProp: Array<any> = Utils.validateResponse(propertyName, data, self.testConfig.SchemaLocation, Utils.SchemaType.Property)
             if (errorsProp) {
-                self.log("* Received response is not valid for Property: " + propertyName + errorsProp)
+                self.log("Received response is not valid for Property: " + propertyName + errorsProp)
                 container.passed = false
                 container.readPropertyReport.result = new Result(35, "Received response is not valid, " + JSON.stringify(errorsProp))
             } else {
-                self.log("* Received response is valid for Property: " + propertyName)
+                self.log("Received response is valid for Property: " + propertyName)
                 container.readPropertyReport.passed = true
                 container.readPropertyReport.result = new Result(200)
             }
             // Read functionality test was passed.
-            self.log("* Read functionality test of Property " + propertyName + " is successful: first get property is schema valid")
+            self.log("Read functionality test of Property " + propertyName + " is successful: first get property is schema valid")
             return
         }
 
@@ -561,7 +562,7 @@ export class Tester {
          * are written into container. Throws an error if an error occurred in node-wot level.
          */
         async function testWriteProperty(): Promise<void> {
-            self.log("* Testing the write functionality for Property: " + propertyName)
+            self.log("Testing the write functionality for Property: " + propertyName)
             container.writePropertyReport = new MiniTestReport(false)
             // Querying the generated payload to write.
             const [result, toSend] = await self.getGeneratedTestData(container, Utils.SchemaType.Property)
@@ -572,13 +573,13 @@ export class Tester {
             }
 
             // Trying to write the property.
-            self.log("* Writing to property " + propertyName + " with data: " + JSON.stringify(toSend, null, " "))
+            self.log("Writing to property " + propertyName + " with data: " + JSON.stringify(toSend, null, " "))
             let sendTimeStamp = new Date()
             try {
                 await self.tut.writeProperty(propertyName, toSend)
             } catch (error) {
                 // Error when trying to write the property.
-                self.log("* Couldn't set the Property: " + propertyName)
+                self.log("Couldn't set the Property: " + propertyName)
                 container.passed = false
                 container.writePropertyReport.passed = false
                 container.writePropertyReport.result = new Result(32, "Problem setting property" + error)
@@ -587,7 +588,7 @@ export class Tester {
             container.writePropertyReport.sent = new Payload(sendTimeStamp, toSend)
             if (!isReadable) {
                 // If property is not readable no further checks are possible, thus the test is passed.
-                self.log("* Property test of " + propertyName + " is successful: no read")
+                self.log("Property test of " + propertyName + " is successful: no read")
                 container.writePropertyReport.passed = true
                 container.writePropertyReport.result = new Result(200)
                 return
@@ -597,7 +598,7 @@ export class Tester {
                 var res2: any = await self.tut.readProperty(propertyName)
             } catch (error) {
                 // Error in the node-wot level.
-                self.log("* Error when fetching Property " + propertyName + " for the second time: \n  " + error)
+                self.log("Error when fetching Property " + propertyName + " for the second time: \n  " + error)
                 container.passed = false
                 container.writePropertyReport.passed = false
                 container.writePropertyReport.result = new Result(31, "Could not fetch property in the second get" + error)
@@ -606,30 +607,30 @@ export class Tester {
 
             let responseTimeStamp = new Date()
             let data2: JSON = res2
-            self.log("* Data after second read property for " + propertyName + ": " + JSON.stringify(data2, null, " "))
+            self.log("Data after second read property for " + propertyName + ": " + JSON.stringify(data2, null, " "))
             // Checking if the read value validates against the property schema (this shouldn't be necessary since the first time was
             // correct but it is here nonetheless).
-            let errorsProp2: Array<any> = Utils.validateResponse(propertyName, data2, self.testConfig.SchemaLocation, "Property")
+            let errorsProp2: Array<any> = Utils.validateResponse(propertyName, data2, self.testConfig.SchemaLocation, Utils.SchemaType.Property)
             if (errorsProp2) {
-                self.log("* Received second response is not valid for Property: " + propertyName + errorsProp2)
+                self.log("Received second response is not valid for Property: " + propertyName + errorsProp2)
                 container.passed = false
                 container.writePropertyReport.received = new Payload(responseTimeStamp, data2)
                 container.writePropertyReport.result = new Result(45, "Received second response is not valid, " + JSON.stringify(errorsProp2))
                 return
             }
             // Checking if the read value is identical to the written one.
-            self.log("* Received second response is valid for Property: " + propertyName)
+            self.log("Received second response is valid for Property: " + propertyName)
             container.writePropertyReport.passed = true
             if (JSON.stringify(data2) == JSON.stringify(toSend)) {
                 // Values are identical, thus the test is passed.
-                self.log("* Write functionality test of Property " + propertyName + " is successful: write works and second get property successful")
-                self.log("* The return value of the second get property (after writing) did match the write for Property: " + propertyName)
+                self.log("Write functionality test of Property " + propertyName + " is successful: write works and second get property successful")
+                self.log("The return value of the second get property (after writing) did match the write for Property: " + propertyName)
                 container.writePropertyReport.received = new Payload(responseTimeStamp, data2)
                 container.writePropertyReport.result = new Result(200)
                 return
             }
             // If the values are not identical but can change really fast thus the test is also passed.
-            self.log("* Write functionality test of Property " + propertyName + " is successful: write works, fetch not matching")
+            self.log("Write functionality test of Property " + propertyName + " is successful: write works, fetch not matching")
             container.writePropertyReport.received = new Payload(responseTimeStamp, data2)
             container.writePropertyReport.result = new Result(100, "The return value of the second get property (after writing) did not match the write")
             return
@@ -666,16 +667,16 @@ export class Tester {
     ) {
         let interaction = Utils.getInteractionByName(this.tutTd, interactionType, interactionName)
         if (this.logMode && listeningType == Utils.ListeningType.Asynchronous) console.log("interaction pattern of " + interactionType + ":", interaction)
-        this.log("* ..................... Testing " + interactionType + ": " + interactionName + ".................")
+        this.log("..................... Testing " + interactionType + ": " + interactionName + ".................")
         try {
             if (interactionType == Utils.InteractionType.Property) await this.testProperty(testCycle, testScenario, interactionName, interaction, listeningType)
             else if (interactionType == Utils.InteractionType.Action) await this.testAction(testCycle, testScenario, interactionName, interaction)
             else if (interactionType == Utils.InteractionType.Event) await this.testEvent(testCycle, testScenario, interactionName, interaction, listeningType)
         } catch (error) {
-            this.log("* Error when testing " + interactionType + " " + interactionName + " (see previous messages).")
+            this.log("Error when testing " + interactionType + " " + interactionName + " (see previous messages).")
             throw error
         }
-        this.log("* ..................... End Testing " + interactionType + ": " + interactionName + ".................")
+        this.log("..................... End Testing " + interactionType + ": " + interactionName + ".................")
         return
     }
 
@@ -697,7 +698,7 @@ export class Tester {
         if (!propertyWithObserveList.length && !eventList.length) {
             return false
         }
-        this.log("* ---------------------- Start of Second Test Phase: Synchronous Listening ---------------------------")
+        this.log("---------------------- Start of Second Test Phase: Synchronous Listening ---------------------------")
         this.testReport.addTestCycle()
         this.testReport.addTestScenario()
         try {
@@ -713,10 +714,10 @@ export class Tester {
             await Promise.all(interactionList)
         } catch (error) {
             console.log(error)
-            this.log("* ------------------------- Error in second Test Phase -----------------------------------")
+            this.log("------------------------- Error in second Test Phase -----------------------------------")
             return true
         }
-        this.log("* ------------------------- Second Test Phase finished without an error. -----------------------------------")
+        this.log("------------------------- Second Test Phase finished without an error. -----------------------------------")
         return true
     }
 
@@ -750,7 +751,7 @@ export class Tester {
             await this.testAllInteractionsOfTypeSequentially(testCycle, testScenario, Utils.InteractionType.Action)
             await this.testAllInteractionsOfTypeSequentially(testCycle, testScenario, Utils.InteractionType.Event)
         } catch (error) {
-            self.log("* Error in Test Scenario " + testScenario + " (see previous messages):\n  " + error.stack)
+            self.log("Error in Test Scenario " + testScenario + " (see previous messages):\n  " + error.stack)
             throw error
         }
         return
@@ -778,11 +779,11 @@ export class Tester {
             })
             promise
                 .then(() => {
-                    self.log("* Test Cycle " + cycleNumber + " has finished without an error.")
+                    self.log("Test Cycle " + cycleNumber + " has finished without an error.")
                     resolve()
                 })
                 .catch(() => {
-                    self.log("* Error in Test Cycle " + cycleNumber + " (see previous messages).")
+                    self.log("Error in Test Cycle " + cycleNumber + " (see previous messages).")
                     reject()
                 })
         })
@@ -809,18 +810,18 @@ export class Tester {
             let promise = Promise.resolve()
             reps.forEach((repNb) => {
                 promise = promise.then(() => {
-                    self.log("* Cycle " + repNb + ", testing all scenarios")
+                    self.log("Cycle " + repNb + ", testing all scenarios")
                     self.testReport.addTestCycle()
                     return self.testCycle(repNb, scenarioNumber)
                 })
             })
             promise
                 .then(() => {
-                    self.log("* First Test Phase has finished without an error.")
+                    self.log("First Test Phase has finished without an error.")
                     resolve(self.testReport)
                 })
                 .catch(() => {
-                    self.log("* Testing the Thing has finished with an error (see previous messages).")
+                    self.log("Testing the Thing has finished with an error (see previous messages).")
                     reject()
                 })
         })

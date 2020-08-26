@@ -58,7 +58,7 @@ srv.start().then((WoT) => {
             testBenchStatus: {
                 type: "string",
                 writeOnly: false,
-                readOnly: false,
+                readOnly: true,
                 description: "(not finished) Shows the status of the test bench whether it is currently testing a device or not",
             },
             thingUnderTestTD: {
@@ -78,7 +78,7 @@ srv.start().then((WoT) => {
             testReport: {
                 type: "string",
                 writeOnly: false,
-                readOnly: false,
+                readOnly: true,
                 description: "Contains all of the outputs of the testing. Not necessary for fastTest",
             },
         },
@@ -99,7 +99,7 @@ srv.start().then((WoT) => {
                 output: {
                     type: "string",
                 },
-                description: "By invoking this action, the test bench consumes the thing under test, generates data to be sent. Not necessary for fastTest",
+                description: "By invoking this action, the test bench consumes the thing under test, generates the data to be sent. Not necessary for fastTest",
             },
             testThing: {
                 input: {
@@ -108,7 +108,7 @@ srv.start().then((WoT) => {
                 output: {
                     type: "boolean",
                 },
-                description: "By invoking this action the testing starts and produces a test report that can be read. Not necessary for fastTest",
+                description: "By invoking this action, the testing starts and produces a test report that can be read. Not necessary for fastTest",
             },
         },
     })
