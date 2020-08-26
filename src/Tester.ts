@@ -257,15 +257,19 @@ export class Tester {
             }
             // Stop handling if sent TD does not have "data".
             if (testMode == Utils.InteractionType.Event && !interaction.hasOwnProperty("data")) {
-                // receivedData === undefined if event was emitted without payload.
+                // receivedData === undefined if event was emitted without payload. This is correct as long as event has no "data" property.
                 if (receivedData === undefined) {
                     self.log("Received empty event with no data expected due to the missing data property for this event in the TD.")
                     let result = new Result(200, "Received empty event with no data expected due to the missing data property for this event in the TD.")
                     container.eventDataReport.received.push(new EventData(receivedTimeStamp, null, result))
                     return
                 }
-                self.log("Received event data with no data property for this event in the TD.")
-                let result = new Result(99, "Received data despite no data expected due to the missing data property for this event in the TD.")
+                // Received unexpected event data (no "data" property for this event in the TD).
+                self.log("Received unexpected (no data property for this event in the TD) event data: " + JSON.parse(JSON.stringify(receivedData, null, " ")))
+                let result = new Result(
+                    99,
+                    "Received unexpected (no data property for this event in the TD) event data: " + JSON.parse(JSON.stringify(receivedData, null, " "))
+                )
                 container.passed = false
                 container.eventDataReport.passed = false
                 container.eventDataReport.received.push(new EventData(receivedTimeStamp, JSON.parse(JSON.stringify(receivedData, null, " ")), result))
