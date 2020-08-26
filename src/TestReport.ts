@@ -22,37 +22,9 @@ export class Payload {
     timestamp: Date
     payload: JSON
 
-    constructor(timestamp: Date, payload: JSON) {
+    constructor(timestamp: Date, payload: JSON = null) {
         this.timestamp = timestamp
         this.payload = payload
-    }
-}
-
-/**
- * A micro test report only containing a passed boolean, a timestamp defining when the interaction was started, a payload object defining
- * defining the received payload and a result object.
- */
-export class MicroTestReport {
-    passed: boolean
-    sendTimestamp: Date
-    received: Payload
-    result: Result
-
-    constructor() {
-        this.passed = false
-        this.sendTimestamp = null
-        this.received = null
-        this.result = null
-    }
-
-    /**
-     * Creates a new object to ensure correct format when printing/storing the container.
-     * @return A correctly formatted object containing the needed data.
-     */
-    getPrintableMessage() {
-        if (this.sendTimestamp == null) delete this.sendTimestamp
-        if (this.received == null) delete this.received
-        return this
     }
 }
 
@@ -70,6 +42,15 @@ export class MiniTestReport {
         this.sent = null
         this.received = null
         this.result = null
+    }
+
+    getPrintableOnlyOut() {
+        let outTestReport = {}
+        outTestReport["passed"] = this.passed
+        if (this.sent != null) outTestReport["sendTimestamp"] = this.sent.timestamp
+        if (this.received != null) outTestReport["received"] = this.received
+        outTestReport["result"] = this.result
+        return outTestReport
     }
 }
 
@@ -118,7 +99,7 @@ export class ActionTestReportContainer extends InteractionTestReportContainer {
  * An PropertyTestReportContainer containing the results of a property test.
  */
 export class PropertyTestReportContainer extends InteractionTestReportContainer {
-    readPropertyReport: MicroTestReport
+    readPropertyReport: MiniTestReport
     writePropertyReport: MiniTestReport
     observePropertyReport: EventTestReportContainer
 
@@ -135,14 +116,14 @@ export class PropertyTestReportContainer extends InteractionTestReportContainer 
         delete this.testScenario
 
         let toReturn = { name: this.name, passed: this.passed }
-        if (this.readPropertyReport != null) toReturn["readPropertyReport"] = this.readPropertyReport.getPrintableMessage()
+        if (this.readPropertyReport != null) toReturn["readPropertyReport"] = this.readPropertyReport.getPrintableOnlyOut()
         if (this.writePropertyReport != null) toReturn["writePropertyReport"] = this.writePropertyReport
         if (this.observePropertyReport != null) {
             let observePropertyReport = {
                 passed: this.observePropertyReport.passed,
-                subscriptionReport: this.observePropertyReport.subscriptionReport.getPrintableMessage(),
+                subscriptionReport: this.observePropertyReport.subscriptionReport.getPrintableOnlyOut(),
                 observedDataReport: this.observePropertyReport.eventDataReport.getPrintableMessage(),
-                cancellationReport: this.observePropertyReport.cancellationReport.getPrintableMessage(),
+                cancellationReport: this.observePropertyReport.cancellationReport.getPrintableOnlyOut(),
             }
             toReturn["observePropertyReport"] = observePropertyReport
         }
@@ -192,15 +173,15 @@ class EventDataReport {
  * An EventTestReportContainer containing the results of an event test.
  */
 export class EventTestReportContainer extends InteractionTestReportContainer {
-    subscriptionReport: MicroTestReport
+    subscriptionReport: MiniTestReport
     eventDataReport: EventDataReport
-    cancellationReport: MicroTestReport
+    cancellationReport: MiniTestReport
 
     constructor(testCycle: number, testScenario: number, name: string) {
         super(testCycle, testScenario, name)
-        this.subscriptionReport = new MicroTestReport()
+        this.subscriptionReport = new MiniTestReport(false)
         this.eventDataReport = new EventDataReport()
-        this.cancellationReport = new MicroTestReport()
+        this.cancellationReport = new MiniTestReport(false)
     }
 
     /**
@@ -211,9 +192,9 @@ export class EventTestReportContainer extends InteractionTestReportContainer {
         return {
             name: this.name,
             passed: this.passed,
-            subscriptionReport: this.subscriptionReport.getPrintableMessage(),
+            subscriptionReport: this.subscriptionReport.getPrintableOnlyOut(),
             eventDataReport: this.eventDataReport.getPrintableMessage(),
-            cancellationReport: this.cancellationReport.getPrintableMessage(),
+            cancellationReport: this.cancellationReport.getPrintableOnlyOut(),
         }
     }
 }

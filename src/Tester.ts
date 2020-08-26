@@ -19,7 +19,6 @@ import {
     Payload,
     EventTestReportContainer,
     EventData,
-    MicroTestReport,
 } from "./TestReport"
 
 export class Tester {
@@ -206,7 +205,7 @@ export class Tester {
                 return SubscriptionStatus.Successful
             }
 
-            container.subscriptionReport.sendTimestamp = new Date()
+            container.subscriptionReport.sent = new Payload(new Date())
             // Trying to Subscribe to the Event. subscriptionStatus is set accordingly.
             subscriptionStatus = await Promise.race([subscribeEvent(), timeout()])
             switch (subscriptionStatus) {
@@ -358,7 +357,7 @@ export class Tester {
                     }
                     // Successfully unsubscribed/unobserved.
                     self.log("Successfully cancelled subscription from " + interactionSpecifier)
-                    container.cancellationReport.sendTimestamp = sendTimeStamp
+                    container.cancellationReport.sent = new Payload(sendTimeStamp)
                     container.cancellationReport.passed = true
                     container.cancellationReport.result = new Result(200)
                     break
@@ -524,8 +523,8 @@ export class Tester {
         async function testReadProperty(): Promise<void> {
             let data: JSON
             self.log("Testing the read functionality for Property: " + propertyName)
-            container.readPropertyReport = new MicroTestReport()
-            container.readPropertyReport.sendTimestamp = new Date()
+            container.readPropertyReport = new MiniTestReport(false)
+            container.readPropertyReport.sent = new Payload(new Date())
             // Trying to read the property.
             try {
                 var res: any = await self.tut.readProperty(propertyName)
