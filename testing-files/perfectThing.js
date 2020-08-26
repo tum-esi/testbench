@@ -10,7 +10,7 @@ srv.addServer(new CoapServer(coapSrvObj))
 
 srv.start().then((WoT) => {
     console.log("* started servient")
-    let thing = WoT.produce({
+    WoT.produce({
         title: "TestServient",
         description: "Test servient that can be used as a servient to be tested with the WoT Test Bench",
         properties: {
@@ -100,6 +100,9 @@ srv.start().then((WoT) => {
             onChange: {
                 type: "number",
             },
+            onChangeTimeout: {
+                type: "number",
+            },
         },
         id: "urn:uuid:3999c3d8-1b55-4c05-bc63-c91f0981cf36",
     })
@@ -167,6 +170,11 @@ srv.start().then((WoT) => {
                     return input
                 })
             })
+
+            setInterval(myEventCallback, 400)
+            function myEventCallback() {
+                thing.emitEvent("onChange", 42)
+            }
 
             thing.expose().then(() => {
                 console.info(thing.title + " ready")
