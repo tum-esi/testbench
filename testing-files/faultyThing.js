@@ -16,7 +16,7 @@ srv.start().then((WoT) => {
         properties: {
             display: {
                 type: "string",
-                observable: false,
+                observable: true,
             },
             counter: {
                 type: "number",
