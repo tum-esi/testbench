@@ -4,7 +4,7 @@
     "properties": {
         "display": {
             "type": "string",
-            "observable": true,
+            "observable": false,
             "readOnly": false,
             "writeOnly": false,
             "forms": [
@@ -53,6 +53,8 @@
         },
         "temperature": {
             "type": "number",
+            "minimum": 0.0,
+            "maximum": 100.0,
             "writable": false,
             "observable": true,
             "readOnly": false,
@@ -79,7 +81,7 @@
         "wrongWritable": {
             "description": "property that says writable but isn't",
             "type": "number",
-            "observable": true,
+            "observable": false,
             "readOnly": false,
             "writeOnly": false,
             "forms": [
@@ -105,7 +107,7 @@
             "description": "property that returns a different data type than the one described",
             "type": "number",
             "readOnly": true,
-            "observable": true,
+            "observable": false,
             "writeOnly": false,
             "forms": [
                 {

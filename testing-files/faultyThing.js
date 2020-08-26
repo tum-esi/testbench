@@ -16,7 +16,7 @@ srv.start().then((WoT) => {
         properties: {
             display: {
                 type: "string",
-                observable: true,
+                observable: false,
             },
             counter: {
                 type: "number",
@@ -25,19 +25,21 @@ srv.start().then((WoT) => {
             },
             temperature: {
                 type: "number",
+                minimum: 0.0,
+                maximum: 100.0,
                 writable: false,
                 observable: true,
             },
             wrongWritable: {
                 description: "property that says writable but isn't",
                 type: "number",
-                observable: true,
+                observable: false,
             },
             wrongDataTypeNumber: {
                 description: "property that returns a different data type than the one described",
                 type: "number",
                 readOnly: true,
-                observable: true,
+                observable: false,
             },
             wrongDataTypeObject: {
                 description: "property that doesn't return a key that is required",
@@ -125,14 +127,10 @@ srv.start().then((WoT) => {
             thing.writeProperty("display", "initialization string")
             thing.writeProperty("wrongWritable", 15)
 
-            // thing.setPropertyWriteHandler("wrongWritable", () => {
-            //     return new Promise((resolve, reject) => {
-            //         console.log("Writing the old value")
-            //         thing.writeProperty("wrongWritable", 15)
-            //         resolve(15)
-            //     })
-            //     // return thing.properties["wrongWritable"].write(15).then(() => 15, () => false);
-            // })
+            thing.setPropertyWriteHandler("wrongWritable", async () => {
+                console.log("Writing the old value.")
+                return 15
+            })
 
             thing.writeProperty("wrongDataTypeNumber", "this is not a number")
             thing.writeProperty("wrongDataTypeObject", {
@@ -172,7 +170,7 @@ srv.start().then((WoT) => {
             thing.setActionHandler("setTestObject", (input) => {
                 console.log("* ACTION HANDLER FUNCTION for setTestObject")
                 console.log("* ", input)
-                return thing.writeProperty("testObject", input).then(
+                return thing.writeProperty("wrongDataTypeObject", input).then(
                     () => input,
                     () => false
                 )
@@ -186,10 +184,19 @@ srv.start().then((WoT) => {
                 return promise1
             })
 
-            setInterval(myEventCallback, 400)
-            function myEventCallback() {
+            setInterval(() => {
                 thing.emitEvent("failEvent", "not a number so test fails")
-            }
+            }, 400)
+
+            setInterval(() => {
+                thing.writeProperty("counter", true)
+                thing.writeProperty("temperature", 300)
+                setTimeout(async () => {
+                    await thing.writeProperty("counter", "not a number")
+                    await thing.writeProperty("temperature", -400)
+                    return
+                }, 400)
+            }, 800)
 
             thing.expose().then(() => {
                 console.info(thing.title + " ready")
