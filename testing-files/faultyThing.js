@@ -168,7 +168,7 @@ srv.start().then((WoT) => {
             thing.setActionHandler("setTestObject", (input) => {
                 console.log("* ACTION HANDLER FUNCTION for setTestObject")
                 console.log("* ", input)
-                return thing.properties["testObject"].write(input).then(
+                return thing.writeProperty("testObject", input).then(
                     () => input,
                     () => false
                 )
