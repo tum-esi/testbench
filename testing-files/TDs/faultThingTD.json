@@ -1,42 +1,28 @@
 {
-    "name": "TestServient",
+    "title": "TestServient",
     "description": "Test servient that can be used as a servient to be tested with the WoT Test Bench",
-    "@context": "http://www.w3.org/ns/td",
-    "@type": "Thing",
-    "security": [
-        {
-            "scheme": "nosec"
-        }
-    ],
     "properties": {
         "display": {
             "type": "string",
-            "writable": true,
             "observable": true,
+            "readOnly": false,
+            "writeOnly": false,
             "forms": [
                 {
-                    "href": "http://192.168.178.144:8081/TestServient/properties/display",
-                    "mediaType": "application/json"
+                    "href": "http://localhost:8083/TestServient/properties/display",
+                    "contentType": "application/json",
+                    "op": ["readproperty", "writeproperty"]
                 },
                 {
-                    "href": "http://[2a02:8106:216:5400::df75]:8081/TestServient/properties/display",
-                    "mediaType": "application/json"
+                    "href": "http://localhost:8083/TestServient/properties/display/observable",
+                    "contentType": "application/json",
+                    "op": ["observeproperty", "unobserveproperty"],
+                    "subprotocol": "longpoll"
                 },
                 {
-                    "href": "http://[2a02:8106:216:5400:502e:119a:294a:31b6]:8081/TestServient/properties/display",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://192.168.178.5:8081/TestServient/properties/display",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400::8de4]:8081/TestServient/properties/display",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400:abf8:b9c8:4232:35d9]:8081/TestServient/properties/display",
-                    "mediaType": "application/json"
+                    "href": "coap://localhost:8084/TestServient/properties/display",
+                    "contentType": "application/json",
+                    "op": ["readproperty", "writeproperty"]
                 }
             ]
         },
@@ -44,30 +30,24 @@
             "type": "number",
             "writable": true,
             "observable": true,
+            "readOnly": false,
+            "writeOnly": false,
             "forms": [
                 {
-                    "href": "http://192.168.178.144:8081/TestServient/properties/counter",
-                    "mediaType": "application/json"
+                    "href": "http://localhost:8083/TestServient/properties/counter",
+                    "contentType": "application/json",
+                    "op": ["readproperty", "writeproperty"]
                 },
                 {
-                    "href": "http://[2a02:8106:216:5400::df75]:8081/TestServient/properties/counter",
-                    "mediaType": "application/json"
+                    "href": "http://localhost:8083/TestServient/properties/counter/observable",
+                    "contentType": "application/json",
+                    "op": ["observeproperty", "unobserveproperty"],
+                    "subprotocol": "longpoll"
                 },
                 {
-                    "href": "http://[2a02:8106:216:5400:502e:119a:294a:31b6]:8081/TestServient/properties/counter",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://192.168.178.5:8081/TestServient/properties/counter",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400::8de4]:8081/TestServient/properties/counter",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400:abf8:b9c8:4232:35d9]:8081/TestServient/properties/counter",
-                    "mediaType": "application/json"
+                    "href": "coap://localhost:8084/TestServient/properties/counter",
+                    "contentType": "application/json",
+                    "op": ["readproperty", "writeproperty"]
                 }
             ]
         },
@@ -75,34 +55,80 @@
             "type": "number",
             "writable": false,
             "observable": true,
+            "readOnly": false,
+            "writeOnly": false,
             "forms": [
                 {
-                    "href": "http://192.168.178.144:8081/TestServient/properties/temperature",
-                    "mediaType": "application/json"
+                    "href": "http://localhost:8083/TestServient/properties/temperature",
+                    "contentType": "application/json",
+                    "op": ["readproperty", "writeproperty"]
                 },
                 {
-                    "href": "http://[2a02:8106:216:5400::df75]:8081/TestServient/properties/temperature",
-                    "mediaType": "application/json"
+                    "href": "http://localhost:8083/TestServient/properties/temperature/observable",
+                    "contentType": "application/json",
+                    "op": ["observeproperty", "unobserveproperty"],
+                    "subprotocol": "longpoll"
                 },
                 {
-                    "href": "http://[2a02:8106:216:5400:502e:119a:294a:31b6]:8081/TestServient/properties/temperature",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://192.168.178.5:8081/TestServient/properties/temperature",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400::8de4]:8081/TestServient/properties/temperature",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400:abf8:b9c8:4232:35d9]:8081/TestServient/properties/temperature",
-                    "mediaType": "application/json"
+                    "href": "coap://localhost:8084/TestServient/properties/temperature",
+                    "contentType": "application/json",
+                    "op": ["readproperty", "writeproperty"]
                 }
             ]
         },
-        "testObject": {
+        "wrongWritable": {
+            "description": "property that says writable but isn't",
+            "type": "number",
+            "observable": true,
+            "readOnly": false,
+            "writeOnly": false,
+            "forms": [
+                {
+                    "href": "http://localhost:8083/TestServient/properties/wrongWritable",
+                    "contentType": "application/json",
+                    "op": ["readproperty", "writeproperty"]
+                },
+                {
+                    "href": "http://localhost:8083/TestServient/properties/wrongWritable/observable",
+                    "contentType": "application/json",
+                    "op": ["observeproperty", "unobserveproperty"],
+                    "subprotocol": "longpoll"
+                },
+                {
+                    "href": "coap://localhost:8084/TestServient/properties/wrongWritable",
+                    "contentType": "application/json",
+                    "op": ["readproperty", "writeproperty"]
+                }
+            ]
+        },
+        "wrongDataTypeNumber": {
+            "description": "property that returns a different data type than the one described",
+            "type": "number",
+            "readOnly": true,
+            "observable": true,
+            "writeOnly": false,
+            "forms": [
+                {
+                    "href": "http://localhost:8083/TestServient/properties/wrongDataTypeNumber",
+                    "contentType": "application/json",
+                    "op": ["readproperty"],
+                    "htv:methodName": "GET"
+                },
+                {
+                    "href": "http://localhost:8083/TestServient/properties/wrongDataTypeNumber/observable",
+                    "contentType": "application/json",
+                    "op": ["observeproperty", "unobserveproperty"],
+                    "subprotocol": "longpoll"
+                },
+                {
+                    "href": "coap://localhost:8084/TestServient/properties/wrongDataTypeNumber",
+                    "contentType": "application/json",
+                    "op": ["readproperty"]
+                }
+            ]
+        },
+        "wrongDataTypeObject": {
+            "description": "property that doesn't return a key that is required",
             "type": "object",
             "properties": {
                 "brightness": {
@@ -114,32 +140,20 @@
                     "type": "string"
                 }
             },
-            "writable": true,
+            "required": ["brightness", "status"],
+            "readOnly": false,
+            "writeOnly": false,
             "observable": false,
             "forms": [
                 {
-                    "href": "http://192.168.178.144:8081/TestServient/properties/testObject",
-                    "mediaType": "application/json"
+                    "href": "http://localhost:8083/TestServient/properties/wrongDataTypeObject",
+                    "contentType": "application/json",
+                    "op": ["readproperty", "writeproperty"]
                 },
                 {
-                    "href": "http://[2a02:8106:216:5400::df75]:8081/TestServient/properties/testObject",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400:502e:119a:294a:31b6]:8081/TestServient/properties/testObject",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://192.168.178.5:8081/TestServient/properties/testObject",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400::8de4]:8081/TestServient/properties/testObject",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400:abf8:b9c8:4232:35d9]:8081/TestServient/properties/testObject",
-                    "mediaType": "application/json"
+                    "href": "coap://localhost:8084/TestServient/properties/wrongDataTypeObject",
+                    "contentType": "application/json",
+                    "op": ["readproperty", "writeproperty"]
                 }
             ]
         },
@@ -148,32 +162,19 @@
             "items": {
                 "type": "number"
             },
-            "writable": true,
+            "readOnly": false,
+            "writeOnly": false,
             "observable": false,
             "forms": [
                 {
-                    "href": "http://192.168.178.144:8081/TestServient/properties/testArray",
-                    "mediaType": "application/json"
+                    "href": "http://localhost:8083/TestServient/properties/testArray",
+                    "contentType": "application/json",
+                    "op": ["readproperty", "writeproperty"]
                 },
                 {
-                    "href": "http://[2a02:8106:216:5400::df75]:8081/TestServient/properties/testArray",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400:502e:119a:294a:31b6]:8081/TestServient/properties/testArray",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://192.168.178.5:8081/TestServient/properties/testArray",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400::8de4]:8081/TestServient/properties/testArray",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400:abf8:b9c8:4232:35d9]:8081/TestServient/properties/testArray",
-                    "mediaType": "application/json"
+                    "href": "coap://localhost:8084/TestServient/properties/testArray",
+                    "contentType": "application/json",
+                    "op": ["readproperty", "writeproperty"]
                 }
             ]
         }
@@ -185,30 +186,19 @@
             },
             "forms": [
                 {
-                    "href": "http://192.168.178.144:8081/TestServient/actions/setCounter",
-                    "mediaType": "application/json"
+                    "href": "http://localhost:8083/TestServient/actions/setCounter",
+                    "contentType": "application/json",
+                    "op": ["invokeaction"],
+                    "htv:methodName": "POST"
                 },
                 {
-                    "href": "http://[2a02:8106:216:5400::df75]:8081/TestServient/actions/setCounter",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400:502e:119a:294a:31b6]:8081/TestServient/actions/setCounter",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://192.168.178.5:8081/TestServient/actions/setCounter",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400::8de4]:8081/TestServient/actions/setCounter",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400:abf8:b9c8:4232:35d9]:8081/TestServient/actions/setCounter",
-                    "mediaType": "application/json"
+                    "href": "coap://localhost:8084/TestServient/actions/setCounter",
+                    "contentType": "application/json",
+                    "op": "invokeaction"
                 }
-            ]
+            ],
+            "idempotent": false,
+            "safe": false
         },
         "getTemperature": {
             "output": {
@@ -216,30 +206,19 @@
             },
             "forms": [
                 {
-                    "href": "http://192.168.178.144:8081/TestServient/actions/getTemperature",
-                    "mediaType": "application/json"
+                    "href": "http://localhost:8083/TestServient/actions/getTemperature",
+                    "contentType": "application/json",
+                    "op": ["invokeaction"],
+                    "htv:methodName": "POST"
                 },
                 {
-                    "href": "http://[2a02:8106:216:5400::df75]:8081/TestServient/actions/getTemperature",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400:502e:119a:294a:31b6]:8081/TestServient/actions/getTemperature",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://192.168.178.5:8081/TestServient/actions/getTemperature",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400::8de4]:8081/TestServient/actions/getTemperature",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400:abf8:b9c8:4232:35d9]:8081/TestServient/actions/getTemperature",
-                    "mediaType": "application/json"
+                    "href": "coap://localhost:8084/TestServient/actions/getTemperature",
+                    "contentType": "application/json",
+                    "op": "invokeaction"
                 }
-            ]
+            ],
+            "idempotent": false,
+            "safe": false
         },
         "setDisplay": {
             "input": {
@@ -250,30 +229,19 @@
             },
             "forms": [
                 {
-                    "href": "http://192.168.178.144:8081/TestServient/actions/setDisplay",
-                    "mediaType": "application/json"
+                    "href": "http://localhost:8083/TestServient/actions/setDisplay",
+                    "contentType": "application/json",
+                    "op": ["invokeaction"],
+                    "htv:methodName": "POST"
                 },
                 {
-                    "href": "http://[2a02:8106:216:5400::df75]:8081/TestServient/actions/setDisplay",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400:502e:119a:294a:31b6]:8081/TestServient/actions/setDisplay",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://192.168.178.5:8081/TestServient/actions/setDisplay",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400::8de4]:8081/TestServient/actions/setDisplay",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400:abf8:b9c8:4232:35d9]:8081/TestServient/actions/setDisplay",
-                    "mediaType": "application/json"
+                    "href": "coap://localhost:8084/TestServient/actions/setDisplay",
+                    "contentType": "application/json",
+                    "op": "invokeaction"
                 }
-            ]
+            ],
+            "idempotent": false,
+            "safe": false
         },
         "setTestObject": {
             "input": {
@@ -291,32 +259,22 @@
             },
             "forms": [
                 {
-                    "href": "http://192.168.178.144:8081/TestServient/actions/setTestObject",
-                    "mediaType": "application/json"
+                    "href": "http://localhost:8083/TestServient/actions/setTestObject",
+                    "contentType": "application/json",
+                    "op": ["invokeaction"],
+                    "htv:methodName": "POST"
                 },
                 {
-                    "href": "http://[2a02:8106:216:5400::df75]:8081/TestServient/actions/setTestObject",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400:502e:119a:294a:31b6]:8081/TestServient/actions/setTestObject",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://192.168.178.5:8081/TestServient/actions/setTestObject",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400::8de4]:8081/TestServient/actions/setTestObject",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400:abf8:b9c8:4232:35d9]:8081/TestServient/actions/setTestObject",
-                    "mediaType": "application/json"
+                    "href": "coap://localhost:8084/TestServient/actions/setTestObject",
+                    "contentType": "application/json",
+                    "op": "invokeaction"
                 }
-            ]
+            ],
+            "idempotent": false,
+            "safe": false
         },
-        "setTestArray": {
+        "longTakingAction": {
+            "description": "Action that can fail because of taking longer than usual (5s)",
             "input": {
                 "type": "array",
                 "items": {
@@ -331,69 +289,53 @@
             },
             "forms": [
                 {
-                    "href": "http://192.168.178.144:8081/TestServient/actions/setTestArray",
-                    "mediaType": "application/json"
+                    "href": "http://localhost:8083/TestServient/actions/longTakingAction",
+                    "contentType": "application/json",
+                    "op": ["invokeaction"],
+                    "htv:methodName": "POST"
                 },
                 {
-                    "href": "http://[2a02:8106:216:5400::df75]:8081/TestServient/actions/setTestArray",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400:502e:119a:294a:31b6]:8081/TestServient/actions/setTestArray",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://192.168.178.5:8081/TestServient/actions/setTestArray",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400::8de4]:8081/TestServient/actions/setTestArray",
-                    "mediaType": "application/json"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400:abf8:b9c8:4232:35d9]:8081/TestServient/actions/setTestArray",
-                    "mediaType": "application/json"
+                    "href": "coap://localhost:8084/TestServient/actions/longTakingAction",
+                    "contentType": "application/json",
+                    "op": "invokeaction"
                 }
-            ]
+            ],
+            "idempotent": false,
+            "safe": false
         }
     },
     "events": {
-        "onChange": {
+        "failEvent": {
             "type": "number",
             "forms": [
                 {
-                    "href": "http://192.168.178.144:8081/TestServient/events/onChange",
-                    "mediaType": "application/json",
-                    "subProtocol": "LongPoll"
+                    "href": "http://localhost:8083/TestServient/events/failEvent",
+                    "contentType": "application/json",
+                    "subprotocol": "longpoll",
+                    "op": ["subscribeevent", "unsubscribeevent"]
                 },
                 {
-                    "href": "http://[2a02:8106:216:5400::df75]:8081/TestServient/events/onChange",
-                    "mediaType": "application/json",
-                    "subProtocol": "LongPoll"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400:502e:119a:294a:31b6]:8081/TestServient/events/onChange",
-                    "mediaType": "application/json",
-                    "subProtocol": "LongPoll"
-                },
-                {
-                    "href": "http://192.168.178.5:8081/TestServient/events/onChange",
-                    "mediaType": "application/json",
-                    "subProtocol": "LongPoll"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400::8de4]:8081/TestServient/events/onChange",
-                    "mediaType": "application/json",
-                    "subProtocol": "LongPoll"
-                },
-                {
-                    "href": "http://[2a02:8106:216:5400:abf8:b9c8:4232:35d9]:8081/TestServient/events/onChange",
-                    "mediaType": "application/json",
-                    "subProtocol": "LongPoll"
+                    "href": "coap://localhost:8084/TestServient/events/failEvent",
+                    "contentType": "application/json",
+                    "op": ["subscribeevent", "unsubscribeevent"]
                 }
             ]
         }
     },
-    "links": [],
-    "id": "urn:uuid:560290c8-6490-4a58-99ca-eea9bc8c25d2"
+    "id": "urn:uuid:560290c8-6490-4a58-99ca-eea9bc8c25d2",
+    "@context": "https://www.w3.org/2019/wot/td/v1",
+    "@type": "Thing",
+    "security": ["nosec_sc"],
+    "forms": [
+        {
+            "href": "http://localhost:8083/TestServient/all/properties",
+            "contentType": "application/json",
+            "op": ["readallproperties", "readmultipleproperties", "writeallproperties", "writemultipleproperties"]
+        }
+    ],
+    "securityDefinitions": {
+        "nosec_sc": {
+            "scheme": "nosec"
+        }
+    }
 }
