@@ -140,19 +140,11 @@ srv.start().then((WoT) => {
             })
             thing.writeProperty("testArray", [12, 15, 10])
 
-            thing.setActionHandler("setCounter", (input) => {
+            thing.setActionHandler("setCounter", async (input) => {
                 console.log("* ACTION HANDLER FUNCTION for setCounter")
                 console.log("* ", input)
-                thing
-                    .writeProperty("counter", input)
-                    .then(() => {
-                        console.log("* Set counter successful")
-                        return
-                    })
-                    .catch(() => {
-                        console.log("* Set counter failed")
-                        return
-                    })
+                thing.writeProperty("counter", input)
+                return "not the expected return value"
             })
 
             thing.setActionHandler("getTemperature", () => {

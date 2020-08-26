@@ -380,7 +380,9 @@ describe("Action: fastTest", function () {
                     },
                     events: {
                         onChange: {
-                            type: "number",
+                            data: {
+                                type: "number",
+                            },
                             forms: [
                                 {
                                     href: "http://localhost:8081/TestServient/events/onChange",
@@ -396,7 +398,9 @@ describe("Action: fastTest", function () {
                             ],
                         },
                         onChangeTimeout: {
-                            type: "number",
+                            data: {
+                                type: "number",
+                            },
                             forms: [
                                 {
                                     href: "http://localhost:8081/TestServient/events/onChangeTimeout",

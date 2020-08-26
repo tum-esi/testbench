@@ -99,7 +99,7 @@ export class Tester {
         // Validating the request against a schema. Validator returns an array that describes the error. This array is empty when there is no error.
         // Necessary because the requests are user written and can contain errors.
         if (toSend != null || schemaType != Utils.SchemaType.Action) {
-            let errors: Array<any> = Utils.validateRequest(container.name, toSend, this.testConfig.SchemaLocation, schemaType)
+            const errors: Array<any> = Utils.validateRequest(container.name, toSend, this.testConfig.SchemaLocation, schemaType)
             if (errors) {
                 //meaning that there is a validation error
                 this.log("Created " + schemaType + " payload for " + container.name + " is not valid: Created Payload: " + toSend + "Errors: " + errors)
@@ -120,7 +120,7 @@ export class Tester {
      * @param listeningType The Listening Type (Either Synchronously or Asynchronously).
      */
     public async testEvent(testCycle: number, testScenario: number, eventName: string, interaction: any, listeningType: Utils.ListeningType): Promise<boolean> {
-        var container: EventTestReportContainer = new EventTestReportContainer(testCycle, testScenario, eventName)
+        const container: EventTestReportContainer = new EventTestReportContainer(testCycle, testScenario, eventName)
         await this.testObserveOrEvent(container, interaction, Utils.InteractionType.Event, listeningType)
         let messageAddition = "not "
         if (container.passed == true) {
@@ -154,12 +154,12 @@ export class Tester {
         if (listeningType == Utils.ListeningType.Asynchronous) eventConfig = self.testConfig.EventAndObservePOptions.Asynchronous
         else eventConfig = self.testConfig.EventAndObservePOptions.Synchronous
         var indexOfEventData: number = -1
-        var earlyListenTimeout = new Utils.DeferredPromise()
+        const earlyListenTimeout = new Utils.DeferredPromise()
 
         // Initialize message strings.
         const interactionName = container.name
         const interactionSpecifier = testMode + " " + interactionName
-        var receivedDataMsg = "Received data for " + testMode + " " + interactionName + " "
+        const receivedDataMsg = "Received data for " + testMode + " " + interactionName + " "
 
         // Run Tests.
         enum SubscriptionStatus {
@@ -245,7 +245,7 @@ export class Tester {
          * @param receivedData The received data package.
          */
         async function handleReceivedData(receivedData: any): Promise<void> {
-            let receivedTimeStamp = new Date()
+            const receivedTimeStamp = new Date()
             ++indexOfEventData
             // Stop recording if maximum number of recorded data packages is reached.
             if (eventConfig.MaxAmountRecvData != null) {
@@ -255,21 +255,22 @@ export class Tester {
                     return
                 }
             }
-            // Stop handling if sent TD does not have "data".
+            // Stop handling if sent TD does not have "data" for event.
             if (testMode == Utils.InteractionType.Event && !interaction.hasOwnProperty("data")) {
                 // receivedData === undefined if event was emitted without payload. This is correct as long as event has no "data" property.
                 if (receivedData === undefined) {
-                    self.log("Received empty event with no data expected due to the missing data property for this event in the TD.")
-                    let result = new Result(200, "Received empty event with no data expected due to the missing data property for this event in the TD.")
-                    container.eventDataReport.received.push(new EventData(receivedTimeStamp, null, result))
+                    self.log("Received as expected empty event with no payload.")
+                    const result = new Result(200, "Received as expected empty event with no payload.")
+                    container.eventDataReport.received.push(new EventData(receivedTimeStamp, receivedData, result))
                     return
                 }
                 // Received unexpected event data (no "data" property for this event in the TD).
-                self.log("Received unexpected (no data property for this event in the TD) event data: " + JSON.parse(JSON.stringify(receivedData, null, " ")))
-                let result = new Result(
-                    99,
-                    "Received unexpected (no data property for this event in the TD) event data: " + JSON.parse(JSON.stringify(receivedData, null, " "))
+                self.log(
+                    interactionSpecifier +
+                        "received unexpected (no data property for this event in the TD) event data: " +
+                        JSON.parse(JSON.stringify(receivedData, null, " "))
                 )
+                const result = new Result(99, "Received unexpected (no data property for this event in the TD) event data.")
                 container.passed = false
                 container.eventDataReport.passed = false
                 container.eventDataReport.received.push(new EventData(receivedTimeStamp, JSON.parse(JSON.stringify(receivedData, null, " ")), result))
@@ -278,12 +279,12 @@ export class Tester {
             self.log(receivedDataMsg + "[index: " + indexOfEventData + "]: " + JSON.stringify(receivedData, null, " "))
             // Checking if data package has JSON format.
             try {
-                let temp: JSON = receivedData
+                const temp: JSON = receivedData
             } catch (jsonError) {
                 self.log(receivedDataMsg + "[index: " + indexOfEventData + "] is not in JSON format")
                 container.passed = false
                 container.eventDataReport.passed = false
-                let result = new Result(15, "Received data [index: " + indexOfEventData + "] is not in JSON format: " + jsonError)
+                const result = new Result(15, "Received data [index: " + indexOfEventData + "] is not in JSON format: " + jsonError)
                 container.eventDataReport.received.push(new EventData(receivedTimeStamp, receivedData, result))
                 return
             }
@@ -296,7 +297,7 @@ export class Tester {
                 self.log(receivedDataMsg + "[index: " + indexOfEventData + "] is not valid.")
                 container.passed = false
                 container.eventDataReport.passed = false
-                let result = new Result(16, "Received data [index: " + indexOfEventData + "] is not valid: " + JSON.stringify(validationError))
+                const result = new Result(16, "Received data [index: " + indexOfEventData + "] is not valid: " + JSON.stringify(validationError))
                 container.eventDataReport.received.push(new EventData(receivedTimeStamp, receivedData, result))
             } else {
                 // Otherwise data package is valid.
@@ -359,7 +360,7 @@ export class Tester {
                     break
                 case SubscriptionStatus.Successful:
                     // Testing cancellation only makes sense if subscription worked.
-                    let sendTimeStamp = new Date()
+                    const sendTimeStamp = new Date()
                     try {
                         // Trying to Unsubscribe/Stop observing from the event/property.
                         if (testMode == Utils.InteractionType.Event) await self.tut.unsubscribeEvent(interactionName)
@@ -407,8 +408,8 @@ export class Tester {
      * @param testScenario The number indicating the testScenario.
      */
     public async testAction(testCycle: number, testScenario: number, actionName: string, interaction: any): Promise<void> {
-        var self = this
-        var container = new ActionTestReportContainer(testCycle, testScenario, actionName)
+        const self = this
+        const container = new ActionTestReportContainer(testCycle, testScenario, actionName)
 
         await testAction()
         self.testReport.addMessage(testCycle, testScenario, container)
@@ -429,7 +430,7 @@ export class Tester {
                 // Try to invoke the action.
                 try {
                     var invokedAction = self.tryToInvokeAction(actionName, toSend)
-                    var res = await invokedAction[1]
+                    var receivedData = await invokedAction[1]
                 } catch (error) {
                     // Error when trying to invoke the action.
                     self.log("Problem when trying to invoke action " + actionName + ":\n  " + error)
@@ -437,22 +438,34 @@ export class Tester {
                     container.report.result = new Result(999, "Invoke Action Error: " + error)
                     return
                 }
-                let responseTimeStamp = new Date()
+                const responseTimeStamp = new Date()
                 container.report.sent = new Payload(invokedAction[0], toSend) //sentTimeStamp, Payload
                 self.log("Invoked action " + actionName + " with data: " + JSON.stringify(toSend, null, " "))
                 if (!interaction.hasOwnProperty("output")) {
-                    // If no answer is needed the test is passed.
-                    self.log(actionName + " is successful without return value")
-                    container.report.result = new Result(201, "no return value needed")
+                    // No data received as expected.
+                    if (receivedData === undefined) {
+                        self.log(actionName + " did as expected not have a return value. Test is successful.")
+                        container.report.result = new Result(201, "The event did as expected not have a return value.")
+                        return
+                    }
+                    // Received data despite not expecting any.
+                    self.log(
+                        actionName +
+                            "received unexpected (action did not have an output property in TD) return value: " +
+                            JSON.parse(JSON.stringify(receivedData, null, " ")) +
+                            '"'
+                    )
+                    container.passed = false
+                    container.report.received = JSON.parse(JSON.stringify(receivedData, null, " "))
+                    container.report.result = new Result(99, "Received unexpected (action did not have an output property in TD) return value.")
                     return
                 }
                 // Testing the invokeAction output.
-                let answer = res
-                container.report.received = new Payload(responseTimeStamp, answer)
-                self.log("Answer is:" + JSON.stringify(answer, null, " "))
+                container.report.received = new Payload(responseTimeStamp, receivedData)
+                self.log("Answer is:" + JSON.stringify(receivedData, null, " "))
                 // Checking if data package has JSON format.
                 try {
-                    let temp: JSON = answer
+                    const temp: JSON = receivedData
                 } catch (error) {
                     self.log("Response is not in JSON format")
                     container.passed = false
@@ -460,7 +473,7 @@ export class Tester {
                     return
                 }
                 // Checking if data package validates against its schema.
-                let errorsRes: Array<any> = Utils.validateResponse(actionName, answer, self.testConfig.SchemaLocation, Utils.SchemaType.Action)
+                const errorsRes: Array<any> = Utils.validateResponse(actionName, receivedData, self.testConfig.SchemaLocation, Utils.SchemaType.Action)
                 if (errorsRes) {
                     self.log("Received response is not valid for: " + actionName)
                     container.passed = false
@@ -499,11 +512,11 @@ export class Tester {
         listeningType: Utils.ListeningType
     ): Promise<void> {
         // Check and log functionalities of the property.
-        var self = this
-        var container = new PropertyTestReportContainer(testCycle, testScenario, propertyName)
-        let isWritable: boolean = !interaction.readOnly
-        let isReadable: boolean = !interaction.writeOnly
-        let isObservable: boolean = interaction.observable
+        const self = this
+        const container = new PropertyTestReportContainer(testCycle, testScenario, propertyName)
+        const isWritable: boolean = !interaction.readOnly
+        const isReadable: boolean = !interaction.writeOnly
+        const isObservable: boolean = interaction.observable
 
         if (isReadable) self.log("Property " + propertyName + " is readable")
         else self.log("Property " + propertyName + " is not readable")
@@ -558,7 +571,7 @@ export class Tester {
             container.readPropertyReport.received = new Payload(responseTimeStamp, res)
             self.log("Data after first read property: " + JSON.stringify(data, null, " "))
             // Checking if data package validates against its schema.
-            let errorsProp: Array<any> = Utils.validateResponse(propertyName, data, self.testConfig.SchemaLocation, Utils.SchemaType.Property)
+            const errorsProp: Array<any> = Utils.validateResponse(propertyName, data, self.testConfig.SchemaLocation, Utils.SchemaType.Property)
             if (errorsProp) {
                 self.log("Received response is not valid for Property: " + propertyName + errorsProp)
                 container.passed = false
@@ -590,7 +603,7 @@ export class Tester {
 
             // Trying to write the property.
             self.log("Writing to property " + propertyName + " with data: " + JSON.stringify(toSend, null, " "))
-            let sendTimeStamp = new Date()
+            const sendTimeStamp = new Date()
             try {
                 await self.tut.writeProperty(propertyName, toSend)
             } catch (error) {
@@ -621,12 +634,12 @@ export class Tester {
                 throw new Error("Problem in the node-wot level.")
             }
 
-            let responseTimeStamp = new Date()
-            let data2: JSON = res2
+            const responseTimeStamp = new Date()
+            const data2: JSON = res2
             self.log("Data after second read property for " + propertyName + ": " + JSON.stringify(data2, null, " "))
             // Checking if the read value validates against the property schema (this shouldn't be necessary since the first time was
             // correct but it is here nonetheless).
-            let errorsProp2: Array<any> = Utils.validateResponse(propertyName, data2, self.testConfig.SchemaLocation, Utils.SchemaType.Property)
+            const errorsProp2: Array<any> = Utils.validateResponse(propertyName, data2, self.testConfig.SchemaLocation, Utils.SchemaType.Property)
             if (errorsProp2) {
                 self.log("Received second response is not valid for Property: " + propertyName + errorsProp2)
                 container.passed = false
@@ -681,7 +694,7 @@ export class Tester {
         interactionType: Utils.InteractionType,
         listeningType: Utils.ListeningType
     ) {
-        let interaction = Utils.getInteractionByName(this.tutTd, interactionType, interactionName)
+        const interaction = Utils.getInteractionByName(this.tutTd, interactionType, interactionName)
         if (this.logMode && listeningType == Utils.ListeningType.Asynchronous) console.log("interaction pattern of " + interactionType + ":", interaction)
         this.log("..................... Testing " + interactionType + ": " + interactionName + ".................")
         try {
@@ -705,13 +718,13 @@ export class Tester {
     async secondTestingPhase(repetitionNumber: number): Promise<boolean> {
         // Nothing to do if second testing phase is disabled.
         if (!this.testConfig.EventAndObservePOptions.Synchronous.isEnabled) return false
-        var propertyWithObserveList: Array<string> = []
+        const propertyWithObserveList: Array<string> = []
         // Check if at least one observable property exists.
         for (let interactionName of this.getAllInteractionOfType(Utils.InteractionType.Property)) {
-            let interaction: any = Utils.getInteractionByName(this.tutTd, Utils.InteractionType.Property, interactionName)
+            const interaction: any = Utils.getInteractionByName(this.tutTd, Utils.InteractionType.Property, interactionName)
             if (interaction.observable) propertyWithObserveList.push(interactionName)
         }
-        var eventList: Array<string> = this.getAllInteractionOfType(Utils.InteractionType.Event)
+        const eventList: Array<string> = this.getAllInteractionOfType(Utils.InteractionType.Event)
         // Nothing to do if no events and no observable properties exist.
         if (!propertyWithObserveList.length && !eventList.length) return false
         this.log("---------------------- Start of Second Test Phase: Synchronous Listening ---------------------------")
@@ -719,11 +732,11 @@ export class Tester {
         this.testReport.addTestScenario()
         try {
             // Generating List of testFunctions to run synchronously.
-            let interactionList: Array<Promise<any>> = []
-            for (let propertyName of propertyWithObserveList) {
+            const interactionList: Array<Promise<any>> = []
+            for (const propertyName of propertyWithObserveList) {
                 interactionList.push(this.testInteraction(repetitionNumber, 0, propertyName, Utils.InteractionType.Property, Utils.ListeningType.Synchronous))
             }
-            for (let eventName of eventList) {
+            for (const eventName of eventList) {
                 interactionList.push(this.testInteraction(repetitionNumber, 0, eventName, Utils.InteractionType.Event, Utils.ListeningType.Synchronous))
             }
             // Awaiting all of those testFunctions.
@@ -745,10 +758,10 @@ export class Tester {
      */
     async testAllInteractionsOfTypeSequentially(testCycle: number, testScenario: number, interactionType: Utils.InteractionType) {
         // Get all interactions for type.
-        let interactionList: Array<string> = this.getAllInteractionOfType(interactionType)
+        const interactionList: Array<string> = this.getAllInteractionOfType(interactionType)
 
         // Test all interaction sequentially
-        for (let interactionName of interactionList) {
+        for (const interactionName of interactionList) {
             await this.testInteraction(testCycle, testScenario, interactionName, interactionType, Utils.ListeningType.Asynchronous)
         }
         return
@@ -761,7 +774,7 @@ export class Tester {
      * @param testScenario The number indicating the testScenario.
      */
     public async testScenario(testCycle: number, testScenario: number): Promise<any> {
-        var self = this
+        const self = this
         try {
             await this.testAllInteractionsOfTypeSequentially(testCycle, testScenario, Utils.InteractionType.Property)
             await this.testAllInteractionsOfTypeSequentially(testCycle, testScenario, Utils.InteractionType.Action)
@@ -779,9 +792,9 @@ export class Tester {
      * @param scenarioNumber The number of scenarios to be run in this testCycle.
      */
     public testCycle(cycleNumber: number, scenarioNumber: number): Promise<any> {
-        var self = this
-        let maxScenario: number = scenarioNumber
-        let scenarios: Array<number> = []
+        const self = this
+        const maxScenario: number = scenarioNumber
+        const scenarios: Array<number> = []
         for (var i = 0; i < maxScenario; i++) {
             scenarios[i] = i
         }
@@ -817,8 +830,8 @@ export class Tester {
      */
     public testThing(repetition: number, scenarioNumber: number, logMode: boolean): Promise<TestReport> {
         this.logMode = logMode
-        var self = this
-        let reps: Array<number> = []
+        const self = this
+        const reps: Array<number> = []
         for (var i = 0; i < repetition; i++) {
             reps[i] = i
         }

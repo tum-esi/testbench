@@ -98,10 +98,14 @@ srv.start().then((WoT) => {
         },
         events: {
             onChange: {
-                type: "number",
+                data: {
+                    type: "number",
+                },
             },
             onChangeTimeout: {
-                type: "number",
+                data: {
+                    type: "number",
+                },
             },
         },
         id: "urn:uuid:3999c3d8-1b55-4c05-bc63-c91f0981cf36",
@@ -157,10 +161,7 @@ srv.start().then((WoT) => {
             thing.setActionHandler("setTestObject", (input) => {
                 console.log("* ACTION HANDLER FUNCTION for setTestObject")
                 console.log("* ", input)
-                return thing.writeProperty("testObject", input).then(
-                    () => input,
-                    () => false
-                )
+                return thing.writeProperty("testObject", input)
             })
 
             thing.setActionHandler("setTestArray", (input) => {
