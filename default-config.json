@@ -20,6 +20,7 @@
             "MsSubscribeTimeout": 400
         },
         "Synchronous": {
+            "isEnabled": true,
             "MaxAmountRecvData": 5,
             "MsListen": 5000,
             "MsSubscribeTimeout": 1000

@@ -31,7 +31,7 @@ export interface testConfig {
     Scenarios?: number
     Repetitions?: number
     EventAndObservePOptions: {
-        Synchronous: {
+        Asynchronous: {
             // How many Data Packages the testbench will be receiving. Set to null for unlimited amount.
             MaxAmountRecvData: number
             // MilliSeconds the testbench stays subscribed/observes and Event/Property during second Phase (if data package cap is not hit before).
@@ -39,7 +39,9 @@ export interface testConfig {
             // MilliSeconds until the testbench times out during subscription.
             MsSubscribeTimeout: number
         }
-        Asynchronous: {
+        Synchronous: {
+            // If false the testbench will skip the second (synchronous) listening phase.
+            isEnabled: boolean
             // How many Data Packages the testbench will be receiving. Set to null for unlimited amount.
             MaxAmountRecvData: number
             // MilliSeconds the testbench stays subscribed/observes and Event/Property during second Phase (if data package cap is not hit before).

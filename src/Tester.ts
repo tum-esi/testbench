@@ -15,9 +15,6 @@ import {
     ActionTestReportContainer,
     PropertyTestReportContainer,
     MiniTestReport,
-
-
-    
     Result,
     Payload,
     EventTestReportContainer,
@@ -153,8 +150,9 @@ export class Tester {
         var self = this
 
         // Initialize testing parameters.
-        if (listeningType == Utils.ListeningType.Asynchronous) var eventConfig = self.testConfig.EventAndObservePOptions.Asynchronous
-        else var eventConfig = self.testConfig.EventAndObservePOptions.Synchronous
+        var eventConfig: { MaxAmountRecvData: number; MsListen: number; MsSubscribeTimeout: number }
+        if (listeningType == Utils.ListeningType.Asynchronous) eventConfig = self.testConfig.EventAndObservePOptions.Asynchronous
+        else eventConfig = self.testConfig.EventAndObservePOptions.Synchronous
         var indexOfEventData: number = -1
         var earlyListenTimeout = new Utils.DeferredPromise()
 
@@ -689,6 +687,8 @@ export class Tester {
      * testReport object.
      */
     async secondTestingPhase(repetitionNumber: number): Promise<boolean> {
+        // Nothing to do if second testing phase is disabled.
+        if (!this.testConfig.EventAndObservePOptions.Synchronous.isEnabled) return false
         var propertyWithObserveList: Array<string> = []
         // Check if at least one observable property exists.
         for (let interactionName of this.getAllInteractionOfType(Utils.InteractionType.Property)) {
@@ -697,9 +697,7 @@ export class Tester {
         }
         var eventList: Array<string> = this.getAllInteractionOfType(Utils.InteractionType.Event)
         // Nothing to do if no events and no observable properties exist.
-        if (!propertyWithObserveList.length && !eventList.length) {
-            return false
-        }
+        if (!propertyWithObserveList.length && !eventList.length) return false
         this.log("---------------------- Start of Second Test Phase: Synchronous Listening ---------------------------")
         this.testReport.addTestCycle()
         this.testReport.addTestScenario()
