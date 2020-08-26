@@ -18,6 +18,16 @@ srv.start().then((WoT) => {
                 type: "string",
                 observable: true,
             },
+            counter: {
+                type: "number",
+                writable: true,
+                observable: true,
+            },
+            temperature: {
+                type: "number",
+                writable: false,
+                observable: true,
+            },
             wrongWritable: {
                 description: "property that says writable but isn't",
                 type: "number",
@@ -103,7 +113,9 @@ srv.start().then((WoT) => {
         },
         events: {
             failEvent: {
-                type: "number",
+                data: {
+                    type: "number",
+                },
             },
         },
         id: "urn:uuid:560290c8-6490-4a58-99ca-eea9bc8c25d2",
@@ -113,14 +125,14 @@ srv.start().then((WoT) => {
             thing.writeProperty("display", "initialization string")
             thing.writeProperty("wrongWritable", 15)
 
-            thing.setPropertyWriteHandler("wrongWritable", () => {
-                return new Promise(function (resolve, reject) {
-                    console.log("Writing the old value")
-                    thing.writeProperty("wrongWritable", 15)
-                    resolve(15)
-                })
-                // return thing.properties["wrongWritable"].write(15).then(() => 15, () => false);
-            })
+            // thing.setPropertyWriteHandler("wrongWritable", () => {
+            //     return new Promise((resolve, reject) => {
+            //         console.log("Writing the old value")
+            //         thing.writeProperty("wrongWritable", 15)
+            //         resolve(15)
+            //     })
+            //     // return thing.properties["wrongWritable"].write(15).then(() => 15, () => false);
+            // })
 
             thing.writeProperty("wrongDataTypeNumber", "this is not a number")
             thing.writeProperty("wrongDataTypeObject", {
@@ -176,7 +188,7 @@ srv.start().then((WoT) => {
 
             thing.setActionHandler("longTakingAction", (input) => {
                 console.log("* ACTION HANDLER FUNCTION for longTakingAction")
-                var promise1 = new Promise(function (resolve, reject) {
+                var promise1 = new Promise((resolve, reject) => {
                     setTimeout(resolve, 5000, input)
                 })
                 return promise1
@@ -184,7 +196,7 @@ srv.start().then((WoT) => {
 
             setInterval(myEventCallback, 400)
             function myEventCallback() {
-                thing.emitEvent("onChange", "notANumber")
+                thing.emitEvent("failEvent", "not a number so test fails")
             }
 
             thing.expose().then(() => {

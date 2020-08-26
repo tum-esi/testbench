@@ -306,7 +306,9 @@
     },
     "events": {
         "failEvent": {
-            "type": "number",
+            "data": {
+                "type": "number"
+            },
             "forms": [
                 {
                     "href": "http://localhost:8083/TestServient/events/failEvent",
