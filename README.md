@@ -148,6 +148,72 @@ TD Version Used: Princeton Testfest 2019
 
 -   You can use your browser and the GET requests to inspect all properties during the procedure.
 
+## How does the testing work?
+
+-   During the whole testing process every step is logged in the CLI if logMode is enabled. Additionally any sent or received Data is written
+    into the test report together with an analysis of the process.
+-   The testing process consists of four stages:
+
+### Starting Phase
+
+-   The testbench extracts the schemas of the different interactions (properties, actions and events) from the TD provided in the payload
+    of the GET request.
+-   It then generates random requests that match these extracted schemas.
+
+### Main Phase
+
+-   Now every interaction is tested sequentially.
+
+-   Actions
+
+    -   The testbench sends a request matching the input specified in the TD.
+    -   The testbench verifies the actual output against the output specified in the TD.
+
+-   Properties:
+
+    -   The reading functionality is tested by sending the specified request for readProperty to the Thing and verifying the output
+        against output specified in the TD.
+    -   The writing functionality is tested by sending the specified request for writeProperty to the Thing. Afterwards the
+        testbench tries to read the property again and checks if the read matched the write. A non matching read is still counted as
+        a pass, due to the fact that the property could have just changed between the write and read request.
+    -   For observing functionality see Events just with observeProperty and unobserveProperty requests instead of subscribeEvent and
+        unsubscribeEvent requests
+
+-   Events (three stages)
+
+    -   The subscription test
+        -   The testbench sends the specified request for subscribeEvent to the Thing. Node-wot can in some cases not differentiate
+            between an successful subscription and an unsuccessful subscription with the Thing just not emitting an event, so the
+            subscription test has essentially three different outcomes: Successful, Timeout and Failed. Successful describes the case
+            where node-wot confirms a successful subscription, Timeout describes the case where node-wot can not differentiate (see
+            above) and Failed describes the case where node-wot throws an error during subscription (The timeout length can be configured in
+            the testConfig).
+    -   The listening phase
+        -   The testbench listens a specified amount of time for any incoming data for this subscription. Any received data is verified
+            against output specified in the TD.
+        -   The listening phase ends after a configurable amount of time or when a configurable amount of data packages was received
+            (both options can be configured in the testConfig).
+    -   The cancel subscription test (depends on the outcome fot the subscription test)
+        -   If subscription test was successful the testbench sends the specified request for unsubscribeEvent.
+        -   If subscription test was a timeout, the testbench can not know if the subscription was successful so it does not test
+            anything.
+        -   If subscription test was a fail the testbench can obviously not cancel the subscription so it does not test anything.
+
+-   The test request is returned with the current stage of the testReport.
+-   The testReport property is updated with the current stage of the testReport
+
+### Synchronous listening Phase (only if events or observable properties are present; optional)
+
+-   Can be explicitly deactivated in the testConfig.
+-   All Events and observable properties are tested again but this time synchronously.
+-   The timeout length, listening length and the received data package threshold can all be configured independent of the listening phase of
+    the sequential tests in the testConfig.
+
+### Ending Phase
+
+-   The testReport is written to the storage
+-   If the Synchronous listening phase was present the testReport property is updated.
+
 ## To-Do
 
 In the order of priority, the following need to be implemented
