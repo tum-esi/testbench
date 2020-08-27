@@ -162,7 +162,7 @@ TD Version Used: Princeton Testfest 2019
 
 ### Main Phase
 
--   Now every interaction is tested sequentially.
+-   Now every interaction is tested sequentially. This asynchronus testing leeds to a easily readable log.
 
 -   Actions
 
@@ -205,7 +205,8 @@ TD Version Used: Princeton Testfest 2019
 ### Synchronous listening Phase (only if events or observable properties are present; optional)
 
 -   Can be explicitly deactivated in the testConfig.
--   All Events and observable properties are tested again but this time synchronously.
+-   All Events and observable properties are tested again but this time synchronously. This synchronous testing needs significantly less
+    time but results in a pretty hard to read log.
 -   The timeout length, listening length and the received data package threshold can all be configured independent of the listening phase of
     the sequential tests in the testConfig.
 
@@ -214,6 +215,10 @@ TD Version Used: Princeton Testfest 2019
 -   The finished testReport is written to the storage
 -   If the Synchronous listening phase was present the testReport property is updated to the current state.
 -   The testbench is reset to be ready for the next test run.
+
+### TLDR
+
+![TLDR](readme-images/test.svg)
 
 ## To-Do
 
