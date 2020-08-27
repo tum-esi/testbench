@@ -277,7 +277,7 @@ export class TestReport {
      * @param testingPhase the testing phase.
      */
     public printResults(testingPhase: ListeningType): void {
-        LogInGreen("Results of the test with Errors/TotalTests\n")
+        LogInGreen("Results of the test:\n")
         LogInGreen("↓ Test Cycles\t  ")
         for (var testCycle = 0; testCycle <= this.maxTestScenario; testCycle++) {
             LogInGreen("TS" + testCycle + "\t")

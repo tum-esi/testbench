@@ -181,7 +181,7 @@ TD Version Used: Princeton Testfest 2019
 
 -   Events (three stages)
 
-    <img src="readme-images/eventTesting.svg" align="center" height="800">
+    <img src="readme-images/eventTesting.svg" align="center" height="725">
 
     -   The subscription test
         -   The testbench sends the specified request for subscribeEvent to the Thing. Node-wot can in some cases not differentiate

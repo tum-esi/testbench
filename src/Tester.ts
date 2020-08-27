@@ -261,7 +261,7 @@ export class Tester {
                 if (receivedData === undefined) {
                     self.log("Received as expected empty event with no payload.")
                     const result = new Result(200, "Received as expected empty event with no payload.")
-                    container.eventDataReport.received.push(new EventData(receivedTimeStamp, receivedData, result))
+                    container.eventDataReport.received.push(new EventData(receivedTimeStamp, null, result))
                     return
                 }
                 // Received unexpected event data (no "data" property for this event in the TD).
@@ -308,7 +308,13 @@ export class Tester {
                 container.passed = false
                 container.eventDataReport.passed = false
                 const result = new Result(15, "Received data [index: " + indexOfEventData + "] is not in JSON format: " + jsonError)
-                container.eventDataReport.received.push(new EventData(receivedTimeStamp, receivedData, result))
+                container.eventDataReport.received.push(
+                    new EventData(
+                        receivedTimeStamp,
+                        JSON.parse(JSON.stringify("NOT the actual data: The received data was not JSON conformal: " + jsonError)),
+                        result
+                    )
+                )
                 return
             }
             // Checking if data package validates against its schema.
@@ -468,6 +474,7 @@ export class Tester {
                     // No data received as expected.
                     if (receivedData === undefined) {
                         self.log(actionName + " did as expected not have a return value. Test is successful.")
+                        container.report.received = null
                         container.report.result = new Result(201, "The event did as expected not have a return value.")
                         return
                     }
@@ -503,6 +510,7 @@ export class Tester {
                 } catch (error) {
                     self.log("Response is not in JSON format")
                     container.passed = false
+                    container.report.received = JSON.parse(JSON.stringify("NOT the actual data: The received data was not JSON conformal."))
                     container.report.result = new Result(15, "Response is not in JSON format: " + error)
                     return
                 }
