@@ -17,15 +17,20 @@ srv.start().then((WoT) => {
             display: {
                 type: "string",
                 observable: true,
+                readOnly: false,
+                writeOnly: false,
             },
             counter: {
                 type: "number",
-                observable: true,
+                observable: false,
+                readOnly: false,
+                writeOnly: false,
             },
             temperature: {
                 type: "number",
                 readOnly: true,
                 observable: true,
+                writeOnly: false,
             },
             testObject: {
                 type: "object",
@@ -39,6 +44,9 @@ srv.start().then((WoT) => {
                         type: "string",
                     },
                 },
+                readOnly: false,
+                writeOnly: false,
+                observable: false,
             },
             testArray: {
                 type: "array",
@@ -46,6 +54,9 @@ srv.start().then((WoT) => {
                     type: "number",
                 },
             },
+            readOnly: false,
+            writeOnly: false,
+            observable: false,
         },
         actions: {
             setCounter: {
@@ -172,10 +183,19 @@ srv.start().then((WoT) => {
                 })
             })
 
-            setInterval(myEventCallback, 400)
-            function myEventCallback() {
+            // Emit Event each Interval.
+            setInterval(() => {
                 thing.emitEvent("onChange", 42)
-            }
+            }, 400)
+
+            // Alternate property each Interval.
+            setInterval(() => {
+                thing.writeProperty("temperature", -12)
+                setTimeout(async () => {
+                    await thing.writeProperty("temperature", 42)
+                    return
+                }, 400)
+            }, 800)
 
             thing.expose().then(() => {
                 console.info(thing.title + " ready")
