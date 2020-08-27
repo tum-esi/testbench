@@ -265,15 +265,38 @@ export class Tester {
                     return
                 }
                 // Received unexpected event data (no "data" property for this event in the TD).
-                self.log(
-                    interactionSpecifier +
-                        "received unexpected (no data property for this event in the TD) event data: " +
-                        JSON.parse(JSON.stringify(receivedData, null, " "))
-                )
-                const result = new Result(99, "Received unexpected (no data property for this event in the TD) event data.")
                 container.passed = false
                 container.eventDataReport.passed = false
-                container.eventDataReport.received.push(new EventData(receivedTimeStamp, JSON.parse(JSON.stringify(receivedData, null, " ")), result))
+                try {
+                    const temp: JSON = receivedData
+                } catch (error) {
+                    // received data is not JSON
+                    self.log(
+                        receivedDataMsg +
+                            "[index: " +
+                            indexOfEventData +
+                            "]: received unexpected (no data property for this even in the TD), non JSON conformal data."
+                    )
+                    const result = new Result(98, "Received unexpected (no data property for this event in TD), non JSON conformal return value.")
+                    container.eventDataReport.received.push(
+                        new EventData(
+                            receivedTimeStamp,
+                            JSON.parse(JSON.stringify("NOT the actual data: The received data was not JSON conformal: " + error)),
+                            result
+                        )
+                    )
+                    return
+                }
+                self.log(
+                    receivedDataMsg +
+                        "[index: " +
+                        indexOfEventData +
+                        ']: received unexpected (no data property for this event in TD) data: "' +
+                        JSON.stringify(receivedData, null, " ") +
+                        '"'
+                )
+                const result = new Result(99, "Received unexpected (no data property for this event in TD) event data.")
+                container.eventDataReport.received.push(new EventData(receivedTimeStamp, receivedData, result))
                 return
             }
             self.log(receivedDataMsg + "[index: " + indexOfEventData + "]: " + JSON.stringify(receivedData, null, " "))
@@ -449,14 +472,25 @@ export class Tester {
                         return
                     }
                     // Received data despite not expecting any.
+                    container.passed = false
+                    try {
+                        const temp: JSON = receivedData
+                    } catch (error) {
+                        // received data is not JSON
+                        self.log(actionName + "received unexpected (action did not have an output property in TD), non JSON conformal return value.")
+                        container.report.received = JSON.parse(JSON.stringify("NOT the actual data: The received data was not JSON conformal."))
+                        container.report.result = new Result(
+                            98,
+                            "Received unexpected (action did not have an output property in TD), non JSON conformal return value."
+                        )
+                        return
+                    }
                     self.log(
                         actionName +
                             "received unexpected (action did not have an output property in TD) return value: " +
-                            JSON.parse(JSON.stringify(receivedData, null, " ")) +
-                            '"'
+                            JSON.stringify(receivedData, null, " ")
                     )
-                    container.passed = false
-                    container.report.received = JSON.parse(JSON.stringify(receivedData, null, " "))
+                    container.report.received = receivedData
                     container.report.result = new Result(99, "Received unexpected (action did not have an output property in TD) return value.")
                     return
                 }
