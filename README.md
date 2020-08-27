@@ -181,6 +181,8 @@ TD Version Used: Princeton Testfest 2019
 
 -   Events (three stages)
 
+    <img src="readme-images/eventTesting.svg" align="center" height="800">
+
     -   The subscription test
         -   The testbench sends the specified request for subscribeEvent to the Thing. Node-wot can in some cases not differentiate
             between an successful subscription and an unsuccessful subscription with the Thing just not emitting an event, so the
@@ -189,8 +191,9 @@ TD Version Used: Princeton Testfest 2019
             above) and Failed describes the case where node-wot throws an error during subscription (The timeout length can be configured in
             the testConfig).
     -   The listening phase
-        -   The testbench listens a specified amount of time for any incoming data for this subscription. Any received data is verified
-            against output specified in the TD.
+        -   Is only active if the subscription was successful.
+        -   The testbench listens for any incoming data for this subscription. Any received data is verified against output specified
+            in the TD.
         -   The listening phase ends after a configurable amount of time or when a configurable amount of data packages was received
             (both options can be configured in the testConfig).
     -   The cancel subscription test (depends on the outcome fot the subscription test)
