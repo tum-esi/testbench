@@ -286,7 +286,7 @@ export class TestReport {
 
         // Printing the results.
         for (var testCycle = 0; testCycle <= this.testCycleCount; testCycle++) {
-            if (testingPhase == ListeningType.Synchronous && testCycle == this.testCycleCount) LogInGreen("Listening Phase\t\t")
+            if (testingPhase == ListeningType.Synchronous && testCycle == this.testCycleCount) LogInGreen("Listening Phase\t  ")
             else LogInGreen("TC" + testCycle + "\t\t  ")
             for (var testScenario = 0; testScenario <= this.maxTestScenario; testScenario++) {
                 // In the listening Phase only first testScenario exists, thus no further testScenarios can be logged.
@@ -316,7 +316,7 @@ export class TestReport {
                     LogInGreen(fails + "/" + curSceLength + "\t")
                 }
             }
-            if (testCycle != this.testCycleCount) LogInGreen("Fails/Total")
+            if (testingPhase != ListeningType.Synchronous || testCycle != this.testCycleCount) LogInGreen("Fails/Total")
             console.log()
         }
 
