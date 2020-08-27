@@ -199,8 +199,8 @@ TD Version Used: Princeton Testfest 2019
             anything.
         -   If subscription test was a fail the testbench can obviously not cancel the subscription so it does not test anything.
 
--   The test request is returned with the current stage of the testReport.
--   The testReport property is updated with the current stage of the testReport
+-   The test request is returned with the current state of the testReport.
+-   The testReport property is updated with the current state of the testReport
 
 ### Synchronous listening Phase (only if events or observable properties are present; optional)
 
@@ -211,8 +211,9 @@ TD Version Used: Princeton Testfest 2019
 
 ### Ending Phase
 
--   The testReport is written to the storage
--   If the Synchronous listening phase was present the testReport property is updated.
+-   The finished testReport is written to the storage
+-   If the Synchronous listening phase was present the testReport property is updated to the current state.
+-   The testbench is reset to be ready for the next test run.
 
 ## To-Do
 
