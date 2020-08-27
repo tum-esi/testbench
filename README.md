@@ -218,7 +218,7 @@ TD Version Used: Princeton Testfest 2019
 
 ### TLDR
 
-![TLDR](readme-images/test.svg)
+<img src="readme-images/test.svg" align="center" height="400" width="400">
 
 ## To-Do
 
