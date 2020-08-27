@@ -28,8 +28,7 @@
         },
         "counter": {
             "type": "number",
-            "writable": true,
-            "observable": true,
+            "observable": false,
             "readOnly": false,
             "writeOnly": false,
             "forms": [
@@ -53,11 +52,8 @@
         },
         "temperature": {
             "type": "number",
-            "minimum": 0.0,
-            "maximum": 100.0,
-            "writable": false,
-            "observable": true,
-            "readOnly": false,
+            "observable": false,
+            "readOnly": true,
             "writeOnly": false,
             "forms": [
                 {
@@ -73,6 +69,32 @@
                 },
                 {
                     "href": "coap://localhost:8084/TestServient/properties/temperature",
+                    "contentType": "application/json",
+                    "op": ["readproperty", "writeproperty"]
+                }
+            ]
+        },
+        "faultyPercent": {
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 100.0,
+            "observable": true,
+            "readOnly": true,
+            "writeOnly": false,
+            "forms": [
+                {
+                    "href": "http://localhost:8083/TestServient/properties/faultyPercent",
+                    "contentType": "application/json",
+                    "op": ["readproperty", "writeproperty"]
+                },
+                {
+                    "href": "http://localhost:8083/TestServient/properties/faultyPercent/observable",
+                    "contentType": "application/json",
+                    "op": ["observeproperty", "unobserveproperty"],
+                    "subprotocol": "longpoll"
+                },
+                {
+                    "href": "coap://localhost:8084/TestServient/properties/faultyPercent",
                     "contentType": "application/json",
                     "op": ["readproperty", "writeproperty"]
                 }

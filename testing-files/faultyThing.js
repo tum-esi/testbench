@@ -16,34 +16,47 @@ srv.start().then((WoT) => {
         properties: {
             display: {
                 type: "string",
+                readOnly: false,
                 observable: true,
             },
             counter: {
                 type: "number",
-                writable: true,
+                readOnly: false,
                 observable: true,
             },
             temperature: {
                 type: "number",
+                readOnly: true,
+                observable: false,
+            },
+            faultyPercent: {
+                type: "number",
                 minimum: 0.0,
                 maximum: 100.0,
-                writable: false,
                 observable: true,
+                readOnly: true,
+                writeOnly: false,
             },
             wrongWritable: {
                 description: "property that says writable but isn't",
                 type: "number",
                 observable: false,
+                readOnly: false,
+                writeOnly: false,
             },
             wrongDataTypeNumber: {
                 description: "property that returns a different data type than the one described",
                 type: "number",
                 readOnly: true,
                 observable: false,
+                writeOnly: false,
             },
             wrongDataTypeObject: {
                 description: "property that doesn't return a key that is required",
                 type: "object",
+                readOnly: false,
+                writeOnly: false,
+                observable: false,
                 properties: {
                     brightness: {
                         type: "number",
@@ -61,6 +74,9 @@ srv.start().then((WoT) => {
                 items: {
                     type: "number",
                 },
+                readOnly: false,
+                writeOnly: false,
+                observable: false,
             },
         },
         actions: {
@@ -132,6 +148,7 @@ srv.start().then((WoT) => {
                 return 15
             })
 
+            thing.writeProperty("temperature", true)
             thing.writeProperty("wrongDataTypeNumber", "this is not a number")
             thing.writeProperty("wrongDataTypeObject", {
                 brightness: 99.99,
@@ -190,10 +207,10 @@ srv.start().then((WoT) => {
 
             setInterval(() => {
                 thing.writeProperty("counter", true)
-                thing.writeProperty("temperature", 300)
+                thing.writeProperty("faultyPercent", 300)
                 setTimeout(async () => {
                     await thing.writeProperty("counter", "not a number")
-                    await thing.writeProperty("temperature", -400)
+                    await thing.writeProperty("faultyPercent", -400)
                     return
                 }, 400)
             }, 800)
