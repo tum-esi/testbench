@@ -4,7 +4,6 @@ dist/
 Reports/
 Resources/
 .travis.yml
-README.md
 
 # Ignore all HTML files:
 *.html

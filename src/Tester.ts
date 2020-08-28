@@ -10,25 +10,42 @@ After the test a test report can be generated and analyzed to get more meaning o
  */
 import * as wot from "wot-typescript-definitions"
 import * as Utils from "./utilities"
-import { TestReport, ActionTestReportContainer, PropertyTestReportContainer, MiniTestReport, Result, Payload, EventTestReportContainer } from "./TestReport"
-import { testConfig } from "./utilities"
+import {
+    TestReport,
+    ActionTestReportContainer,
+    PropertyTestReportContainer,
+    MiniTestReport,
+    Result,
+    Payload,
+    EventTestReportContainer,
+    EventData,
+} from "./TestReport"
 
 export class Tester {
     private tutTd: wot.ThingDescription //the TD that belongs to the Thing under Test
-    private testConfig: testConfig //the file that describes various locations of the files that are needed. Must be configured by the user
+    private testConfig: Utils.testConfig //the file that describes various locations of the files that are needed. Must be configured by the user
     public codeGen: Utils.CodeGenerator //this will generate the requests to be sent to the tut
     public testReport: TestReport //after the testing, this will contain the bare results
     private tut: wot.ConsumedThing // the thing under test
+    private logMode: boolean // True if logMode is enabled, false otherwise.
 
     /**
      * This is a basic constructor, it is planned to change to incorporate more things into the initiate function.
      * @param tC The testConfig.
      * @param tut The Thing under test.
      */
-    constructor(tC: testConfig, tut: wot.ConsumedThing) {
+    constructor(tC: Utils.testConfig, tut: wot.ConsumedThing) {
         this.testConfig = tC
         this.tutTd = tut.getThingDescription()
         this.tut = tut
+    }
+
+    /**
+     * Logs a message in blue.
+     * @param message The message to log.
+     */
+    private log(message: string, prefix: string = "* ", color: string = "\x1b[36m%s\x1b[0m"): void {
+        if (this.logMode) console.log(color, prefix + message)
     }
 
     /**
@@ -36,49 +53,373 @@ export class Tester {
      * @param logMode True if logMode is enabled, false otherwise.
      */
     public initiate(logMode: boolean): number {
-        if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Initiation has started")
+        this.log("Initiation has started")
+        this.logMode = logMode
         let check = 0
         try {
             check = Utils.generateSchemas(this.tutTd, this.testConfig.SchemaLocation, logMode)
-            if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Finished schema generation.")
+            this.log("Finished schema generation.")
         } catch (Error) {
-            if (logMode) console.log("Schema Generation Error" + Error)
+            this.log("Schema Generation Error" + Error)
         }
         try {
             this.codeGen = new Utils.CodeGenerator(this.tutTd, this.testConfig)
-            if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Finished code generation")
+            this.log("Finished code generation")
         } catch (Error) {
-            if (logMode) console.log("Utils.CodeGenerator Initialization Error" + Error)
+            this.log("Utils.CodeGenerator Initialization Error" + Error)
         }
         //The test report gets initialized and the first cycle and scenarios are added
         //This means that single tests are possible to be seen in the test report
         this.testReport = new TestReport()
-        if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Initialization finished")
+        this.log("Initialization finished")
         return check
     }
 
-    // -----TODO thing of timers to cause event
-    public testEvent(
-        testCycle: number,
-        actionName: string,
-        interaction: any,
-        testScenario: number,
-        interactionIndex: number,
-        logMode: boolean
-    ): Promise<boolean> {
-        // testing event function
-
-        return new Promise(function (resolve, reject) {
-            // implement event testing here:
-            resolve(true)
-        })
+    /**
+     * Returns the generated Test Data. Logs the entire process if logMode is enabled. Returns a Tuple. First Tuple element is a Result object
+     * containing a resultMessage and a resultID in case of failure. Result object is null otherwise. Second Tuple element is the generated Payload.
+     * @param schemaType The SchemaType of the generated TestData to get.
+     * @returns A Tuple. First Tuple element is a Result object containing a resultMessage and a resultID in case of failure. Result
+     * object is null otherwise. Second Tuple element is the generated Payload.
+     */
+    async getGeneratedTestData(
+        container: PropertyTestReportContainer | EventTestReportContainer | ActionTestReportContainer,
+        schemaType: Utils.SchemaType
+    ): Promise<[Result, JSON]> {
+        let toSend: JSON
+        // Generating the message to send.
+        var result = null
+        try {
+            toSend = this.codeGen.findRequestValue(this.testConfig.TestDataLocation, container.testScenario, schemaType, container.name)
+            this.log("Successfully created " + schemaType + " payload for " + container.name + ": " + JSON.stringify(toSend, null, " "))
+        } catch (error) {
+            this.log("Problem while trying to create " + schemaType + " payload for " + container.name + ":\n  " + error)
+            result = new Result(12, "Cannot create payload: " + error)
+        }
+        // Validating the request against a schema. Validator returns an array that describes the error. This array is empty when there is no error.
+        // Necessary because the requests are user written and can contain errors.
+        if (toSend != null || schemaType != Utils.SchemaType.Action) {
+            const errors: Array<any> = Utils.validateRequest(container.name, toSend, this.testConfig.SchemaLocation, schemaType)
+            if (errors) {
+                //meaning that there is a validation error
+                this.log("Created " + schemaType + " payload for " + container.name + " is not valid: Created Payload: " + toSend + "Errors: " + errors)
+                result = new Result(13, "Created payload was invalid: " + JSON.stringify(errors))
+            } else {
+                this.log("Created " + schemaType + " payload for " + container.name + " is valid")
+            }
+        }
+        return [result, toSend]
     }
 
     /**
-     * Invokes the specified action either with or without a payload. The returned Promise times out after 5 Seconds if no
-     * answer is received.
+     * Tests an event. Logs the entire testing process. Adds a message containing the test results to the testReport.
+     * @param testCycle The testCycle of the event to test.
+     * @param testScenario The testScenario of the event to test.
+     * @param eventName The name of the event to test.
+     * @param interaction The interaction Object of the event to test.
+     * @param listeningType The Listening Type (Either Synchronously or Asynchronously).
+     */
+    public async testEvent(testCycle: number, testScenario: number, eventName: string, interaction: any, listeningType: Utils.ListeningType): Promise<boolean> {
+        const container: EventTestReportContainer = new EventTestReportContainer(testCycle, testScenario, eventName)
+        await this.testObserveOrEvent(container, interaction, Utils.InteractionType.Event, listeningType)
+        let messageAddition = "not "
+        if (container.passed == true) {
+            messageAddition = ""
+        }
+        this.log("Test for Event " + eventName + " was " + messageAddition + "passed.")
+        this.testReport.addMessage(testCycle, testScenario, container)
+        return true
+    }
+
+    /**
+     * Tests an Event or observeProperty. At first the the subscription is tested. The subscription has three possible outcomes Timeout, Error
+     * and Successful. If subscription was successful the methods waits a defined timeframe. In this timeframe a provided callback checks
+     * every bit of received Data. Afterwards the unsubscribe operation is tested. A container object is filled with the testResults during
+     * the whole testing process and returned afterwards. Every step is logged if logMode is enabled.
+     * @param container
+     * @param interaction
+     * @param testMode
+     * @param listeningType
+     */
+    private async testObserveOrEvent(
+        container: EventTestReportContainer,
+        interaction: any,
+        testMode: Utils.InteractionType.Event | Utils.InteractionType.Property,
+        listeningType: Utils.ListeningType
+    ): Promise<void> {
+        var self = this
+
+        // Initialize testing parameters.
+        var eventConfig: { MaxAmountRecvData: number; MsListen: number; MsSubscribeTimeout: number }
+        if (listeningType == Utils.ListeningType.Asynchronous) eventConfig = self.testConfig.EventAndObservePOptions.Asynchronous
+        else eventConfig = self.testConfig.EventAndObservePOptions.Synchronous
+        var indexOfEventData: number = -1
+        const earlyListenTimeout = new Utils.DeferredPromise()
+
+        // Initialize message strings.
+        const interactionName = container.name
+        const interactionSpecifier = testMode + " " + interactionName
+        const receivedDataMsg = "Received data for " + testMode + " " + interactionName + " "
+
+        // Run Tests.
+        enum SubscriptionStatus {
+            Timeout,
+            Error,
+            Successful,
+        }
+        var subscriptionStatus: SubscriptionStatus = SubscriptionStatus.Error
+        await testSubscribe()
+        await testUnsubscribe()
+
+        // If no data was received, no checks could be made.
+        if (container.eventDataReport.received.length < 1) {
+            container.eventDataReport.result = new Result(100, "Never received any data, thus no checks could be made.")
+        }
+        return
+
+        /**
+         * Tests the subscribe functionality.
+         */
+        async function testSubscribe(): Promise<boolean> {
+            self.log("Trying to subscribe to " + interactionSpecifier + ".")
+
+            async function timeout(): Promise<SubscriptionStatus> {
+                await Utils.sleepInMs(eventConfig.MsSubscribeTimeout)
+                return SubscriptionStatus.Timeout
+            }
+            var subscriptionError = null
+            async function subscribeEvent(): Promise<SubscriptionStatus> {
+                try {
+                    if (testMode == Utils.InteractionType.Event) {
+                        await self.tut.subscribeEvent(interactionName, (eventData) => {
+                            handleReceivedData(eventData)
+                        })
+                    } else {
+                        await self.tut.observeProperty(interactionName, (eventData) => {
+                            handleReceivedData(eventData)
+                        })
+                    }
+                } catch (error) {
+                    subscriptionError = error
+                    return SubscriptionStatus.Error
+                }
+                return SubscriptionStatus.Successful
+            }
+
+            container.subscriptionReport.sent = new Payload(new Date())
+            // Trying to Subscribe to the Event. subscriptionStatus is set accordingly.
+            subscriptionStatus = await Promise.race([subscribeEvent(), timeout()])
+            switch (subscriptionStatus) {
+                case SubscriptionStatus.Error:
+                    self.log("Problem when trying to subscribe to " + interactionSpecifier + ": " + subscriptionError)
+                    container.passed = false
+                    container.subscriptionReport.passed = false
+                    container.subscriptionReport.result = new Result(10, "Problem when trying to subscribe: " + subscriptionError)
+                    break
+                case SubscriptionStatus.Timeout:
+                    self.log(
+                        "Timed out when trying to subscribe to " +
+                            interactionSpecifier +
+                            ". Due to the design of node-wot this can mean either the subscription was unsuccessful or " +
+                            "the subscription was successful but no data was received."
+                    )
+                    container.passed = true
+                    container.subscriptionReport.passed = true
+                    container.subscriptionReport.result = new Result(
+                        100,
+                        "Timeout when subscribing: Due to the design of node-wot this can mean either the subscription was unsuccessful or it was successful but no data was received."
+                    )
+                    break
+                case SubscriptionStatus.Successful:
+                    self.log("Successfully subscribed to " + interactionSpecifier + ".")
+                    container.subscriptionReport.passed = true
+                    container.subscriptionReport.result = new Result(200)
+                    await Promise.race([Utils.sleepInMs(eventConfig.MsListen), earlyListenTimeout])
+                    break
+            }
+            return
+        }
+
+        /**
+         * Records received data and checks if it is valid.
+         * @param receivedData The received data package.
+         */
+        async function handleReceivedData(receivedData: any): Promise<void> {
+            const receivedTimeStamp = new Date()
+            ++indexOfEventData
+            // Stop recording if maximum number of recorded data packages is reached.
+            if (eventConfig.MaxAmountRecvData != null) {
+                if (indexOfEventData >= eventConfig.MaxAmountRecvData) {
+                    // Stop Listening for Data.
+                    earlyListenTimeout.resolve()
+                    return
+                }
+            }
+            // Stop handling if sent TD does not have "data" for event.
+            if (testMode == Utils.InteractionType.Event && !interaction.hasOwnProperty("data")) {
+                // receivedData === undefined if event was emitted without payload. This is correct as long as event has no "data" property.
+                if (receivedData === undefined) {
+                    self.log("Received as expected empty event with no payload.")
+                    const result = new Result(200, "Received as expected empty event with no payload.")
+                    container.eventDataReport.received.push(new EventData(receivedTimeStamp, null, result))
+                    return
+                }
+                // Received unexpected event data (no "data" property for this event in the TD).
+                container.passed = false
+                container.eventDataReport.passed = false
+                try {
+                    const temp: JSON = receivedData
+                } catch (error) {
+                    // received data is not JSON
+                    self.log(
+                        receivedDataMsg +
+                            "[index: " +
+                            indexOfEventData +
+                            "]: received unexpected (no data property for this even in the TD), non JSON conformal data."
+                    )
+                    const result = new Result(98, "Received unexpected (no data property for this event in TD), non JSON conformal return value.")
+                    container.eventDataReport.received.push(
+                        new EventData(
+                            receivedTimeStamp,
+                            JSON.parse(JSON.stringify("NOT the actual data: The received data was not JSON conformal: " + error)),
+                            result
+                        )
+                    )
+                    return
+                }
+                self.log(
+                    receivedDataMsg +
+                        "[index: " +
+                        indexOfEventData +
+                        ']: received unexpected (no data property for this event in TD) data: "' +
+                        JSON.stringify(receivedData, null, " ") +
+                        '"'
+                )
+                const result = new Result(99, "Received unexpected (no data property for this event in TD) event data.")
+                container.eventDataReport.received.push(new EventData(receivedTimeStamp, receivedData, result))
+                return
+            }
+            self.log(receivedDataMsg + "[index: " + indexOfEventData + "]: " + JSON.stringify(receivedData, null, " "))
+            // Checking if data package has JSON format.
+            try {
+                const temp: JSON = receivedData
+            } catch (jsonError) {
+                self.log(receivedDataMsg + "[index: " + indexOfEventData + "] is not in JSON format")
+                container.passed = false
+                container.eventDataReport.passed = false
+                const result = new Result(15, "Received data [index: " + indexOfEventData + "] is not in JSON format: " + jsonError)
+                container.eventDataReport.received.push(
+                    new EventData(
+                        receivedTimeStamp,
+                        JSON.parse(JSON.stringify("NOT the actual data: The received data was not JSON conformal: " + jsonError)),
+                        result
+                    )
+                )
+                return
+            }
+            // Checking if data package validates against its schema.
+            var validationError: Array<any>
+            if (testMode == Utils.InteractionType.Event)
+                validationError = Utils.validateResponse(interactionName, receivedData, self.testConfig.SchemaLocation, Utils.SchemaType.EventData)
+            else validationError = Utils.validateResponse(interactionName, receivedData, self.testConfig.SchemaLocation, Utils.SchemaType.Property)
+            if (validationError) {
+                self.log(receivedDataMsg + "[index: " + indexOfEventData + "] is not valid.")
+                container.passed = false
+                container.eventDataReport.passed = false
+                const result = new Result(16, "Received data [index: " + indexOfEventData + "] is not valid: " + JSON.stringify(validationError))
+                container.eventDataReport.received.push(new EventData(receivedTimeStamp, receivedData, result))
+            } else {
+                // Otherwise data package is valid.
+                self.log(receivedDataMsg + "[index: " + indexOfEventData + "] is valid.")
+                container.eventDataReport.received.push(new EventData(receivedTimeStamp, receivedData, new Result(200)))
+            }
+        }
+
+        /**
+         * Tests the unsubscribe functionality.
+         */
+        async function testUnsubscribe(): Promise<boolean> {
+            self.log("Trying to unsubscribe from " + interactionSpecifier + ".")
+
+            // Different actions are needed depending on the subscriptionStatus.
+            switch (subscriptionStatus) {
+                case SubscriptionStatus.Error:
+                    // If Subscription failed Cancellation can not work.
+                    self.log(
+                        "Problem when trying to unsubscribe from " +
+                            interactionSpecifier +
+                            ": The testbench was never subscribed due to a subscription error (see previous messages and subscriptionReport)."
+                    )
+                    container.passed = true
+                    container.cancellationReport.passed = true
+                    container.cancellationReport.result = new Result(
+                        100,
+                        "Subscription cancellation test not possible: The testbench was never subscribed to " +
+                            testMode +
+                            " due to a subscription error (see subscriptionReport)."
+                    )
+                    break
+                case SubscriptionStatus.Timeout:
+                    // Due to not knowing if subscription failed or subscription was successful but no events were emitted, this case needs
+                    // his own handling.
+                    self.log(
+                        "Problem when trying to unsubscribe from " +
+                            interactionSpecifier +
+                            ": The testbench was never subscribed or was subscribed but never received any data (see previous messages, subscriptionReport and eventDataReport/observedDataReport)."
+                    )
+                    container.passed = true
+                    container.cancellationReport.passed = true
+                    container.cancellationReport.result = new Result(
+                        100,
+                        "Subscription cancellation test not possible: Timeout during subscription (see subscriptionReport)."
+                    )
+                    try {
+                        // In this case cancelling subscription is necessary because if subscription was successful but subscription
+                        // provider starts emitting only after the subscribeTimeout was reached the testbench would still be subscribed and
+                        // thus receiving the data packages.
+                        self.log(
+                            "The following output of node-wot describes unsubscribing from " +
+                                interactionSpecifier +
+                                " but due to the design of node-wot this output is identical for " +
+                                "unsuccessful subscription and successful subscription with no emitted event."
+                        )
+                        if (testMode == Utils.InteractionType.Event) await self.tut.unsubscribeEvent(interactionName)
+                        else await self.tut.unobserveProperty(interactionName)
+                    } catch {}
+                    break
+                case SubscriptionStatus.Successful:
+                    // Testing cancellation only makes sense if subscription worked.
+                    const sendTimeStamp = new Date()
+                    try {
+                        // Trying to Unsubscribe/Stop observing from the event/property.
+                        if (testMode == Utils.InteractionType.Event) await self.tut.unsubscribeEvent(interactionName)
+                        else await self.tut.unobserveProperty(interactionName)
+                    } catch (error) {
+                        // If unsubscribing/unobserving threw an error.
+                        self.log("Error while canceling subscription from " + interactionSpecifier + ":\n  " + error)
+                        container.passed = false
+                        container.cancellationReport.passed = false
+                        container.cancellationReport.result = new Result(20, "Error while canceling subscription: " + error)
+                        return true
+                    }
+                    // Successfully unsubscribed/unobserved.
+                    self.log("Successfully cancelled subscription from " + interactionSpecifier)
+                    container.cancellationReport.sent = new Payload(sendTimeStamp)
+                    container.cancellationReport.passed = true
+                    container.cancellationReport.result = new Result(200)
+                    break
+            }
+            return
+        }
+    }
+
+    /**
+     * Invokes the specified action either with or without a payload. The returned promise times out after a specified amount of Seconds if
+     * no answer is received.
      * @param actionName: The name of the action to invoke.
      * @param toSend: The payload to send to invoke the action.
+     * @returns A Tuple containing the timestamp when the Action was invoked and the Promise that resolves after successful action invoke or
+     * rejects after timeout.
      */
     private tryToInvokeAction(actionName: string, toSend?: JSON): [Date, Promise<any>] {
         if (toSend != null) {
@@ -88,461 +429,414 @@ export class Tester {
     }
 
     /**
-     * This method test the action given in the parameters.
-     * logMode toggles between outputting every single step and error into the terminal. TRUE outputs to the terminal
-     * testScenario number is related to the json file that contains the requests to be sent. In this file, in the array of interaction names,
-     * you can put different json values that will be sent to the thing
+     * Tests an action. At first the the needed data to invoke the action is queried. Then the action is invoked and the output is validated.
+     * Every step and/or thrown error is documented in the ActionTestReportContainer object and logged if logMode is enabled.
      * @param testCycle The number indicating the testCycle.
      * @param actionName The string indicating the name of the action.
      * @param interaction An interaction object containing further information about the tested interaction.
      * @param testScenario The number indicating the testScenario.
-     * @param interactionIndex The number indicating the interactionNumber.
-     * @param logMode True if logMode is enabled, false otherwise.
      */
-    public testAction(
-        testCycle: number,
-        actionName: string,
-        interaction: any,
-        testScenario: number,
-        interactionIndex: number,
-        logMode: boolean
-    ): Promise<boolean> {
-        var self = this
-        var container = new ActionTestReportContainer(testCycle, testScenario, actionName)
+    public async testAction(testCycle: number, testScenario: number, actionName: string, interaction: any): Promise<void> {
+        const self = this
+        const container = new ActionTestReportContainer(testCycle, testScenario, actionName)
 
-        return new Promise(function (resolve, reject) {
-            testAction().then(() => {
-                self.testReport.addMessage(container)
-                resolve(true)
-            })
-        })
+        await testAction()
+        self.testReport.addMessage(testCycle, testScenario, container)
+        if (container.passed == true) self.log("Test for " + actionName + " was successful.")
+        else self.log("Test for " + actionName + " was not successful.")
+        return
 
-        function testAction(): Promise<boolean> {
-            return new Promise(function (resolve) {
-                let toSend: JSON
-                //generating the message to send
+        async function testAction(): Promise<void> {
+            // Querying the generated payload to write.
+            const [result, toSend] = await self.getGeneratedTestData(container, Utils.SchemaType.Action)
+            if (result != null) {
+                container.report.result = result
+                container.passed = false
+                return
+            }
+            try {
+                self.log("Trying to invoke action " + actionName + " with data:" + JSON.stringify(toSend, null, " "))
+                // Try to invoke the action.
                 try {
-                    toSend = self.codeGen.findRequestValue(self.testConfig.TestDataLocation, testScenario, interactionIndex, actionName)
-                    if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Created value to send :", JSON.stringify(toSend, null, " "))
-                } catch (Error) {
-                    if (logMode)
-                        console.log("\x1b[36m%s\x1b[0m", "* Cannot create for " + actionName + ", look at the previous message to identify the problem")
+                    var invokedAction = self.tryToInvokeAction(actionName, toSend)
+                    var receivedData = await invokedAction[1]
+                } catch (error) {
+                    // Error when trying to invoke the action.
+                    self.log("Problem when trying to invoke action " + actionName + ":\n  " + error)
                     container.passed = false
-                    container.report.result = new Result(12, "Cannot create message: " + Error)
-                    resolve(true)
+                    container.report.result = new Result(999, "Invoke Action Error: " + error)
+                    return
                 }
-                //validating request against a schema. Validator returns an array that describes the error. This array is empty when there is no error
-                //a first thinking would say that it shouldn't be necessary but since the requests are user written, there can be errors there as well.
-                if (toSend != null) {
-                    let errors: Array<any> = Utils.validateRequest(actionName, toSend, self.testConfig.SchemaLocation, "Action")
-                    if (errors) {
-                        //meaning that there is a validation error
-                        if (logMode)
-                            console.log(
-                                "\x1b[36m%s\x1b[0m",
-                                "* Created request is not valid for " + actionName + "\nMessage is " + toSend + "\nError is " + errors
-                            )
-                        container.passed = false
-                        container.report.result = new Result(13, "Created message has bad format: " + JSON.stringify(errors))
-                        resolve(true)
-                    } else {
-                        if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Created request is valid for: " + actionName)
+                const responseTimeStamp = new Date()
+                container.report.sent = new Payload(invokedAction[0], toSend) //sentTimeStamp, Payload
+                self.log("Invoked action " + actionName + " with data: " + JSON.stringify(toSend, null, " "))
+                if (!interaction.hasOwnProperty("output")) {
+                    // No data received as expected.
+                    if (receivedData === undefined) {
+                        self.log(actionName + " did as expected not have a return value. Test is successful.")
+                        container.report.received = null
+                        container.report.result = new Result(201, "The event did as expected not have a return value.")
+                        return
                     }
-                }
-                //invoking the action
-                try {
-                    if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Invoking action " + actionName + " with data:", JSON.stringify(toSend, null, " "))
-                    // Try to invoke the action.
-                    const invokedAction = self.tryToInvokeAction(actionName, toSend)
-                    invokedAction[1]
-                        .then((res: any) => {
-                            let responseTimeStamp = new Date()
-                            container.report.sent = new Payload(invokedAction[0], toSend) //sentTimeStamp, Payload
-                            if (interaction.hasOwnProperty("output")) {
-                                //the action doesn't have to answer something back
-                                let answer = res
-                                container.report.received = new Payload(responseTimeStamp, answer)
-                                if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Answer is:", JSON.stringify(answer, null, " "))
-                                try {
-                                    let temp: JSON = answer
-                                } catch (error) {
-                                    if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Response is not in JSON format")
-                                    container.passed = false
-                                    container.report.result = new Result(15, "Response is not in JSON format: " + error)
-                                    resolve(true)
-                                }
-                                //validating the response against its schema, same as before
-                                let errorsRes: Array<any> = Utils.validateResponse(actionName, answer, self.testConfig.SchemaLocation, "Action")
-                                if (errorsRes) {
-                                    //meaning that there is a validation error
-                                    if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Received response is not valid for: " + actionName)
-                                    container.passed = false
-                                    container.report.result = new Result(16, "Received response is not valid, " + JSON.stringify(errorsRes))
-                                    resolve(true)
-                                } else {
-                                    if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Received response is valid for: " + actionName)
-                                    //if nothing is wrong, putting a good result
-                                    if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* ", actionName + " is successful")
-                                    container.report.result = new Result(100)
-                                    resolve(true)
-                                }
-                            } else {
-                                // in case there is no answer needed it is a successful test as well
-                                if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* ", actionName + " is successful without return value")
-                                container.report.result = new Result(101, "no return value needed")
-                                resolve(true)
-                            }
-                        })
-                        .catch((error) => {
-                            container.passed = false
-                            container.report.result = new Result(999, "Invoke Action Error: " + error)
-                            resolve(true)
-                        })
-                } catch (Error) {
-                    // in case there is a problem with the invoke of the action
-                    if (logMode) console.log("* Response receiving for  " + actionName + "is unsuccessful, continuing with other scenarios")
+                    // Received data despite not expecting any.
                     container.passed = false
-                    container.report.result = new Result(10, "Problem invoking the action" + Error)
-                    resolve(true)
+                    try {
+                        const temp: JSON = receivedData
+                    } catch (error) {
+                        // received data is not JSON
+                        self.log(actionName + "received unexpected (action did not have an output property in TD), non JSON conformal return value.")
+                        container.report.received = JSON.parse(JSON.stringify("NOT the actual data: The received data was not JSON conformal."))
+                        container.report.result = new Result(
+                            98,
+                            "Received unexpected (action did not have an output property in TD), non JSON conformal return value."
+                        )
+                        return
+                    }
+                    self.log(
+                        actionName +
+                            "received unexpected (action did not have an output property in TD) return value: " +
+                            JSON.stringify(receivedData, null, " ")
+                    )
+                    container.report.received = receivedData
+                    container.report.result = new Result(99, "Received unexpected (action did not have an output property in TD) return value.")
+                    return
                 }
-            })
+                // Testing the invokeAction output.
+                container.report.received = new Payload(responseTimeStamp, receivedData)
+                self.log("Answer is:" + JSON.stringify(receivedData, null, " "))
+                // Checking if data package has JSON format.
+                try {
+                    const temp: JSON = receivedData
+                } catch (error) {
+                    self.log("Response is not in JSON format")
+                    container.passed = false
+                    container.report.received = JSON.parse(JSON.stringify("NOT the actual data: The received data was not JSON conformal."))
+                    container.report.result = new Result(15, "Response is not in JSON format: " + error)
+                    return
+                }
+                // Checking if data package validates against its schema.
+                const errorsRes: Array<any> = Utils.validateResponse(actionName, receivedData, self.testConfig.SchemaLocation, Utils.SchemaType.Action)
+                if (errorsRes) {
+                    self.log("Received response is not valid for: " + actionName)
+                    container.passed = false
+                    container.report.result = new Result(16, "Received response is not valid, " + JSON.stringify(errorsRes))
+                    return
+                } else {
+                    // Otherwise output is valid.
+                    self.log("Received response is valid for: " + actionName)
+                    container.report.result = new Result(200)
+                    return
+                }
+            } catch (Error) {
+                // In case there is a problem with the invoke of the action.
+                self.log("Response receiving for  " + actionName + "is unsuccessful, continuing with other scenarios")
+                container.passed = false
+                container.report.result = new Result(10, "Problem invoking the action" + Error)
+                return
+            }
         }
     }
 
     /**
-     * This method tests the property given in the parameters
-     * logMode toggles between outputting every single step and error into the terminal. TRUE outputs to the terminal
-     * testScenario number is related to the json file that contains the requests to be sent. In this file, in the array of interaction names,
-     * you can put different json values that will be sent to the thing
-     * First the property values are fetched from the thing. Then if the property is writable, a value from the requests is written to the property
-     * Then property values are fetched again. Here it is hoped that the value is the same as the written one but if the value changes in between it will
-     * be different. This is recorded as an error but has a specific error case number. This basically tests if the property is really writable
+     * Tests a property. If the property is readable/writeable/observable the functionality is tested in this error. Every step
+     * and/or thrown error is documented in the PropertyTestReportContainer object and logged if logMode is enabled.
      * @param testCycle The number indicating the testCycle.
+     * @param testScenario The number indicating the testScenario.
      * @param propertyName The string indicating the name of the property.
      * @param interaction An interaction object containing further information about the tested interaction.
-     * @param testScenario The number indicating the testScenario.
-     * @param interactionIndex The number indicating the interactionNumber.
-     * @param logMode True if logMode is enabled, false otherwise.
+     * @param listeningType The Listening Type (Either Synchronously or Asynchronously).
      */
-    public testProperty(
+    public async testProperty(
         testCycle: number,
+        testScenario: number,
         propertyName: string,
         interaction: any,
-        testScenario: number,
-        interactionIndex: number,
-        logMode: boolean
-    ): Promise<boolean> {
-        var self = this
-        var container = new PropertyTestReportContainer(testCycle, testScenario, propertyName)
-        let isWritable: boolean = !interaction.readOnly
-        let isReadable: boolean = !interaction.writeOnly
+        listeningType: Utils.ListeningType
+    ): Promise<void> {
+        // Check and log functionalities of the property.
+        const self = this
+        const container = new PropertyTestReportContainer(testCycle, testScenario, propertyName)
+        const isWritable: boolean = !interaction.readOnly
+        const isReadable: boolean = !interaction.writeOnly
+        const isObservable: boolean = interaction.observable
 
-        if (logMode) {
-            if (isReadable) console.log("\x1b[36m%s\x1b[0m", "* Property is readable")
-            if (!isReadable) console.log("\x1b[36m%s\x1b[0m", "* Property is not readable")
-            if (isWritable) console.log("\x1b[36m%s\x1b[0m", "* Property is writable")
-            if (!isWritable) console.log("\x1b[36m%s\x1b[0m", "* Property is not writable")
-        }
+        if (isReadable) self.log("Property " + propertyName + " is readable")
+        else self.log("Property " + propertyName + " is not readable")
+        if (isWritable) self.log("Property " + propertyName + " is writable")
+        else self.log("Property " + propertyName + " is not writable")
+        if (isObservable) self.log("Property " + propertyName + " is observable")
+        else self.log("Property " + propertyName + " is not observable")
 
-        return new Promise(function (resolve, reject) {
-            testReadProperty()
-                .then(() => testWriteProperty())
-                .then(() => {
-                    self.testReport.addMessage(container)
-                    resolve(true)
-                })
-                .catch((curBool) => {
-                    container.passed = false
-                    self.testReport.addMessage(container)
-                    reject(curBool)
-                })
-        })
-
-        /**
-         * Tests the ReadProperty of a property. TestResults are written into container. Returns true if an error on node-wot level occurred.
-         * @return A boolean indicating if an error on node-wot level occurred.
-         */
-        function testReadProperty(): Promise<boolean> {
-            return new Promise(function (resolve, reject) {
-                if (isReadable) {
-                    let data: JSON
-                    if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Testing the read functionality for: ", propertyName)
-                    container.readPropertyReport = new MiniTestReport(false)
-                    self.tut
-                        .readProperty(propertyName)
-                        .then((res: any) => {
-                            let responseTimeStamp = new Date()
-                            data = res
-                            container.readPropertyReport.received = new Payload(responseTimeStamp, res)
-                            if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Data after first read property: ", JSON.stringify(data, null, " "))
-                            //validating the property value with its Schemas
-                            let errorsProp: Array<any> = Utils.validateResponse(propertyName, data, self.testConfig.SchemaLocation, "Property")
-                            if (errorsProp) {
-                                //meaning that there is a validation error
-                                if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Received response is not valid for: " + propertyName, errorsProp)
-                                container.passed = false
-                                container.readPropertyReport.result = new Result(35, "Received response is not valid, " + JSON.stringify(errorsProp))
-                            } else {
-                                if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Received response is valid for: " + propertyName)
-                                container.readPropertyReport.passed = true
-                                container.readPropertyReport.result = new Result(200)
-                            }
-                        })
-                        .then(() => {
-                            if (logMode)
-                                console.log(
-                                    "\x1b[36m%s\x1b[0m",
-                                    "* Read functionality test of " + propertyName + " is successful: first get property is schema valid"
-                                )
-                            resolve(true)
-                        })
-                        .catch((error: any) => {
-                            //problem in the node-wot level
-                            if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Problem fetching first time property: " + propertyName)
-                            console.log("ERROR is: ", error)
-                            container.passed = false
-                            container.readPropertyReport.passed = false
-                            container.readPropertyReport.result = new Result(30, "Could not fetch property")
-                            reject(true)
-                        })
-                } else {
-                    resolve(true)
-                }
-            })
-        }
-
-        /**
-         * Tests the WriteProperty of a property. TestResults are written into container. Returns true if an error on node-wot level occurred.
-         * @return A boolean indicating if an error on node-wot level occurred.
-         */
-        function testWriteProperty(): Promise<boolean> {
-            //if we can write into the property, it means that we can test whether we can write and get back the same type
-            //the same value will be expected but a special error case will be written if it is not the same since maybe the value is changing very fast
-            return new Promise(function (resolve, reject) {
-                if (isWritable) {
-                    let data2: JSON
-                    let toSend: JSON
-                    if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Testing the write functionality for: ", propertyName)
-                    container.writePropertyReport = new MiniTestReport(false)
-                    //generating the message to send
-                    try {
-                        toSend = self.codeGen.findRequestValue(self.testConfig.TestDataLocation, testScenario, interactionIndex, propertyName)
-                        if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Created value to send: ", JSON.stringify(toSend, null, " "))
-                    } catch (Error) {
-                        if (logMode)
-                            console.log(
-                                "\x1b[36m%s\x1b[0m",
-                                "* Cannot create message for " + propertyName + ", look at the previous message to identify the problem"
-                            )
-                        container.passed = false
-                        container.writePropertyReport.result = new Result(40, "Cannot create message: " + Error)
-                        resolve(true)
-                    }
-                    //validating request against a schema, same as the action. Since the requests are written by the user there can be errors
-                    //Pay attention that validateResponse is called because writing to a property is based on its outputData
-                    let errors: Array<any> = Utils.validateResponse(propertyName, toSend, self.testConfig.SchemaLocation, "Property")
-                    if (errors) {
-                        //meaning that there is a validation error
-                        if (logMode)
-                            console.log(
-                                "\x1b[36m%s\x1b[0m",
-                                "* Created request is not valid for " + propertyName + "\nMessage is " + toSend + "\nError is " + errors
-                            )
-                        container.passed = false
-                        container.readPropertyReport.result = new Result(41, "Created message has bad format: " + JSON.stringify(errors))
-                        resolve(true)
-                    } else {
-                        if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Created request is valid for: " + propertyName)
-                    }
-
-                    //setting the property, aka writing into it
-                    if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Writing to property " + propertyName + " with data: ", JSON.stringify(toSend, null, " "))
-                    let sendTimeStamp = new Date()
-                    self.tut
-                        .writeProperty(propertyName, toSend)
-                        .then(() => {
-                            container.writePropertyReport.sent = new Payload(sendTimeStamp, toSend)
-                            if (!isReadable) {
-                                if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Property test of " + propertyName + " is successful: no read")
-                                container.writePropertyReport.passed = true
-                                container.writePropertyReport.result = new Result(200)
-                                resolve(true)
-                            } else {
-                                //now reading and hoping to get the same value
-                                let curPropertyData2: any = self.tut
-                                    .readProperty(propertyName)
-                                    .then((res2: any) => {
-                                        let responseTimeStamp = new Date()
-                                        data2 = res2
-                                        if (logMode) console.log("\x1b[36m%s%s\x1b[0m", "* Data after second read property: ", JSON.stringify(data2, null, " "))
-                                        //validating the gotten value (this shouldn't be necessary since the first time was correct but it is here nonetheless)
-
-                                        let errorsProp2: Array<any> = Utils.validateResponse(propertyName, data2, self.testConfig.SchemaLocation, "Property")
-
-                                        if (errorsProp2) {
-                                            //meaning that there is a validation error
-                                            if (logMode)
-                                                console.log("\x1b[36m%s%s\x1b[0m", "* Received second response is not valid for: " + propertyName, errorsProp2)
-                                            //here for the received, two response values are put
-                                            container.passed = false
-                                            container.writePropertyReport.received = new Payload(responseTimeStamp, data2)
-                                            container.writePropertyReport.result = new Result(
-                                                45,
-                                                "Received second response is not valid, " + JSON.stringify(errorsProp2)
-                                            )
-                                        } else {
-                                            //if there is no validation error we can test if the value we've gotten is the same as the one we wrote
-                                            if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Received second response is valid for: " + propertyName)
-                                            container.writePropertyReport.passed = true
-                                            if (JSON.stringify(data2) == JSON.stringify(toSend)) {
-                                                // wohoo everything is fine
-                                                if (logMode)
-                                                    console.log(
-                                                        "\x1b[36m%s\x1b[0m",
-                                                        "* Write functionality test of " +
-                                                            propertyName +
-                                                            " is successful: write works and second get property successful"
-                                                    )
-                                                if (logMode)
-                                                    console.log(
-                                                        "\x1b[36m%s\x1b[0m",
-                                                        "* The return value of the second get property (after writing) did match the write for: " + propertyName
-                                                    )
-                                                container.writePropertyReport.received = new Payload(responseTimeStamp, data2)
-                                                container.writePropertyReport.result = new Result(201)
-                                            } else {
-                                                //maybe the value changed between two requests...
-                                                if (logMode)
-                                                    console.log(
-                                                        "\x1b[36m%s\x1b[0m",
-                                                        "* Write functionality test of " + propertyName + " is successful: write works, fetch not matching"
-                                                    )
-                                                container.writePropertyReport.received = new Payload(responseTimeStamp, data2)
-                                                container.writePropertyReport.result = new Result(
-                                                    46,
-                                                    "The return value of the second get property (after writing) did not match the write for: " + propertyName
-                                                )
-                                            }
-                                        }
-                                    })
-                                    .then(() => {
-                                        resolve(true)
-                                    })
-                                    .catch((error: any) => {
-                                        //problem in the node-wot level
-                                        if (logMode)
-                                            console.log("\x1b[36m%s\x1b[0m", "* Problem second time fetching property " + propertyName + "in the second get")
-                                        container.passed = false
-                                        container.writePropertyReport.passed = false
-                                        container.writePropertyReport.result = new Result(31, "Could not fetch property in the second get" + error)
-                                        reject(true)
-                                    })
-                            }
-                        })
-                        .catch((error: any) => {
-                            if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Couldn't set the property: " + propertyName)
-                            container.passed = false
-                            container.writePropertyReport.passed = false
-                            container.writePropertyReport.result = new Result(32, "Problem setting property" + Error)
-                            resolve(true)
-                        })
-                } else {
-                    resolve(true)
-                }
-            })
-        }
-    }
-
-    private testInteraction(testCycle: number, testScenario: number, interactionIndex: number, interactionName: string, logMode: boolean): Promise<any> {
-        var self = this
-        return new Promise(function (resolve, reject) {
-            let interaction = Utils.getInteractionByName(self.tutTd, interactionName)
-            console.log("interaction pattern:", interaction[0], "interaction:", interaction[1])
-            if (interaction[0] == "Property") {
-                if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* ..................... Testing Property:", interactionName, ".................")
-                self.testProperty(testCycle, interactionName, interaction[1], testScenario, interactionIndex, logMode)
-                    .then((curBool) => {
-                        if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* ..................... End Testing Property:", interactionName, ".................")
-                        resolve(curBool)
-                    })
-                    .catch((curBool) => {
-                        if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* Error in testing property ", interactionName, ", check previous messages")
-                        reject(curBool)
-                    })
-            } else if (interaction[0] == "Action") {
-                if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* ..................... Testing Action:", interactionName, ".................")
-                self.testAction(testCycle, interactionName, interaction[1], testScenario, interactionIndex, logMode)
-                    .then((curBool) => {
-                        if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* ..................... End Testing Action:", interactionName, ".................")
-                        resolve(curBool)
-                    })
-                    .catch((curBool) => {
-                        if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* Error in testing action ", interactionName, ", check previous messages")
-                        reject(curBool)
-                    })
-            } else if (interaction[0] == "Event") {
-                if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* ..................... Testing Event: ", interactionName, ".................")
-                self.testEvent(testCycle, interactionName, interaction[1], testScenario, interactionIndex, logMode)
-                    .then((curBool) => {
-                        if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* ..................... End Testing Event: ", interactionName, ".................")
-                        resolve(curBool)
-                    })
-                    .catch((curBool) => {
-                        if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* Error in testing event ", interactionName, ", check previous messages")
-                        reject(curBool)
-                    })
-            } else {
-                if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Asked for something other than Action or Property or Event")
-                reject(false)
+        try {
+            // Test each property functionality if it is enabled.
+            if (isReadable) await testReadProperty()
+            if (isWritable) await testWriteProperty()
+            if (isObservable) {
+                container.observePropertyReport = new EventTestReportContainer(testCycle, testScenario, propertyName)
+                await this.testObserveOrEvent(container.observePropertyReport, interaction, Utils.InteractionType.Property, listeningType)
+                if (!container.observePropertyReport.passed) container.passed = false
             }
-        })
+        } catch (error) {
+            container.passed = false
+            self.testReport.addMessage(testCycle, testScenario, container)
+            throw error
+        }
+        self.testReport.addMessage(testCycle, testScenario, container)
+        if (container.passed == true) {
+            self.log("Test for Property " + propertyName + " was successful.")
+        }
+        return
+
+        /**
+         * Tests the read functionality of a property. TestResults are written into container. Throws an error if an error occurred in the
+         * node-wot level.
+         * @returns A boolean indicating if an error on node-wot level occurred.
+         */
+        async function testReadProperty(): Promise<void> {
+            let data: JSON
+            self.log("Testing the read functionality for Property: " + propertyName)
+            container.readPropertyReport = new MiniTestReport(false)
+            container.readPropertyReport.sent = new Payload(new Date())
+            // Trying to read the property.
+            try {
+                var res: any = await self.tut.readProperty(propertyName)
+                var responseTimeStamp = new Date()
+                data = res
+            } catch (error) {
+                // Error in the node-wot level.
+                self.log("Error when fetching Property " + propertyName + " for the first time: \n  " + error)
+                container.passed = false
+                container.readPropertyReport.passed = false
+                container.readPropertyReport.result = new Result(30, "Could not fetch property")
+                throw new Error("Problem in the node-wot level.")
+            }
+            container.readPropertyReport.received = new Payload(responseTimeStamp, res)
+            self.log("Data after first read property: " + JSON.stringify(data, null, " "))
+            // Checking if data package validates against its schema.
+            const errorsProp: Array<any> = Utils.validateResponse(propertyName, data, self.testConfig.SchemaLocation, Utils.SchemaType.Property)
+            if (errorsProp) {
+                self.log("Received response is not valid for Property: " + propertyName + errorsProp)
+                container.passed = false
+                container.readPropertyReport.result = new Result(35, "Received response is not valid, " + JSON.stringify(errorsProp))
+            } else {
+                self.log("Received response is valid for Property: " + propertyName)
+                container.readPropertyReport.passed = true
+                container.readPropertyReport.result = new Result(200)
+            }
+            // Read functionality test was passed.
+            self.log("Read functionality test of Property " + propertyName + " is successful: first get property is schema valid")
+            return
+        }
+
+        /**
+         * Tests the WriteProperty of a property by writing to the property and reading this property immediately afterwards. TestResults
+         * are written into container. Throws an error if an error occurred in node-wot level.
+         */
+        async function testWriteProperty(): Promise<void> {
+            self.log("Testing the write functionality for Property: " + propertyName)
+            container.writePropertyReport = new MiniTestReport(false)
+            // Querying the generated payload to write.
+            const [result, toSend] = await self.getGeneratedTestData(container, Utils.SchemaType.Property)
+            if (result != null) {
+                container.writePropertyReport.result = result
+                container.passed = false
+                return
+            }
+
+            // Trying to write the property.
+            self.log("Writing to property " + propertyName + " with data: " + JSON.stringify(toSend, null, " "))
+            const sendTimeStamp = new Date()
+            try {
+                await self.tut.writeProperty(propertyName, toSend)
+            } catch (error) {
+                // Error when trying to write the property.
+                self.log("Couldn't set the Property: " + propertyName)
+                container.passed = false
+                container.writePropertyReport.passed = false
+                container.writePropertyReport.result = new Result(32, "Problem setting property" + error)
+                return
+            }
+            container.writePropertyReport.sent = new Payload(sendTimeStamp, toSend)
+            if (!isReadable) {
+                // If property is not readable no further checks are possible, thus the test is passed.
+                self.log("Property test of " + propertyName + " is successful: no read")
+                container.writePropertyReport.passed = true
+                container.writePropertyReport.result = new Result(200)
+                return
+            }
+            // Reading the property and checking if written and read value are identical.
+            try {
+                var res2: any = await self.tut.readProperty(propertyName)
+            } catch (error) {
+                // Error in the node-wot level.
+                self.log("Error when fetching Property " + propertyName + " for the second time: \n  " + error)
+                container.passed = false
+                container.writePropertyReport.passed = false
+                container.writePropertyReport.result = new Result(31, "Could not fetch property in the second get" + error)
+                throw new Error("Problem in the node-wot level.")
+            }
+
+            const responseTimeStamp = new Date()
+            const data2: JSON = res2
+            self.log("Data after second read property for " + propertyName + ": " + JSON.stringify(data2, null, " "))
+            // Checking if the read value validates against the property schema (this shouldn't be necessary since the first time was
+            // correct but it is here nonetheless).
+            const errorsProp2: Array<any> = Utils.validateResponse(propertyName, data2, self.testConfig.SchemaLocation, Utils.SchemaType.Property)
+            if (errorsProp2) {
+                self.log("Received second response is not valid for Property: " + propertyName + errorsProp2)
+                container.passed = false
+                container.writePropertyReport.received = new Payload(responseTimeStamp, data2)
+                container.writePropertyReport.result = new Result(45, "Received second response is not valid, " + JSON.stringify(errorsProp2))
+                return
+            }
+            // Checking if the read value is identical to the written one.
+            self.log("Received second response is valid for Property: " + propertyName)
+            container.writePropertyReport.passed = true
+            if (JSON.stringify(data2) == JSON.stringify(toSend)) {
+                // Values are identical, thus the test is passed.
+                self.log("Write functionality test of Property " + propertyName + " is successful: write works and second get property successful")
+                self.log("The return value of the second get property (after writing) did match the write for Property: " + propertyName)
+                container.writePropertyReport.received = new Payload(responseTimeStamp, data2)
+                container.writePropertyReport.result = new Result(200)
+                return
+            }
+            // If the values are not identical but can change really fast thus the test is also passed.
+            self.log("Write functionality test of Property " + propertyName + " is successful: write works, fetch not matching")
+            container.writePropertyReport.received = new Payload(responseTimeStamp, data2)
+            container.writePropertyReport.result = new Result(100, "The return value of the second get property (after writing) did not match the write")
+            return
+        }
     }
 
     /**
-     * This method tests all the messages with the values of one given scenario
-     * Actions and Properties are all tested
-     * The return value needs to be changed and made into a Promise
-     * @param testCycle The number indicating the testCycle.
-     * @param testScenario The number indicating the testScenario.
-     * @param logMode True if logMode is enabled, false otherwise.
+     * Returns a string array of all interactions of the given type. Array is empty if there are no interactions of this type.
+     * @param interactionType The type of the queried interactions.
+     * @returns A string array of the interactions of this type. Array is empty if no interactions of this type exist.
      */
-    public testScenario(testCycle: number, testScenario: number, logMode: boolean): Promise<any> {
-        var self = this
+    getAllInteractionOfType(interactionType: Utils.InteractionType): Array<string> {
         let interactionList: Array<string> = []
-        for (var key in self.tutTd.properties) {
-            interactionList.push(key)
-        }
-        for (var key in self.tutTd.actions) {
-            interactionList.push(key)
-        }
-        for (var key in self.tutTd.events) {
-            interactionList.push(key)
-        }
-
-        return new Promise(function (resolve, reject) {
-            let promise: Promise<any> = Promise.resolve()
-            interactionList.forEach((interactionName, index) => {
-                promise = promise.then(() => {
-                    return self.testInteraction(testCycle, testScenario, index, interactionName, logMode)
-                })
-            })
-            //in the end the return value indicates if at least one interaction failed
-            promise
-                .then(() => {
-                    if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* ------------- Test Scenario nb", testScenario, " has finished -------------")
-                    resolve()
-                })
-                .catch((error: Error) => {
-                    if (logMode) console.log("\x1b[36m%s%s%s%s\x1b[0m", "* Test Scenario nb", testScenario, " has finished with an error:", error)
-                    reject(error)
-                })
-        })
+        if (interactionType == Utils.InteractionType.Property) interactionList = Object.keys(this.tutTd.properties)
+        else if (interactionType == Utils.InteractionType.Action) interactionList = Object.keys(this.tutTd.actions)
+        else if (interactionType == Utils.InteractionType.Event) interactionList = Object.keys(this.tutTd.events)
+        return interactionList
     }
 
-    public testCycle(cycleNumber: number, scenarioNumber: number, logMode: boolean): Promise<any> {
-        var self = this
-        let maxScenario: number = scenarioNumber
-        let scenarios: Array<number> = []
+    /**
+     * Tests an interaction and logs the testing process. Throws an error if the test encounters a fatal error.
+     * @param testCycle The number indicating the testCycle.
+     * @param testScenario The number indicating the testScenario.
+     * @param interactionName The string indicating the name of the interaction.
+     * @param interactionType The type of the interaction.
+     * @param listeningType The Listening Type (Either Synchronously or Asynchronously).
+     */
+    async testInteraction(
+        testCycle: number,
+        testScenario: number,
+        interactionName: string,
+        interactionType: Utils.InteractionType,
+        listeningType: Utils.ListeningType
+    ) {
+        const interaction = Utils.getInteractionByName(this.tutTd, interactionType, interactionName)
+        if (this.logMode && listeningType == Utils.ListeningType.Asynchronous) console.log("interaction pattern of " + interactionType + ":", interaction)
+        this.log("..................... Testing " + interactionType + ": " + interactionName + ".................")
+        try {
+            if (interactionType == Utils.InteractionType.Property) await this.testProperty(testCycle, testScenario, interactionName, interaction, listeningType)
+            else if (interactionType == Utils.InteractionType.Action) await this.testAction(testCycle, testScenario, interactionName, interaction)
+            else if (interactionType == Utils.InteractionType.Event) await this.testEvent(testCycle, testScenario, interactionName, interaction, listeningType)
+        } catch (error) {
+            this.log("Error when testing " + interactionType + " " + interactionName + " (see previous messages).")
+            throw error
+        }
+        this.log("..................... End Testing " + interactionType + ": " + interactionName + ".................")
+        return
+    }
+
+    /**
+     * The second testing phase. Reruns all tests with a listening phase (observable properties and events). This time the testing is
+     * happening synchronously. Returns when all tests resolved or a fatal error occurred.
+     * @param repetitionNumber The number of repetitions in the whole test. Indicates the index of the second test phase report in the
+     * testReport object.
+     */
+    async secondTestingPhase(repetitionNumber: number): Promise<boolean> {
+        // Nothing to do if second testing phase is disabled.
+        if (!this.testConfig.EventAndObservePOptions.Synchronous.isEnabled) return false
+        const propertyWithObserveList: Array<string> = []
+        // Check if at least one observable property exists.
+        for (let interactionName of this.getAllInteractionOfType(Utils.InteractionType.Property)) {
+            const interaction: any = Utils.getInteractionByName(this.tutTd, Utils.InteractionType.Property, interactionName)
+            if (interaction.observable) propertyWithObserveList.push(interactionName)
+        }
+        const eventList: Array<string> = this.getAllInteractionOfType(Utils.InteractionType.Event)
+        // Nothing to do if no events and no observable properties exist.
+        if (!propertyWithObserveList.length && !eventList.length) return false
+        this.log("---------------------- Start of Second Test Phase: Synchronous Listening ---------------------------")
+        this.testReport.addTestCycle()
+        this.testReport.addTestScenario()
+        try {
+            // Generating List of testFunctions to run synchronously.
+            const interactionList: Array<Promise<any>> = []
+            for (const propertyName of propertyWithObserveList) {
+                interactionList.push(this.testInteraction(repetitionNumber, 0, propertyName, Utils.InteractionType.Property, Utils.ListeningType.Synchronous))
+            }
+            for (const eventName of eventList) {
+                interactionList.push(this.testInteraction(repetitionNumber, 0, eventName, Utils.InteractionType.Event, Utils.ListeningType.Synchronous))
+            }
+            // Awaiting all of those testFunctions.
+            await Promise.all(interactionList)
+        } catch (error) {
+            console.log(error)
+            this.log("------------------------- Error in second Test Phase -----------------------------------")
+            return true
+        }
+        this.log("------------------------- Second Test Phase finished without an error. -----------------------------------")
+        return true
+    }
+
+    /**
+     * Tests all interactions of a specified type sequentially.
+     * @param testCycle The number indicating the testCycle.
+     * @param testScenario The number indicating the testScenario.
+     * @param interactionType The type of the interactions.
+     */
+    async testAllInteractionsOfTypeSequentially(testCycle: number, testScenario: number, interactionType: Utils.InteractionType) {
+        // Get all interactions for type.
+        const interactionList: Array<string> = this.getAllInteractionOfType(interactionType)
+
+        // Test all interaction sequentially
+        for (const interactionName of interactionList) {
+            await this.testInteraction(testCycle, testScenario, interactionName, interactionType, Utils.ListeningType.Asynchronous)
+        }
+        return
+    }
+
+    /**
+     * Tests all interactions of this Thing with the for this testingScenario generated data. The report destination for each subTestReport
+     * in the testReport is specified through the testCycle and testScenario parameters.
+     * @param testCycle The number indicating the testCycle.
+     * @param testScenario The number indicating the testScenario.
+     */
+    public async testScenario(testCycle: number, testScenario: number): Promise<any> {
+        const self = this
+        try {
+            await this.testAllInteractionsOfTypeSequentially(testCycle, testScenario, Utils.InteractionType.Property)
+            await this.testAllInteractionsOfTypeSequentially(testCycle, testScenario, Utils.InteractionType.Action)
+            await this.testAllInteractionsOfTypeSequentially(testCycle, testScenario, Utils.InteractionType.Event)
+        } catch (error) {
+            self.log("Error in Test Scenario " + testScenario + " (see previous messages):\n  " + error.stack)
+            throw error
+        }
+        return
+    }
+
+    /**
+     * Runs a single testCycle.
+     * @param cycleNumber The number specifying the testCycle.
+     * @param scenarioNumber The number of scenarios to be run in this testCycle.
+     */
+    public testCycle(cycleNumber: number, scenarioNumber: number): Promise<any> {
+        const self = this
+        const maxScenario: number = scenarioNumber
+        const scenarios: Array<number> = []
         for (var i = 0; i < maxScenario; i++) {
             scenarios[i] = i
         }
@@ -551,16 +845,16 @@ export class Tester {
             scenarios.forEach((scenarioNb) => {
                 promise = promise.then(() => {
                     self.testReport.addTestScenario()
-                    return self.testScenario(cycleNumber, scenarioNb, logMode)
+                    return self.testScenario(cycleNumber, scenarioNb)
                 })
             })
             promise
                 .then(() => {
-                    if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* Test Cycle nb", cycleNumber, " has finished without an error")
+                    self.log("Test Cycle " + cycleNumber + " has finished without an error.")
                     resolve()
                 })
                 .catch(() => {
-                    if (logMode) console.log("\x1b[36m%s%s%s\x1b[0m", "* Test Cycle nb", cycleNumber, " has finished with an error")
+                    self.log("Error in Test Cycle " + cycleNumber + " (see previous messages).")
                     reject()
                 })
         })
@@ -574,11 +868,12 @@ export class Tester {
      * @param repetition The number indicating the repetition.
      * @param testScenario The number indicating the testScenario.
      * @param logMode True if logMode is enabled, false otherwise.
-     * @return The test report that has all the required functions to display the results.
+     * @return The testReport object containing the test results and all functions required to display and store the results.
      */
     public testThing(repetition: number, scenarioNumber: number, logMode: boolean): Promise<TestReport> {
-        var self = this
-        let reps: Array<number> = []
+        this.logMode = logMode
+        const self = this
+        const reps: Array<number> = []
         for (var i = 0; i < repetition; i++) {
             reps[i] = i
         }
@@ -586,18 +881,18 @@ export class Tester {
             let promise = Promise.resolve()
             reps.forEach((repNb) => {
                 promise = promise.then(() => {
-                    if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Cycle " + repNb + ", testing all scenarios")
+                    self.log("Cycle " + repNb + ", testing all scenarios")
                     self.testReport.addTestCycle()
-                    return self.testCycle(repNb, scenarioNumber, logMode)
+                    return self.testCycle(repNb, scenarioNumber)
                 })
             })
             promise
                 .then(() => {
-                    if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Testing the Thing has finished without an error")
+                    self.log("First Test Phase has finished without an error.")
                     resolve(self.testReport)
                 })
                 .catch(() => {
-                    if (logMode) console.log("\x1b[36m%s\x1b[0m", "* Testing the Thing has finished with an error")
+                    self.log("Testing the Thing has finished with an error (see previous messages).")
                     reject()
                 })
         })
