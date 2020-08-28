@@ -38,12 +38,6 @@
                     "op": ["readproperty", "writeproperty"]
                 },
                 {
-                    "href": "http://localhost:8083/TestServient/properties/counter/observable",
-                    "contentType": "application/json",
-                    "op": ["observeproperty", "unobserveproperty"],
-                    "subprotocol": "longpoll"
-                },
-                {
                     "href": "coap://localhost:8084/TestServient/properties/counter",
                     "contentType": "application/json",
                     "op": ["readproperty", "writeproperty"]
@@ -60,12 +54,6 @@
                     "href": "http://localhost:8083/TestServient/properties/temperature",
                     "contentType": "application/json",
                     "op": ["readproperty", "writeproperty"]
-                },
-                {
-                    "href": "http://localhost:8083/TestServient/properties/temperature/observable",
-                    "contentType": "application/json",
-                    "op": ["observeproperty", "unobserveproperty"],
-                    "subprotocol": "longpoll"
                 },
                 {
                     "href": "coap://localhost:8084/TestServient/properties/temperature",
@@ -113,12 +101,6 @@
                     "op": ["readproperty", "writeproperty"]
                 },
                 {
-                    "href": "http://localhost:8083/TestServient/properties/wrongWritable/observable",
-                    "contentType": "application/json",
-                    "op": ["observeproperty", "unobserveproperty"],
-                    "subprotocol": "longpoll"
-                },
-                {
                     "href": "coap://localhost:8084/TestServient/properties/wrongWritable",
                     "contentType": "application/json",
                     "op": ["readproperty", "writeproperty"]
@@ -137,12 +119,6 @@
                     "contentType": "application/json",
                     "op": ["readproperty"],
                     "htv:methodName": "GET"
-                },
-                {
-                    "href": "http://localhost:8083/TestServient/properties/wrongDataTypeNumber/observable",
-                    "contentType": "application/json",
-                    "op": ["observeproperty", "unobserveproperty"],
-                    "subprotocol": "longpoll"
                 },
                 {
                     "href": "coap://localhost:8084/TestServient/properties/wrongDataTypeNumber",
