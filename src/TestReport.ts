@@ -224,15 +224,6 @@ export class TestReport {
     }
 
     /**
-     * Resets the results of a test run.
-     */
-    public resetResults(): void {
-        this.results = []
-        this.testCycleCount = -1
-        this.testScenarioCount = -1
-    }
-
-    /**
      * at each new test cycle this should be called it creates a new empty array that will be later on filled with test scenarios
      */
     public addTestCycle(): void {

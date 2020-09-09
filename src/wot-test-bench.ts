@@ -225,9 +225,6 @@ srv.start()
                     }
                 } catch {
                     logFormatted(":::::ERROR::::: TestThing: Error during second test phase.")
-                } finally {
-                    // Resetting the test results.
-                    testReport.resetResults()
                 }
             }
         })
