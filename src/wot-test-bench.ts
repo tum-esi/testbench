@@ -205,20 +205,28 @@ srv.start()
                 var testReport = await tester.testThing(testConfig.Repetitions, testConfig.Scenarios, logMode)
                 testReport.printResults(ListeningType.Asynchronous)
                 await TestBenchT.writeProperty("testReport", testReport.getResults())
-
-                // Starting the second testing phase.
-                const testReportHasChanged = await tester.secondTestingPhase(testConfig.Repetitions)
-                testReport.storeReport(testConfig.TestReportsLocation, tutName)
-                if (testReportHasChanged) {
-                    await TestBenchT.writeProperty("testReport", testReport.getResults())
-                    testReport.printResults(ListeningType.Synchronous)
-                }
-
-                // Resetting the test results.
-                testReport.resetResults()
             } catch {
-                console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR::::: TestThing method went wrong")
-                return false
+                console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR::::: TestThing: Error during first test phase.")
+            }
+
+            secondTestingPhase()
+            return
+
+            async function secondTestingPhase() {
+                try {
+                    // Starting the second testing phase.
+                    const testReportHasChanged = await tester.secondTestingPhase(testConfig.Repetitions)
+                    testReport.storeReport(testConfig.TestReportsLocation, tutName)
+                    if (testReportHasChanged) {
+                        await TestBenchT.writeProperty("testReport", testReport.getResults())
+                        testReport.printResults(ListeningType.Synchronous)
+                    }
+                } catch {
+                    console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR::::: TestThing: Error during second test phase.")
+                } finally {
+                    // Resetting the test results.
+                    testReport.resetResults()
+                }
             }
         })
 
