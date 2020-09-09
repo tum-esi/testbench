@@ -833,31 +833,26 @@ export class Tester {
      * @param cycleNumber The number specifying the testCycle.
      * @param scenarioNumber The number of scenarios to be run in this testCycle.
      */
-    public testCycle(cycleNumber: number, scenarioNumber: number): Promise<any> {
+    public async testCycle(cycleNumber: number, scenarioNumber: number): Promise<any> {
         const self = this
         const maxScenario: number = scenarioNumber
         const scenarios: Array<number> = []
         for (var i = 0; i < maxScenario; i++) {
             scenarios[i] = i
         }
-        return new Promise(function (resolve, reject) {
-            let promise = Promise.resolve()
-            scenarios.forEach((scenarioNb) => {
-                promise = promise.then(() => {
-                    self.testReport.addTestScenario()
-                    return self.testScenario(cycleNumber, scenarioNb)
-                })
-            })
-            promise
-                .then(() => {
-                    self.log("Test Cycle " + cycleNumber + " has finished without an error.")
-                    resolve()
-                })
-                .catch(() => {
-                    self.log("Error in Test Cycle " + cycleNumber + " (see previous messages).")
-                    reject()
-                })
-        })
+
+        try {
+            for (const scenarioNb of scenarios) {
+                self.testReport.addTestScenario()
+                await self.testScenario(cycleNumber, scenarioNb)
+            }
+        } catch {
+            self.log("Error in Test Cycle " + cycleNumber + " (see previous messages).")
+            throw Error
+        }
+
+        self.log("Test Cycle " + cycleNumber + " has finished without an error.")
+        return
     }
 
     /**
@@ -870,31 +865,26 @@ export class Tester {
      * @param logMode True if logMode is enabled, false otherwise.
      * @return The testReport object containing the test results and all functions required to display and store the results.
      */
-    public testThing(repetition: number, scenarioNumber: number, logMode: boolean): Promise<TestReport> {
+    public async testThing(repetition: number, scenarioNumber: number, logMode: boolean): Promise<TestReport> {
         this.logMode = logMode
         const self = this
         const reps: Array<number> = []
         for (var i = 0; i < repetition; i++) {
             reps[i] = i
         }
-        return new Promise(function (resolve, reject) {
-            let promise = Promise.resolve()
-            reps.forEach((repNb) => {
-                promise = promise.then(() => {
-                    self.log("Cycle " + repNb + ", testing all scenarios")
-                    self.testReport.addTestCycle()
-                    return self.testCycle(repNb, scenarioNumber)
-                })
-            })
-            promise
-                .then(() => {
-                    self.log("First Test Phase has finished without an error.")
-                    resolve(self.testReport)
-                })
-                .catch(() => {
-                    self.log("Testing the Thing has finished with an error (see previous messages).")
-                    reject()
-                })
-        })
+
+        try {
+            for (const repNb of reps) {
+                self.log("Cycle " + repNb + ", testing all scenarios")
+                self.testReport.addTestCycle()
+                await self.testCycle(repNb, scenarioNumber)
+            }
+        } catch {
+            self.log("Testing the Thing has finished with an error (see previous messages).")
+            throw Error
+        }
+
+        self.log("First Test Phase has finished without an error.")
+        return self.testReport
     }
 }

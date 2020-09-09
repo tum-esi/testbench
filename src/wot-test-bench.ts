@@ -207,6 +207,7 @@ srv.start()
                 await TestBenchT.writeProperty("testReport", testReport.getResults())
             } catch {
                 logFormatted(":::::ERROR::::: TestThing: Error during first test phase.")
+                return
             }
 
             secondTestingPhase()
