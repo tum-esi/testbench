@@ -10,7 +10,7 @@ import { CoapClientFactory } from "@node-wot/binding-coap"
 import { CoapsClientFactory } from "@node-wot/binding-coap"
 import { Tester } from "./Tester"
 import { parseArgs, configPath, tdPaths } from "./config"
-import { testConfig, ListeningType } from "./utilities"
+import { testConfig, ListeningType, logFormatted } from "./utilities"
 const fs = require("fs")
 var configFile = "default-config.json"
 if (process.argv.length > 2) {
@@ -40,7 +40,7 @@ srv.addClientFactory(new MqttClientFactory())
 
 srv.start()
     .then(async (WoT) => {
-        console.log("\x1b[36m%s\x1b[0m", "* TestBench servient started")
+        logFormatted("TestBench servient started")
         const TestBenchT = await WoT.produce({
             title: tbName,
             description:
@@ -140,14 +140,14 @@ srv.start()
             try {
                 await TestBenchT.writeProperty("testReport", "[]")
             } catch {
-                console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR::::: Init: write testReport property failed")
+                logFormatted(":::::ERROR::::: Init: write testReport property failed")
                 return "Could not reinitialize the test report"
             }
 
             try {
                 var newConf = await TestBenchT.readProperty("testConfig")
             } catch {
-                console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR::::: Init: Get config property failed")
+                logFormatted(":::::ERROR::::: Init: Get config property failed")
                 return "Initiation failed"
             }
             testConfig = await JSON.parse(JSON.stringify(newConf))
@@ -158,7 +158,7 @@ srv.start()
             try {
                 var tutTD = await TestBenchT.readProperty("thingUnderTestTD")
             } catch {
-                console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR::::: Init: Get tutTD property failed")
+                logFormatted(":::::ERROR::::: Init: Get tutTD property failed")
                 return "Initiation failed"
             }
 
@@ -174,7 +174,7 @@ srv.start()
                 try {
                     await TestBenchT.writeProperty("testData", tester.codeGen.requests)
                 } catch {
-                    console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR::::: Init: Set testData property failed")
+                    logFormatted(":::::ERROR::::: Init: Set testData property failed")
                     return "Initiation failed"
                 }
                 return "Initiation was successful."
@@ -182,7 +182,7 @@ srv.start()
                 try {
                     await TestBenchT.writeProperty("testData", tester.codeGen.requests)
                 } catch {
-                    console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR::::: Init: Set testData property failed")
+                    logFormatted(":::::ERROR::::: Init: Set testData property failed")
                     return "Initiation failed"
                 }
                 return "Initiation was successful, but no interactions were found."
@@ -195,18 +195,18 @@ srv.start()
             try {
                 var data = await TestBenchT.readProperty("testData")
             } catch {
-                console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR::::: TestThing: Get test data property failed")
+                logFormatted(":::::ERROR::::: TestThing: Get test data property failed")
                 return false
             }
 
             await fs.writeFileSync(testConfig.TestDataLocation, JSON.stringify(data, null, " "))
-            console.log("\x1b[36m%s\x1b[0m", "* ------ START OF TESTTHING METHOD ------")
+            logFormatted("------ START OF TESTTHING METHOD ------")
             try {
                 var testReport = await tester.testThing(testConfig.Repetitions, testConfig.Scenarios, logMode)
                 testReport.printResults(ListeningType.Asynchronous)
                 await TestBenchT.writeProperty("testReport", testReport.getResults())
             } catch {
-                console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR::::: TestThing: Error during first test phase.")
+                logFormatted(":::::ERROR::::: TestThing: Error during first test phase.")
             }
 
             secondTestingPhase()
@@ -222,7 +222,7 @@ srv.start()
                         testReport.printResults(ListeningType.Synchronous)
                     }
                 } catch {
-                    console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR::::: TestThing: Error during second test phase.")
+                    logFormatted(":::::ERROR::::: TestThing: Error during second test phase.")
                 } finally {
                     // Resetting the test results.
                     testReport.resetResults()
@@ -234,5 +234,5 @@ srv.start()
         console.info(TestBenchT.getThingDescription().title + " ready")
     })
     .catch(() => {
-        console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR::::: Servient startup failed")
+        logFormatted(":::::ERROR::::: Servient startup failed")
     })

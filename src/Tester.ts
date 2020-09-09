@@ -41,11 +41,11 @@ export class Tester {
     }
 
     /**
-     * Logs a message in blue.
+     * Logs a message if the logMode is enabled.
      * @param message The message to log.
      */
-    private log(message: string, prefix: string = "* ", color: string = "\x1b[36m%s\x1b[0m"): void {
-        if (this.logMode) console.log(color, prefix + message)
+    private log(message: string): void {
+        if (this.logMode) Utils.logFormatted(message)
     }
 
     /**
