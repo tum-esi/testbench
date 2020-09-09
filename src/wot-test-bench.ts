@@ -160,34 +160,32 @@ srv.start().then((WoT) => {
                     return "Initiation failed"
                 }
 
-                if (JSON.stringify(tutTD) != "") {
-                    let consumedTuT: wot.ConsumedThing = await WoT.consume(tutTD)
-                    tester = new Tester(testConfig, consumedTuT)
-                    let returnCheck = tester.initiate(logMode)
-                    if (returnCheck == 0) {
-                        return TestBenchT.writeProperty("testData", tester.codeGen.requests)
-                            .then(() => {
-                                return "Initiation was successful."
-                            })
-                            .catch(() => {
-                                console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR::::: Init:" + "Set testData property failed")
-                                return "Initiation failed"
-                            })
-                    } else if (returnCheck == 1) {
-                        return TestBenchT.writeProperty("testData", tester.codeGen.requests)
-                            .then(() => {
-                                return "Initiation was successful," + "but no interactions were found."
-                            })
-                            .catch(() => {
-                                console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR:::::" + "Init: Set testData" + "property failed")
-                                return "Initiation failed"
-                            })
-                    } else {
-                        return "Initiation failed"
-                    }
-                } else {
+                if (JSON.stringify(tutTD) == "") {
                     return "Initiation failed," + "Thing under Test is an empty string."
                 }
+
+                const consumedTuT: wot.ConsumedThing = await WoT.consume(tutTD)
+                tester = new Tester(testConfig, consumedTuT)
+                const returnCheck = tester.initiate(logMode)
+
+                if (returnCheck == 0) {
+                    try {
+                        await TestBenchT.writeProperty("testData", tester.codeGen.requests)
+                    } catch {
+                        console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR::::: Init:" + "Set testData property failed")
+                        return "Initiation failed"
+                    }
+                    return "Initiation was successful."
+                } else if (returnCheck == 1) {
+                    try {
+                        await TestBenchT.writeProperty("testData", tester.codeGen.requests)
+                    } catch {
+                        console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR:::::" + "Init: Set testData" + "property failed")
+                        return "Initiation failed"
+                    }
+                    return "Initiation was successful," + "but no interactions were found."
+                }
+                return "Initiation failed"
             })
 
             // Tests the tut. If input true, logMode is on.
