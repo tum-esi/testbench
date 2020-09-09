@@ -11,6 +11,7 @@ import { CoapsClientFactory } from "@node-wot/binding-coap"
 import { Tester } from "./Tester"
 import { parseArgs, configPath, tdPaths } from "./config"
 import { testConfig, ListeningType, logFormatted } from "./utilities"
+import { TestReport } from "TestReport"
 const fs = require("fs")
 var configFile = "default-config.json"
 if (process.argv.length > 2) {
@@ -202,7 +203,7 @@ srv.start()
             await fs.writeFileSync(testConfig.TestDataLocation, JSON.stringify(data, null, " "))
             logFormatted("------ START OF TESTTHING METHOD ------")
             try {
-                var testReport = await tester.testThing(testConfig.Repetitions, testConfig.Scenarios, logMode)
+                var testReport: TestReport = await tester.testThing(testConfig.Repetitions, testConfig.Scenarios, logMode)
                 testReport.printResults(ListeningType.Asynchronous)
                 await TestBenchT.writeProperty("testReport", testReport.getResults())
             } catch {
@@ -216,7 +217,7 @@ srv.start()
             async function secondTestingPhase() {
                 try {
                     // Starting the second testing phase.
-                    const testReportHasChanged = await tester.secondTestingPhase(testConfig.Repetitions)
+                    const testReportHasChanged: boolean = await tester.secondTestingPhase(testConfig.Repetitions)
                     testReport.storeReport(testConfig.TestReportsLocation, tutName)
                     if (testReportHasChanged) {
                         await TestBenchT.writeProperty("testReport", testReport.getResults())
