@@ -120,79 +120,76 @@ srv.start().then((WoT) => {
             TestBenchT.writeProperty("thingUnderTestTD", "")
 
             // set action handlers
-            TestBenchT.setActionHandler("fastTest", (thingTD: string) => {
+            TestBenchT.setActionHandler("fastTest", async (thingTD: string) => {
                 //get the input
-                return TestBenchT.writeProperty("thingUnderTestTD", thingTD).then(() => {
-                    //write it into tutTD prop
-                    //call initiate
-                    return TestBenchT.invokeAction("initiate", true).then(() => {
-                        //call testThing
-                        return TestBenchT.invokeAction("testThing", true).then(() => {
-                            //call testThing
-                            return TestBenchT.readProperty("testReport")
-                            //return the simplified version
-                        })
-                    })
-                })
+                await TestBenchT.writeProperty("thingUnderTestTD", thingTD)
+                //write it into tutTD prop
+                //call initiate
+                await TestBenchT.invokeAction("initiate", true)
+                //call testThing
+                await TestBenchT.invokeAction("testThing", true)
+                //call testThing
+                return await TestBenchT.readProperty("testReport")
+                //return the simplified version
             })
             /* update config file, gets tutTD if not "", consume tutTD, adds
              Tester, set generated data to testData: */
-            TestBenchT.setActionHandler("initiate", (logMode: boolean) => {
-                return TestBenchT.writeProperty("testReport", "[]")
-                    .then(() => {
-                        return TestBenchT.readProperty("testConfig")
-                            .then((newConf) => {
-                                testConfig = JSON.parse(JSON.stringify(newConf))
+            TestBenchT.setActionHandler("initiate", async (logMode: boolean) => {
+                try {
+                    await TestBenchT.writeProperty("testReport", "[]")
+                } catch {
+                    console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR::::: Init: write" + "testReport property failed")
+                    return "Could not reinitialize the test report"
+                }
 
-                                /* fs.writeFileSync('./default-config.json',
-                                        JSON.stringify(testConfig, null, ' ')); */
-                                srv.addCredentials(testConfig.credentials)
-                                return TestBenchT.readProperty("thingUnderTestTD")
-                                    .then(async (tutTD) => {
-                                        if (JSON.stringify(tutTD) != "") {
-                                            let consumedTuT: wot.ConsumedThing = await WoT.consume(tutTD)
-                                            tester = new Tester(testConfig, consumedTuT)
-                                            let returnCheck = tester.initiate(logMode)
-                                            if (returnCheck == 0) {
-                                                return TestBenchT.writeProperty("testData", tester.codeGen.requests)
-                                                    .then(() => {
-                                                        return "Initiation was successful."
-                                                    })
-                                                    .catch(() => {
-                                                        console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR::::: Init:" + "Set testData property failed")
-                                                        return "Initiation failed"
-                                                    })
-                                            } else if (returnCheck == 1) {
-                                                return TestBenchT.writeProperty("testData", tester.codeGen.requests)
-                                                    .then(() => {
-                                                        return "Initiation was successful," + "but no interactions were found."
-                                                    })
-                                                    .catch(() => {
-                                                        console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR:::::" + "Init: Set testData" + "property failed")
-                                                        return "Initiation failed"
-                                                    })
-                                            } else {
-                                                return "Initiation failed"
-                                            }
-                                        } else {
-                                            return "Initiation failed," + "Thing under Test is an empty string."
-                                        }
-                                    })
-                                    .catch(() => {
-                                        console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR::::: Init: Get" + "tutTD property failed")
-                                        return "Initiation failed"
-                                    })
+                try {
+                    var newConf = await TestBenchT.readProperty("testConfig")
+                } catch {
+                    console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR::::: Init: Get" + "config property failed")
+                    return "Initiation failed"
+                }
+                testConfig = await JSON.parse(JSON.stringify(newConf))
+
+                /* fs.writeFileSync('./default-config.json',
+                        JSON.stringify(testConfig, null, ' ')); */
+                srv.addCredentials(testConfig.credentials)
+                try {
+                    var tutTD = await TestBenchT.readProperty("thingUnderTestTD")
+                } catch {
+                    console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR::::: Init: Get" + "tutTD property failed")
+                    return "Initiation failed"
+                }
+
+                if (JSON.stringify(tutTD) != "") {
+                    let consumedTuT: wot.ConsumedThing = await WoT.consume(tutTD)
+                    tester = new Tester(testConfig, consumedTuT)
+                    let returnCheck = tester.initiate(logMode)
+                    if (returnCheck == 0) {
+                        return TestBenchT.writeProperty("testData", tester.codeGen.requests)
+                            .then(() => {
+                                return "Initiation was successful."
                             })
                             .catch(() => {
-                                console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR::::: Init: Get" + "config property failed")
+                                console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR::::: Init:" + "Set testData property failed")
                                 return "Initiation failed"
                             })
-                    })
-                    .catch(() => {
-                        console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR::::: Init: write" + "testReport property failed")
-                        return "Could not reinitialize the test report"
-                    })
+                    } else if (returnCheck == 1) {
+                        return TestBenchT.writeProperty("testData", tester.codeGen.requests)
+                            .then(() => {
+                                return "Initiation was successful," + "but no interactions were found."
+                            })
+                            .catch(() => {
+                                console.log("\x1b[36m%s\x1b[0m", "* :::::ERROR:::::" + "Init: Set testData" + "property failed")
+                                return "Initiation failed"
+                            })
+                    } else {
+                        return "Initiation failed"
+                    }
+                } else {
+                    return "Initiation failed," + "Thing under Test is an empty string."
+                }
             })
+
             // Tests the tut. If input true, logMode is on.
             TestBenchT.setActionHandler("testThing", (logMode: boolean) => {
                 return TestBenchT.readProperty("testData")
