@@ -836,13 +836,9 @@ export class Tester {
     public async testCycle(cycleNumber: number, scenarioNumber: number): Promise<any> {
         const self = this
         const maxScenario: number = scenarioNumber
-        const scenarios: Array<number> = []
-        for (var i = 0; i < maxScenario; i++) {
-            scenarios[i] = i
-        }
 
         try {
-            for (const scenarioNb of scenarios) {
+            for (var scenarioNb = 0; scenarioNb < maxScenario; scenarioNb++) {
                 self.testReport.addTestScenario()
                 await self.testScenario(cycleNumber, scenarioNb)
             }
@@ -868,13 +864,9 @@ export class Tester {
     public async testThing(repetition: number, scenarioNumber: number, logMode: boolean): Promise<TestReport> {
         this.logMode = logMode
         const self = this
-        const reps: Array<number> = []
-        for (var i = 0; i < repetition; i++) {
-            reps[i] = i
-        }
 
         try {
-            for (const repNb of reps) {
+            for (var repNb = 0; repNb < repetition; repNb++) {
                 self.log("Cycle " + repNb + ", testing all scenarios")
                 self.testReport.addTestCycle()
                 await self.testCycle(repNb, scenarioNumber)
