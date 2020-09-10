@@ -110,6 +110,7 @@ function allTestPassed(allTestCases) {
  * - The testbench is sent a TD for both faultyThing and perfectThing.
  * - The test cases are extracted from the output.
  * - From this output it is checked if the correct test cases failed, respectively passed.
+ * !!! REPEATED execution might fail if faultyThing is not restarted for each execution.
  */
 describe("Action: fastTest", function () {
     describe("Test faultyThing", function () {
