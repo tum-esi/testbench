@@ -212,8 +212,8 @@ srv.start().then((WoT) => {
                     await thing.writeProperty("counter", "not a number")
                     await thing.writeProperty("faultyPercent", -400)
                     return
-                }, 400)
-            }, 800)
+                }, 200)
+            }, 400)
 
             thing.expose().then(() => {
                 console.info(thing.title + " ready")
