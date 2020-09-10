@@ -144,8 +144,8 @@ describe("Action: fastTest", function () {
 
                     // Second test scenario is not tested due to an interplay of different problems: If an event does not emit during the
                     // testing period and subscription worked the test is passed. Node-wot has problems emitting events continuously in the
-                    // in a time frame required by default config. Due to these two problem in the second scenario test cycle has in most
-                    // cases fewer fails. But sometimes it also works -> no tests possible.
+                    // rapid succession required by the default config. Due to these two problems, the second scenario has in
+                    // most cases fewer fails. But sometimes it also works -> no tests possible.
 
                     expect(err).to.be.null
                     done()
