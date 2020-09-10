@@ -1,3 +1,34 @@
+export const testConfig = {
+    TBname: "wot-test-bench",
+    http: {
+        port: 8980,
+        allowSelfSigned: true,
+    },
+    coap: {
+        port: 8981,
+    },
+    SchemaLocation: "Resources/InteractionSchemas/",
+    TestReportsLocation: "Reports/",
+    TestDataLocation: "Resources/fake-data.json",
+    ActionTimeout: 4000,
+    Scenarios: 2,
+    Repetitions: 1,
+    EventAndObservePOptions: {
+        Asynchronous: {
+            MaxAmountRecvData: 2,
+            MsListen: 500,
+            MsSubscribeTimeout: 30000,
+        },
+        Synchronous: {
+            isEnabled: false,
+            MaxAmountRecvData: 5,
+            MsListen: 1000,
+            MsSubscribeTimeout: 1000,
+        },
+    },
+    credentials: {},
+}
+
 export const faultyThingTD = {
     title: "TestServient",
     description: "Test servient that can be used as a servient to be tested with the WoT Test Bench",
@@ -9,20 +40,9 @@ export const faultyThingTD = {
             writeOnly: false,
             forms: [
                 {
-                    href: "http://localhost:8083/TestServient/properties/display",
-                    contentType: "application/json",
-                    op: ["readproperty", "writeproperty"],
-                },
-                {
-                    href: "http://localhost:8083/TestServient/properties/display/observable",
-                    contentType: "application/json",
-                    op: ["observeproperty", "unobserveproperty"],
-                    subprotocol: "longpoll",
-                },
-                {
                     href: "coap://localhost:8084/TestServient/properties/display",
                     contentType: "application/json",
-                    op: ["readproperty", "writeproperty"],
+                    op: ["readproperty", "writeproperty", "observeproperty", "unobserveproperty"],
                 },
             ],
         },
@@ -71,20 +91,9 @@ export const faultyThingTD = {
             writeOnly: false,
             forms: [
                 {
-                    href: "http://localhost:8083/TestServient/properties/faultyPercent",
-                    contentType: "application/json",
-                    op: ["readproperty", "writeproperty"],
-                },
-                {
-                    href: "http://localhost:8083/TestServient/properties/faultyPercent/observable",
-                    contentType: "application/json",
-                    op: ["observeproperty", "unobserveproperty"],
-                    subprotocol: "longpoll",
-                },
-                {
                     href: "coap://localhost:8084/TestServient/properties/faultyPercent",
                     contentType: "application/json",
-                    op: ["readproperty", "writeproperty"],
+                    op: ["readproperty", "writeproperty", "observeproperty", "unobserveproperty"],
                 },
             ],
         },
@@ -141,7 +150,7 @@ export const faultyThingTD = {
                 },
             },
             required: ["brightness", "status"],
-            readOnly: false,
+            readOnly: true,
             writeOnly: false,
             observable: false,
             forms: [
@@ -311,15 +320,9 @@ export const faultyThingTD = {
             },
             forms: [
                 {
-                    href: "http://localhost:8083/TestServient/events/failEvent",
-                    contentType: "application/json",
-                    subprotocol: "longpoll",
-                    op: ["subscribeevent", "unsubscribeevent"],
-                },
-                {
                     href: "coap://localhost:8084/TestServient/events/failEvent",
                     contentType: "application/json",
-                    op: ["subscribeevent", "unsubscribeevent"],
+                    op: ["subscribeevent", "unsubscribeevent", "subscribeevent", "unsubscribeevent"],
                 },
             ],
         },

@@ -211,7 +211,7 @@ srv.start()
                 return
             }
 
-            secondTestingPhase()
+            if (testConfig.EventAndObservePOptions.Synchronous.isEnabled) secondTestingPhase()
             return
 
             async function secondTestingPhase() {

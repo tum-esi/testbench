@@ -758,8 +758,6 @@ export class Tester {
      * testReport object.
      */
     async secondTestingPhase(repetitionNumber: number): Promise<boolean> {
-        // Nothing to do if second testing phase is disabled.
-        if (!this.testConfig.EventAndObservePOptions.Synchronous.isEnabled) return false
         const propertyWithObserveList: Array<string> = []
         // Check if at least one observable property exists.
         for (let interactionName of this.getAllInteractionOfType(Utils.InteractionType.Property)) {

@@ -54,7 +54,7 @@ srv.start().then((WoT) => {
             wrongDataTypeObject: {
                 description: "property that doesn't return a key that is required",
                 type: "object",
-                readOnly: false,
+                readOnly: true,
                 writeOnly: false,
                 observable: false,
                 properties: {
@@ -187,10 +187,8 @@ srv.start().then((WoT) => {
             thing.setActionHandler("setTestObject", (input) => {
                 console.log("* ACTION HANDLER FUNCTION for setTestObject")
                 console.log("* ", input)
-                return thing.writeProperty("wrongDataTypeObject", input).then(
-                    () => input,
-                    () => false
-                )
+                // This action returns a number, but is supposed to return nothing at all
+                return "567"
             })
 
             thing.setActionHandler("longTakingAction", (input) => {

@@ -1,6 +1,8 @@
 var chai = require("chai")
 var chaiHttp = require("chai-http")
-const { faultyThingTD, perfectThingTD } = require("./testing-payloads")
+const { faultyThingTD, perfectThingTD, testConfig } = require("./testing-payloads")
+const { sleepInMs } = require("../dist/utilities.js")
+const fs = require("fs")
 chai.use(chaiHttp)
 const address_testbench = "localhost:8980"
 var expect = chai.expect
@@ -116,6 +118,16 @@ describe("Action: fastTest", function () {
     describe("Test faultyThing", function () {
         it("Fast Test", function (done) {
             this.timeout(20000)
+
+            // Setting the test config.
+            chai.request(address_testbench)
+                .put("/wot-test-bench/properties/testConfig")
+                .send(testConfig)
+                .then(async () => {
+                    // Making sure the test config is used for the test run.
+                    await sleepInMs(1000)
+                })
+
             // Send some Form Data
             chai.request(address_testbench)
                 .post("/wot-test-bench/actions/fastTest")
@@ -124,28 +136,12 @@ describe("Action: fastTest", function () {
                     let allTestCases = getAllTestCases(res.body)
                     expect(allTestCases.length, "Did not report the correct amount of Testcases.").to.be.equal(28) //Check if all TestCases have been generated.
 
-                    // Test first test scenario
-                    expect(getPassedFailedArray(res.body[0][0])).is.eql([
-                        true,
-                        false,
-                        false,
-                        false,
-                        true,
-                        false,
-                        false,
-                        true,
-                        false,
-                        false,
-                        true,
-                        false,
-                        false,
-                        false,
-                    ])
-
-                    // Second test scenario is not tested due to an interplay of different problems: If an event does not emit during the
-                    // testing period and subscription worked the test is passed. Node-wot has problems emitting events continuously in the
-                    // rapid succession required by the default config. Due to these two problems, the second scenario has in
-                    // most cases fewer fails. But sometimes it also works -> no tests possible.
+                    // Expected failed/passed sequence.
+                    expectedArray = [true, false, false, false, true, false, false, true, false, false, true, false, false, false]
+                    // Testing the first test scenario.
+                    expect(getPassedFailedArray(res.body[0][0])).is.eql(expectedArray)
+                    // Testing the second test scenario.
+                    expect(getPassedFailedArray(res.body[0][1])).is.eql(expectedArray)
 
                     expect(err).to.be.null
                     done()
@@ -156,6 +152,15 @@ describe("Action: fastTest", function () {
     describe("Test perfectThing", function () {
         it("Fast Test", function (done) {
             this.timeout(10000)
+
+            // Setting the default config.
+            chai.request(address_testbench)
+                .put("/wot-test-bench/properties/testConfig")
+                .send(JSON.parse(fs.readFileSync("./default-config.json", "utf8")))
+                .then(async () => {
+                    // Making sure the default config is used for the test run.
+                    await sleepInMs(1000)
+                })
             // Send some Form Data
             chai.request(address_testbench)
                 .post("/wot-test-bench/actions/fastTest")
