@@ -465,13 +465,9 @@ describe("Action: fastTest", function () {
                 })
                 .end(function (err, res) {
                     let allTestCases = getAllTestCases(getTestResult(res))
-                    let firstTestScenario = res.body[0][0]
-                    //console.log(allTestCases) //Can be used to log TestResults for debugging purposes.
                     expect(allTestCases.length, "Did not report the correct amount of Testcases.").to.be.equal(28) //Check if all TestCases have been generated.
 
-                    passedFailedArray = console.log(getPassedFailedArray(firstTestScenario))
-
-                    expect(getPassedFailedArray(firstTestScenario)).is.eql([
+                    expect(getPassedFailedArray(res.body[0][0])).is.eql([
                         true,
                         false,
                         false,
@@ -487,6 +483,7 @@ describe("Action: fastTest", function () {
                         false,
                         false,
                     ])
+
                     expect(err).to.be.null
                     done()
                 })
