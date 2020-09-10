@@ -435,7 +435,8 @@ describe("Action: fastTest", function () {
 const notTheActualData = "Not the actual data"
 
 /**
- * Checks if the generation of test data works as defined.
+ * Checks if the generation of test data works as defined. This test has to be executed after the test for action fastTest, otherwise no
+ * data is generated, thus the property would be null.
  */
 describe("Property: testData", function () {
     describe("Get test Data", function () {
