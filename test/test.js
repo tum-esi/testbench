@@ -3,6 +3,13 @@ var chaiHttp = require("chai-http")
 chai.use(chaiHttp)
 var app = "localhost:8980"
 var expect = chai.expect
+
+// Constant used to define that something is not the actual data (Not ideal, but every other value would also be possible, even null).
+const notTheActualData = "Not the actual data"
+
+/**
+ * Checks if the generation of test data works as defined.
+ */
 describe("Property: testData", function () {
     describe("Get test Data", function () {
         it("Get Data", function (done) {
@@ -12,6 +19,23 @@ describe("Property: testData", function () {
                 .end(function (err, res) {
                     expect(err).to.be.null
                     expect(res).to.have.status(200)
+                    // Check properties
+                    checkDataArray(res.body.Property.display, 2, "string")
+                    checkDataArray(res.body.Property.counter, 2, "number")
+                    checkDataArray(res.body.Property.temperature, 2, "object", null)
+                    checkDataArray(res.body.Property.testObject, 2, "object")
+                    checkDataArray(res.body.Property.testArray, 2, "object", notTheActualData, true)
+                    // Check actions
+                    checkDataArray(res.body.Action.setCounter, 2, "number")
+                    checkDataArray(res.body.Action.getTemperature, 2, "object", null)
+                    checkDataArray(res.body.Action.setDisplay, 2, "string")
+                    checkDataArray(res.body.Action.setTestObject, 2, "object")
+                    checkDataArray(res.body.Action.setTestArray, 2, "object", notTheActualData, true)
+                    // Check events
+                    checkDataArray(res.body.EventSubscription.onChange, 2, "object", null)
+                    checkDataArray(res.body.EventSubscription.onChangeTimeout, 2, "object", null)
+                    checkDataArray(res.body.EventCancellation.onChange, 2, "object", null)
+                    checkDataArray(res.body.EventCancellation.onChangeTimeout, 2, "object", null)
                     done()
                 })
         })
@@ -19,13 +43,32 @@ describe("Property: testData", function () {
 })
 
 /**
+ * Checks if an array fulfills the provided parameters.
+ * @param {*} dataArray The data array to check.
+ * @param {*} length The length of the data array to check.
+ * @param {*} dataType The type of the elements of the array to check.
+ * @param {*} actualData The actual data value of all array elements
+ */
+function checkDataArray(dataArray, length, dataType, actualData = notTheActualData, isArray = false) {
+    expect(dataArray.length).to.be.equal(length)
+    dataArray.forEach((data) => {
+        expect(typeof data === dataType, "Expected data type: " + dataType + "; Got: " + typeof data).to.be.true
+        if (actualData != notTheActualData) {
+            expect(data == actualData).to.be.true
+        }
+        if (isArray) {
+            expect(Array.isArray(data), "Object was not an array: " + data).to.be.true
+        }
+    })
+}
+
+/**
  * Returns a JSON object containing the TestResults from a chai send request result object.
  * @param {any} res The result of the chai send request.
  * @return {JSON} The JSON containing the TestResults.
  */
 function getTestResult(res) {
-    let stringTestResult = res.res.text //TestResult as text.
-    return JSON.parse(stringTestResult) //Return TestResult as JSON.
+    return res.body //Return TestResult as JSON.
 }
 
 /**
