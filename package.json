@@ -16,6 +16,7 @@
         "ajv": "^6.10.2",
         "chai-http": "^4.3.0",
         "del": "^5.1.0",
+        "esm": "^3.2.25",
         "inquirer": "^7.3.3",
         "json-schema-faker": "^0.5.0-rc15",
         "mkdirp": "^1.0.4",
@@ -32,7 +33,7 @@
         "build": "tsc",
         "start": "node dist/wot-test-bench.js",
         "clean": "node clean.js",
-        "test": "mocha --exit",
+        "test": "mocha --require esm --exit",
         "windows_stop": "taskkill /im node.exe /f"
     }
 }
