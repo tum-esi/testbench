@@ -209,8 +209,8 @@ srv.start().then((WoT) => {
                 thing.writeProperty("counter", true)
                 thing.writeProperty("faultyPercent", 300)
                 setTimeout(async () => {
-                    await thing.writeProperty("counter", "not a number")
-                    await thing.writeProperty("faultyPercent", -400)
+                    thing.writeProperty("counter", "not a number")
+                    thing.writeProperty("faultyPercent", -400)
                     return
                 }, 200)
             }, 400)

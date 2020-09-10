@@ -16,8 +16,8 @@
     "EventAndObservePOptions": {
         "Asynchronous": {
             "MaxAmountRecvData": 2,
-            "MsListen": 400,
-            "MsSubscribeTimeout": 400
+            "MsListen": 500,
+            "MsSubscribeTimeout": 500
         },
         "Synchronous": {
             "isEnabled": true,
