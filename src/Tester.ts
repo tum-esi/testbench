@@ -861,7 +861,7 @@ export class Tester {
      * @param logMode True if logMode is enabled, false otherwise.
      * @return The testReport object containing the test results and all functions required to display and store the results.
      */
-    public async testThing(repetition: number, scenarioNumber: number, logMode: boolean): Promise<TestReport> {
+    public async firstTestingPhase(repetition: number, scenarioNumber: number, logMode: boolean): Promise<TestReport> {
         this.logMode = logMode
         const self = this
 
