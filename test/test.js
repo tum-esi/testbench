@@ -467,6 +467,7 @@ describe("Action: fastTest", function () {
                     let allTestCases = getAllTestCases(getTestResult(res))
                     expect(allTestCases.length, "Did not report the correct amount of Testcases.").to.be.equal(28) //Check if all TestCases have been generated.
 
+                    // Test first test scenario
                     expect(getPassedFailedArray(res.body[0][0])).is.eql([
                         true,
                         false,
@@ -483,6 +484,11 @@ describe("Action: fastTest", function () {
                         false,
                         false,
                     ])
+
+                    // Second test scenario is not tested due to an interplay of different problems: If an event does not emit during the
+                    // testing period and subscription worked the test is passed. Node-wot has problems emitting events continuously in the
+                    // in a time frame required by default config. Due to these two problem in the second scenario test cycle has in most
+                    // cases fewer fails. But sometimes it also works -> no tests possible.
 
                     expect(err).to.be.null
                     done()
