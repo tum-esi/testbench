@@ -139,9 +139,9 @@ describe("Action: fastTest", function () {
                     // Expected failed/passed sequence.
                     expectedArray = [true, false, false, false, true, false, false, true, false, false, true, false, false, false]
                     // Testing the first test scenario.
-                    expect(getPassedFailedArray(res.body[0][0])).is.eql(expectedArray)
+                    expect(getPassedFailedArray(res.body[0][0]), "First test sequence not as expected").is.eql(expectedArray)
                     // Testing the second test scenario.
-                    expect(getPassedFailedArray(res.body[0][1])).is.eql(expectedArray)
+                    expect(getPassedFailedArray(res.body[0][1]), "Second test sequence not as expected").is.eql(expectedArray)
 
                     expect(err).to.be.null
                     done()

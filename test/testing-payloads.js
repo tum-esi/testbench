@@ -356,20 +356,9 @@ export const perfectThingTD = {
             writeOnly: false,
             forms: [
                 {
-                    href: "http://localhost:8081/TestServient/properties/display",
-                    contentType: "application/json",
-                    op: ["readproperty", "writeproperty"],
-                },
-                {
-                    href: "http://localhost:8081/TestServient/properties/display/observable",
-                    contentType: "application/json",
-                    op: ["observeproperty", "unobserveproperty"],
-                    subprotocol: "longpoll",
-                },
-                {
                     href: "coap://localhost:8082/TestServient/properties/display",
                     contentType: "application/json",
-                    op: ["readproperty", "writeproperty"],
+                    op: ["readproperty", "writeproperty", "observeproperty", "unobserveproperty"],
                 },
             ],
         },
@@ -380,20 +369,9 @@ export const perfectThingTD = {
             writeOnly: false,
             forms: [
                 {
-                    href: "http://localhost:8081/TestServient/properties/counter",
-                    contentType: "application/json",
-                    op: ["readproperty", "writeproperty"],
-                },
-                {
-                    href: "http://localhost:8081/TestServient/properties/counter/observable",
-                    contentType: "application/json",
-                    op: ["observeproperty", "unobserveproperty"],
-                    subprotocol: "longpoll",
-                },
-                {
                     href: "coap://localhost:8082/TestServient/properties/counter",
                     contentType: "application/json",
-                    op: ["readproperty", "writeproperty"],
+                    op: ["readproperty", "writeproperty", "observeproperty", "unobserveproperty"],
                 },
             ],
         },
@@ -404,21 +382,9 @@ export const perfectThingTD = {
             writeOnly: false,
             forms: [
                 {
-                    href: "http://localhost:8081/TestServient/properties/temperature",
-                    contentType: "application/json",
-                    op: ["readproperty"],
-                    "htv:methodName": "GET",
-                },
-                {
-                    href: "http://localhost:8081/TestServient/properties/temperature/observable",
-                    contentType: "application/json",
-                    op: ["observeproperty", "unobserveproperty"],
-                    subprotocol: "longpoll",
-                },
-                {
                     href: "coap://localhost:8082/TestServient/properties/temperature",
                     contentType: "application/json",
-                    op: ["readproperty"],
+                    op: ["readproperty", ["observeproperty", "unobserveproperty"]],
                 },
             ],
         },
@@ -603,14 +569,14 @@ export const perfectThingTD = {
             },
             forms: [
                 {
-                    href: "http://localhost:8081/TestServient/events/onChange",
+                    href: "coap://localhost:8082/TestServient/events/onChange",
                     contentType: "application/json",
-                    subprotocol: "longpoll",
                     op: ["subscribeevent", "unsubscribeevent"],
                 },
                 {
-                    href: "coap://localhost:8082/TestServient/events/onChange",
+                    href: "http://localhost:8081/TestServient/events/onChange",
                     contentType: "application/json",
+                    subprotocol: "longpoll",
                     op: ["subscribeevent", "unsubscribeevent"],
                 },
             ],
@@ -621,15 +587,14 @@ export const perfectThingTD = {
             },
             forms: [
                 {
+                    href: "coap://localhost:8082/TestServient/events/onChangeTimeout",
+                    contentType: "application/json",
+                    op: ["subscribeevent", "unsubscribeevent"],
+                },
+                {
                     href: "http://localhost:8081/TestServient/events/onChangeTimeout",
                     contentType: "application/json",
                     subprotocol: "longpoll",
-                    op: ["subscribeevent", "unsubscribeevent"],
-                },
-
-                {
-                    href: "coap://localhost:8082/TestServient/events/onChangeTimeout",
-                    contentType: "application/json",
                     op: ["subscribeevent", "unsubscribeevent"],
                 },
             ],
