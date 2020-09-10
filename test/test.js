@@ -6,15 +6,6 @@ const address_testbench = "localhost:8980"
 var expect = chai.expect
 
 /**
- * Returns a JSON object containing the TestResults from a chai send request result object.
- * @param {any} res The result of the chai send request.
- * @return {JSON} The JSON containing the TestResults.
- */
-function getTestResult(res) {
-    return res.body //Return TestResult as JSON.
-}
-
-/**
  * Returns a TestCycle object from a TestResult object by int.
  * @param {JSON} testResult The JSON object containing the TestResults.
  * @param {number} cycleInt The number defining the TestCycle.
@@ -114,6 +105,12 @@ function allTestPassed(allTestCases) {
     return !allTestCases.some((testCase) => testCase.passed == false)
 }
 
+/**
+ * Tests the fastTest action:
+ * - The testbench is sent a TD for both faultyThing and perfectThing.
+ * - The test cases are extracted from the output.
+ * - From this output it is checked if the correct test cases failed, respectively passed.
+ */
 describe("Action: fastTest", function () {
     describe("Test faultyThing", function () {
         it("Fast Test", function (done) {
@@ -123,7 +120,7 @@ describe("Action: fastTest", function () {
                 .post("/wot-test-bench/actions/fastTest")
                 .send(faultyThingTD)
                 .end(function (err, res) {
-                    let allTestCases = getAllTestCases(getTestResult(res))
+                    let allTestCases = getAllTestCases(res.body)
                     expect(allTestCases.length, "Did not report the correct amount of Testcases.").to.be.equal(28) //Check if all TestCases have been generated.
 
                     // Test first test scenario
@@ -163,7 +160,7 @@ describe("Action: fastTest", function () {
                 .post("/wot-test-bench/actions/fastTest")
                 .send(perfectThingTD)
                 .end(function (err, res) {
-                    let allTestCases = getAllTestCases(getTestResult(res))
+                    let allTestCases = getAllTestCases(res.body)
                     //console.log(allTestCases); //Can be used to log TestResults for debugging purposes.
                     expect(allTestCases.length, "Did not report the correct amount of Testcases.").to.be.equal(24) //Check if all TestCases have been generated.
                     expect(allTestPassed(allTestCases, "Not all Testcases passed for Action: fastTest.")).to.be.true //Check if all TestCases have passed.
@@ -176,6 +173,26 @@ describe("Action: fastTest", function () {
 
 // Constant used to define that something is not the actual data (Not ideal, but every other value would also be possible, even null).
 const notTheActualData = "Not the actual data"
+
+/**
+ * Checks if an array fulfills the provided parameters.
+ * @param {*} dataArray The data array to check.
+ * @param {*} length The length of the data array to check.
+ * @param {*} dataType The type of the elements of the array to check.
+ * @param {*} actualData The actual data value of all array elements
+ */
+function checkDataArray(dataArray, length, dataType, actualData = notTheActualData, isArray = false) {
+    expect(dataArray.length).to.be.equal(length)
+    dataArray.forEach((data) => {
+        expect(typeof data === dataType, "Expected data type: " + dataType + "; Got: " + typeof data).to.be.true
+        if (actualData != notTheActualData) {
+            expect(data == actualData).to.be.true
+        }
+        if (isArray) {
+            expect(Array.isArray(data), "Object was not an array: " + data).to.be.true
+        }
+    })
+}
 
 /**
  * Checks if the generation of test data works as defined. This test has to be executed after the test for action fastTest, otherwise no
@@ -212,23 +229,3 @@ describe("Property: testData", function () {
         })
     })
 })
-
-/**
- * Checks if an array fulfills the provided parameters.
- * @param {*} dataArray The data array to check.
- * @param {*} length The length of the data array to check.
- * @param {*} dataType The type of the elements of the array to check.
- * @param {*} actualData The actual data value of all array elements
- */
-function checkDataArray(dataArray, length, dataType, actualData = notTheActualData, isArray = false) {
-    expect(dataArray.length).to.be.equal(length)
-    dataArray.forEach((data) => {
-        expect(typeof data === dataType, "Expected data type: " + dataType + "; Got: " + typeof data).to.be.true
-        if (actualData != notTheActualData) {
-            expect(data == actualData).to.be.true
-        }
-        if (isArray) {
-            expect(Array.isArray(data), "Object was not an array: " + data).to.be.true
-        }
-    })
-}
