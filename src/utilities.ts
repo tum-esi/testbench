@@ -13,6 +13,16 @@ console.log = function () {
 }
 
 /**
+ * Logs a formatted message. Per default "* " is added as prefix and the color of the logged message is blue.
+ * @param message The message to log.
+ * @param prefix The prefix of the logged message.
+ * @param color The color of the logged message.
+ */
+export function logFormatted(message: string, prefix: string = "* ", color: string = "\x1b[36m%s\x1b[0m"): void {
+    console.log(color, prefix + message)
+}
+
+/**
  * A test config file is always configured like this.
  */
 export interface testConfig {

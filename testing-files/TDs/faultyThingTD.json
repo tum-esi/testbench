@@ -141,7 +141,7 @@
                 }
             },
             "required": ["brightness", "status"],
-            "readOnly": false,
+            "readOnly": true,
             "writeOnly": false,
             "observable": false,
             "forms": [

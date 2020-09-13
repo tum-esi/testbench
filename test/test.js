@@ -1,32 +1,11 @@
 var chai = require("chai")
 var chaiHttp = require("chai-http")
+const { faultyThingTD, perfectThingTD, testConfig } = require("./testing-payloads")
+const { sleepInMs } = require("../dist/utilities.js")
+const fs = require("fs")
 chai.use(chaiHttp)
-var app = "localhost:8980"
+const address_testbench = "localhost:8980"
 var expect = chai.expect
-describe("Property: testData", function () {
-    describe("Get test Data", function () {
-        it("Get Data", function (done) {
-            // Send some Form Data
-            chai.request(app)
-                .get("/wot-test-bench/properties/testData")
-                .end(function (err, res) {
-                    expect(err).to.be.null
-                    expect(res).to.have.status(200)
-                    done()
-                })
-        })
-    })
-})
-
-/**
- * Returns a JSON object containing the TestResults from a chai send request result object.
- * @param {any} res The result of the chai send request.
- * @return {JSON} The JSON containing the TestResults.
- */
-function getTestResult(res) {
-    let stringTestResult = res.res.text //TestResult as text.
-    return JSON.parse(stringTestResult) //Return TestResult as JSON.
-}
 
 /**
  * Returns a TestCycle object from a TestResult object by int.
@@ -65,7 +44,7 @@ function getTestCaseByInt(testScenario, testCaseInt) {
  * @return {[JSON]} The array containing all testCase JSON objects.
  */
 function getAllTestCases(jsonTestResult) {
-    var allTestCases = []
+    const allTestCases = []
     jsonTestResult.forEach((testCycle) => {
         testCycle.forEach((testScenario) => {
             //Could potentially be solved more elegant by using allTestCases.concat(testScenario), but
@@ -76,6 +55,14 @@ function getAllTestCases(jsonTestResult) {
         })
     })
     return allTestCases
+}
+
+function getPassedFailedArray(allTestCases) {
+    const passedFailedArray = []
+    allTestCases.forEach((testCase) => {
+        passedFailedArray.push(testCase.passed)
+    })
+    return passedFailedArray
 }
 
 /**
@@ -120,326 +107,129 @@ function allTestPassed(allTestCases) {
     return !allTestCases.some((testCase) => testCase.passed == false)
 }
 
+/**
+ * Tests the fastTest action:
+ * - The testbench is sent a TD for both faultyThing and perfectThing.
+ * - The test cases are extracted from the output.
+ * - From this output it is checked if the correct test cases failed, respectively passed.
+ * !!! REPEATED execution might fail if faultyThing is not restarted for each execution.
+ */
 describe("Action: fastTest", function () {
-    describe("Test entire system", function () {
+    describe("Test faultyThing", function () {
+        it("Fast Test", function (done) {
+            this.timeout(20000)
+
+            // Setting the test config.
+            chai.request(address_testbench)
+                .put("/wot-test-bench/properties/testConfig")
+                .send(testConfig)
+                .then(async () => {
+                    // Making sure the test config is used for the test run.
+                    await sleepInMs(1000)
+                })
+
+            // Send some Form Data
+            chai.request(address_testbench)
+                .post("/wot-test-bench/actions/fastTest")
+                .send(faultyThingTD)
+                .end(function (err, res) {
+                    let allTestCases = getAllTestCases(res.body)
+                    expect(allTestCases.length, "Did not report the correct amount of Testcases.").to.be.equal(28) //Check if all TestCases have been generated.
+
+                    // Expected failed/passed sequence.
+                    expectedArray = [true, false, false, false, true, false, false, true, false, false, true, false, false, false]
+                    // Testing the first test scenario.
+                    expect(getPassedFailedArray(res.body[0][0]), "First test sequence not as expected").is.eql(expectedArray)
+                    // Testing the second test scenario.
+                    expect(getPassedFailedArray(res.body[0][1]), "Second test sequence not as expected").is.eql(expectedArray)
+
+                    expect(err).to.be.null
+                    done()
+                })
+        })
+    })
+
+    describe("Test perfectThing", function () {
         it("Fast Test", function (done) {
             this.timeout(10000)
-            // Send some Form Data
-            chai.request(app)
-                .post("/wot-test-bench/actions/fastTest")
-                .send({
-                    title: "TestServient",
-                    description: "Test servient that can be used as a servient to be tested with the WoT Test Bench",
-                    properties: {
-                        display: {
-                            type: "string",
-                            observable: true,
-                            readOnly: false,
-                            writeOnly: false,
-                            forms: [
-                                {
-                                    href: "http://localhost:8081/TestServient/properties/display",
-                                    contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
-                                },
-                                {
-                                    href: "http://localhost:8081/TestServient/properties/display/observable",
-                                    contentType: "application/json",
-                                    op: ["observeproperty", "unobserveproperty"],
-                                    subprotocol: "longpoll",
-                                },
-                                {
-                                    href: "coap://localhost:8082/TestServient/properties/display",
-                                    contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
-                                },
-                            ],
-                        },
-                        counter: {
-                            type: "number",
-                            observable: true,
-                            readOnly: false,
-                            writeOnly: false,
-                            forms: [
-                                {
-                                    href: "http://localhost:8081/TestServient/properties/counter",
-                                    contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
-                                },
-                                {
-                                    href: "http://localhost:8081/TestServient/properties/counter/observable",
-                                    contentType: "application/json",
-                                    op: ["observeproperty", "unobserveproperty"],
-                                    subprotocol: "longpoll",
-                                },
-                                {
-                                    href: "coap://localhost:8082/TestServient/properties/counter",
-                                    contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
-                                },
-                            ],
-                        },
-                        temperature: {
-                            type: "number",
-                            readOnly: true,
-                            observable: true,
-                            writeOnly: false,
-                            forms: [
-                                {
-                                    href: "http://localhost:8081/TestServient/properties/temperature",
-                                    contentType: "application/json",
-                                    op: ["readproperty"],
-                                    "htv:methodName": "GET",
-                                },
-                                {
-                                    href: "http://localhost:8081/TestServient/properties/temperature/observable",
-                                    contentType: "application/json",
-                                    op: ["observeproperty", "unobserveproperty"],
-                                    subprotocol: "longpoll",
-                                },
-                                {
-                                    href: "coap://localhost:8082/TestServient/properties/temperature",
-                                    contentType: "application/json",
-                                    op: ["readproperty"],
-                                },
-                            ],
-                        },
-                        testObject: {
-                            type: "object",
-                            properties: {
-                                brightness: {
-                                    type: "number",
-                                    minimum: 0,
-                                    maximum: 100,
-                                },
-                                status: {
-                                    type: "string",
-                                },
-                            },
-                            readOnly: false,
-                            writeOnly: false,
-                            observable: false,
-                            forms: [
-                                {
-                                    href: "http://localhost:8081/TestServient/properties/testObject",
-                                    contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
-                                },
-                                {
-                                    href: "coap://localhost:8082/TestServient/properties/testObject",
-                                    contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
-                                },
-                            ],
-                        },
-                        testArray: {
-                            type: "array",
-                            items: {
-                                type: "number",
-                            },
-                            readOnly: false,
-                            writeOnly: false,
-                            observable: false,
-                            forms: [
-                                {
-                                    href: "http://localhost:8081/TestServient/properties/testArray",
-                                    contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
-                                },
-                                {
-                                    href: "coap://localhost:8082/TestServient/properties/testArray",
-                                    contentType: "application/json",
-                                    op: ["readproperty", "writeproperty"],
-                                },
-                            ],
-                        },
-                    },
-                    actions: {
-                        setCounter: {
-                            input: {
-                                type: "number",
-                            },
-                            forms: [
-                                {
-                                    href: "http://localhost:8081/TestServient/actions/setCounter",
-                                    contentType: "application/json",
-                                    op: ["invokeaction"],
-                                    "htv:methodName": "POST",
-                                },
-                                {
-                                    href: "coap://localhost:8082/TestServient/actions/setCounter",
-                                    contentType: "application/json",
-                                    op: "invokeaction",
-                                },
-                            ],
-                            idempotent: false,
-                            safe: false,
-                        },
-                        getTemperature: {
-                            output: {
-                                type: "number",
-                            },
-                            forms: [
-                                {
-                                    href: "http://localhost:8081/TestServient/actions/getTemperature",
-                                    contentType: "application/json",
-                                    op: ["invokeaction"],
-                                    "htv:methodName": "POST",
-                                },
-                                {
-                                    href: "coap://localhost:8082/TestServient/actions/getTemperature",
-                                    contentType: "application/json",
-                                    op: "invokeaction",
-                                },
-                            ],
-                            idempotent: false,
-                            safe: false,
-                        },
-                        setDisplay: {
-                            input: {
-                                type: "string",
-                            },
-                            output: {
-                                type: "string",
-                            },
-                            forms: [
-                                {
-                                    href: "http://localhost:8081/TestServient/actions/setDisplay",
-                                    contentType: "application/json",
-                                    op: ["invokeaction"],
-                                    "htv:methodName": "POST",
-                                },
-                                {
-                                    href: "coap://localhost:8082/TestServient/actions/setDisplay",
-                                    contentType: "application/json",
-                                    op: "invokeaction",
-                                },
-                            ],
-                            idempotent: false,
-                            safe: false,
-                        },
-                        setTestObject: {
-                            input: {
-                                type: "object",
-                                properties: {
-                                    brightness: {
-                                        type: "number",
-                                        minimum: 0,
-                                        maximum: 100,
-                                    },
-                                    status: {
-                                        type: "string",
-                                    },
-                                },
-                            },
-                            forms: [
-                                {
-                                    href: "http://localhost:8081/TestServient/actions/setTestObject",
-                                    contentType: "application/json",
-                                    op: ["invokeaction"],
-                                    "htv:methodName": "POST",
-                                },
-                                {
-                                    href: "coap://localhost:8082/TestServient/actions/setTestObject",
-                                    contentType: "application/json",
-                                    op: "invokeaction",
-                                },
-                            ],
-                            idempotent: false,
-                            safe: false,
-                        },
-                        setTestArray: {
-                            input: {
-                                type: "array",
-                                items: {
-                                    type: "number",
-                                },
-                            },
-                            output: {
-                                type: "array",
-                                items: {
-                                    type: "number",
-                                },
-                            },
-                            forms: [
-                                {
-                                    href: "http://localhost:8081/TestServient/actions/setTestArray",
-                                    contentType: "application/json",
-                                    op: ["invokeaction"],
-                                    "htv:methodName": "POST",
-                                },
-                                {
-                                    href: "coap://localhost:8082/TestServient/actions/setTestArray",
-                                    contentType: "application/json",
-                                    op: "invokeaction",
-                                },
-                            ],
-                            idempotent: false,
-                            safe: false,
-                        },
-                    },
-                    events: {
-                        onChange: {
-                            data: {
-                                type: "number",
-                            },
-                            forms: [
-                                {
-                                    href: "http://localhost:8081/TestServient/events/onChange",
-                                    contentType: "application/json",
-                                    subprotocol: "longpoll",
-                                    op: ["subscribeevent", "unsubscribeevent"],
-                                },
-                                {
-                                    href: "coap://localhost:8082/TestServient/events/onChange",
-                                    contentType: "application/json",
-                                    op: ["subscribeevent", "unsubscribeevent"],
-                                },
-                            ],
-                        },
-                        onChangeTimeout: {
-                            data: {
-                                type: "number",
-                            },
-                            forms: [
-                                {
-                                    href: "http://localhost:8081/TestServient/events/onChangeTimeout",
-                                    contentType: "application/json",
-                                    subprotocol: "longpoll",
-                                    op: ["subscribeevent", "unsubscribeevent"],
-                                },
 
-                                {
-                                    href: "coap://localhost:8082/TestServient/events/onChangeTimeout",
-                                    contentType: "application/json",
-                                    op: ["subscribeevent", "unsubscribeevent"],
-                                },
-                            ],
-                        },
-                    },
-                    "@context": "https://www.w3.org/2019/wot/td/v1",
-                    "@type": "Thing",
-                    security: ["nosec_sc"],
-                    id: "urn:uuid:3999c3d8-1b55-4c05-bc63-c91f0981cf36",
-                    forms: [
-                        {
-                            href: "http://localhost:8081/TestServient/all/properties",
-                            contentType: "application/json",
-                            op: ["readallproperties", "readmultipleproperties", "writeallproperties", "writemultipleproperties"],
-                        },
-                    ],
-                    securityDefinitions: {
-                        nosec_sc: {
-                            scheme: "nosec",
-                        },
-                    },
+            // Setting the default config.
+            chai.request(address_testbench)
+                .put("/wot-test-bench/properties/testConfig")
+                .send(JSON.parse(fs.readFileSync("./default-config.json", "utf8")))
+                .then(async () => {
+                    // Making sure the default config is used for the test run.
+                    await sleepInMs(1000)
                 })
+            // Send some Form Data
+            chai.request(address_testbench)
+                .post("/wot-test-bench/actions/fastTest")
+                .send(perfectThingTD)
                 .end(function (err, res) {
-                    let allTestCases = getAllTestCases(getTestResult(res))
+                    let allTestCases = getAllTestCases(res.body)
                     //console.log(allTestCases); //Can be used to log TestResults for debugging purposes.
                     expect(allTestCases.length, "Did not report the correct amount of Testcases.").to.be.equal(24) //Check if all TestCases have been generated.
                     expect(allTestPassed(allTestCases, "Not all Testcases passed for Action: fastTest.")).to.be.true //Check if all TestCases have passed.
                     expect(err).to.be.null
+                    done()
+                })
+        })
+    })
+})
+
+// Constant used to define that something is not the actual data (Not ideal, but every other value would also be possible, even null).
+const notTheActualData = "Not the actual data"
+
+/**
+ * Checks if an array fulfills the provided parameters.
+ * @param {*} dataArray The data array to check.
+ * @param {*} length The length of the data array to check.
+ * @param {*} dataType The type of the elements of the array to check.
+ * @param {*} actualData The actual data value of all array elements
+ */
+function checkDataArray(dataArray, length, dataType, actualData = notTheActualData, isArray = false) {
+    expect(dataArray.length).to.be.equal(length)
+    dataArray.forEach((data) => {
+        expect(typeof data === dataType, "Expected data type: " + dataType + "; Got: " + typeof data).to.be.true
+        if (actualData != notTheActualData) {
+            expect(data == actualData).to.be.true
+        }
+        if (isArray) {
+            expect(Array.isArray(data), "Object was not an array: " + data).to.be.true
+        }
+    })
+}
+
+/**
+ * Checks if the generation of test data works as defined. This test has to be executed after the test for action fastTest, otherwise no
+ * data is generated, thus the property would be null.
+ */
+describe("Property: testData", function () {
+    describe("Get test Data", function () {
+        it("Get Data", function (done) {
+            // Send some Form Data
+            chai.request(address_testbench)
+                .get("/wot-test-bench/properties/testData")
+                .end(function (err, res) {
+                    expect(err).to.be.null
+                    expect(res).to.have.status(200)
+                    // Check properties
+                    checkDataArray(res.body.Property.display, 2, "string")
+                    checkDataArray(res.body.Property.counter, 2, "number")
+                    checkDataArray(res.body.Property.temperature, 2, "object", null)
+                    checkDataArray(res.body.Property.testObject, 2, "object")
+                    checkDataArray(res.body.Property.testArray, 2, "object", notTheActualData, true)
+                    // Check actions
+                    checkDataArray(res.body.Action.setCounter, 2, "number")
+                    checkDataArray(res.body.Action.getTemperature, 2, "object", null)
+                    checkDataArray(res.body.Action.setDisplay, 2, "string")
+                    checkDataArray(res.body.Action.setTestObject, 2, "object")
+                    checkDataArray(res.body.Action.setTestArray, 2, "object", notTheActualData, true)
+                    // Check events
+                    checkDataArray(res.body.EventSubscription.onChange, 2, "object", null)
+                    checkDataArray(res.body.EventSubscription.onChangeTimeout, 2, "object", null)
+                    checkDataArray(res.body.EventCancellation.onChange, 2, "object", null)
+                    checkDataArray(res.body.EventCancellation.onChangeTimeout, 2, "object", null)
                     done()
                 })
         })

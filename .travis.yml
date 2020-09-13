@@ -10,6 +10,7 @@ before_script:
   - npm run build
   - npm start &
   - node testing-files/perfectThing.js &
+  - node testing-files/faultyThing.js &
   - sleep 2
 after_script:
   - if [ $TRAVIS_OS_NAME = 'windows' ]; then npm run windows_stop; fi
