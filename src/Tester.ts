@@ -188,7 +188,7 @@ export class Tester {
                 return SubscriptionStatus.Timeout
             }
             var subscriptionError = null
-            async function subscribeEvent(): Promise<SubscriptionStatus> {
+            async function subscribe(): Promise<SubscriptionStatus> {
                 try {
                     if (testMode == Utils.InteractionType.Event) {
                         await self.tut.subscribeEvent(interactionName, (eventData) => {
@@ -208,7 +208,7 @@ export class Tester {
 
             container.subscriptionReport.sent = new Payload(new Date())
             // Trying to Subscribe to the Event. subscriptionStatus is set accordingly.
-            subscriptionStatus = await Promise.race([subscribeEvent(), timeout()])
+            subscriptionStatus = await Promise.race([subscribe(), timeout()])
             switch (subscriptionStatus) {
                 case SubscriptionStatus.Error:
                     self.log("Problem when trying to subscribe to " + interactionSpecifier + ": " + subscriptionError)
