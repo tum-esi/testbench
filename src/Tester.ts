@@ -398,6 +398,7 @@ export class Tester {
                         // If unsubscribing/unobserving threw an error.
                         self.log("Error while canceling subscription from " + interactionSpecifier + ":\n  " + error)
                         container.passed = false
+                        container.cancellationReport.sent = new Payload(sendTimeStamp)
                         container.cancellationReport.passed = false
                         container.cancellationReport.result = new Result(20, "Error while canceling subscription: " + error)
                         return true
