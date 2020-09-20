@@ -113,6 +113,15 @@ srv.start()
                     },
                     description: "By invoking this action, the testing starts and produces a test report that can be read. Not necessary for fastTest",
                 },
+                testSecurity: {
+                    input: {
+                        type: "string"
+                    },
+                    output: {
+                        type: "string"
+                    },
+                    description: "Tests some basic security and safety vulnerabilities, by sending the TD"
+                }
             },
         })
 
@@ -228,7 +237,7 @@ srv.start()
                 }
             }
         })
-
+        
         await TestBenchT.expose()
         console.info(TestBenchT.getThingDescription().title + " ready")
     })
