@@ -47,7 +47,7 @@ export class MiniTestReport {
     getPrintableOnlyOut() {
         let outTestReport = {}
         outTestReport["passed"] = this.passed
-        if (this.sent != null) outTestReport["sendTimestamp"] = this.sent.timestamp
+        if (this.sent != null) outTestReport["sentTimestamp"] = this.sent.timestamp
         if (this.received != null) outTestReport["received"] = this.received
         outTestReport["result"] = this.result
         return outTestReport
