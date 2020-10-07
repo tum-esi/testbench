@@ -172,54 +172,6 @@ export function validateResponse(responseName: string, response: JSON, schemaLoc
 // ------------------------ SCHEMA GENERATION ------------------------------------
 
 /**
- * extracts json schema from property.
- * @param fragment The interaction fragment to extract the schema from.
- */
-function extractSchema(fragment: any) {
-    let extractedSchema
-    if (fragment.type == "object") {
-        if (fragment.hasOwnProperty("properties")) {
-            if (fragment.hasOwnProperty("required")) {
-                extractedSchema = '"type": "object","properties":' + JSON.stringify(fragment.properties) + ',"required":' + JSON.stringify(fragment.required)
-            } else {
-                extractedSchema = '"type": "object","properties":' + JSON.stringify(fragment.properties)
-            }
-        } else {
-            extractedSchema = '"type": "object"'
-        }
-    } else if (fragment.type == "array") {
-        if (fragment.hasOwnProperty("items")) {
-            extractedSchema = '"type": "array","items":' + JSON.stringify(fragment.items)
-        } else {
-            extractedSchema = '"type": "array"'
-        }
-    } else if (fragment.type == "number" || fragment.type == "integer") {
-        if (fragment.hasOwnProperty("minimum")) {
-            extractedSchema = '"type": "' + fragment.type + '","minimum":' + fragment.minimum
-        }
-        if (fragment.hasOwnProperty("maximum")) {
-            if (fragment.hasOwnProperty("minimum")) {
-                extractedSchema += ',"maximum":' + fragment.maximum
-            } else {
-                extractedSchema = '"type": "' + fragment.type + '","maximum":' + fragment.maximum
-            }
-        } else {
-            extractedSchema = '"type":"' + fragment.type + '"'
-        }
-    } else {
-        // handle other schemas:
-        extractedSchema = '"type":"' + fragment.type + '"'
-    }
-    if (fragment.hasOwnProperty("enum") && fragment.hasOwnProperty("type")) {
-        extractedSchema += ',"enum":' + JSON.stringify(fragment.enum) + ""
-    }
-    if (fragment.hasOwnProperty("enum") && !fragment.hasOwnProperty("type")) {
-        extractedSchema = '"enum":' + JSON.stringify(fragment.enum) + ""
-    }
-    return extractedSchema
-}
-
-/**
  * Writes extracted schema to a file.
  * @param name The name of an interaction.
  * @param dataSchema The schema to write.
@@ -252,7 +204,7 @@ export function generateSchemas(td: wot.ThingDescription, schemaLocation: string
             // checks if writable:
             if (!td.properties[key].readOnly) {
                 // create request schema:
-                let dataSchema = extractSchema(td.properties[key])
+                let dataSchema = JSON.stringify(td.properties[key]).slice(0, -1).substring(1)
                 writeSchema(key, dataSchema, schemaLocationReq, SchemaType.Property)
                 reqSchemaCount++
                 // response schema:
@@ -260,7 +212,7 @@ export function generateSchemas(td: wot.ThingDescription, schemaLocation: string
                 resSchemaCount++
             } else {
                 // create response schema:
-                let dataSchema = extractSchema(td.properties[key])
+                let dataSchema = JSON.stringify(td.properties[key]).slice(0, -1).substring(1)
                 writeSchema(key, dataSchema, schemaLocationResp, SchemaType.Property)
                 resSchemaCount++
             }
