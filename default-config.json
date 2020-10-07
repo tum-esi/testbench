@@ -26,5 +26,6 @@
             "MsSubscribeTimeout": 1000
         }
     },
-    "credentials": {}
+    "credentials": {
+    }
 }

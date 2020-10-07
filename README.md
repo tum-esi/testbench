@@ -67,9 +67,15 @@ TD Version Used: Princeton Testfest 2019
 
 `curl -X POST -H "Content-Type: application/json" -d '{configuration-data}' http://your-address:8080/wot-test-bench/properties/testConfig`
 
+**IMPORTANT: fastTest does two things:**  
+1. calls `testThing` and sets result of this action to the value of `conformance` key in the `testReport`.
+2. calls `testVulnerabilities` and sets result of this action to the value of `vulnerabilities` key in the `testReport`.
 ---
 
-### Method with all Customization Options
+## Method with all Customization Options
+### Testing for Conformance
+
+In conformance test, the TestBench sends valid requests to the Thing, and validates responses, via `testThing` action.
 
 1. Start a servient that has a TD so that TestBench can interact with it.
 
@@ -142,13 +148,55 @@ TD Version Used: Princeton Testfest 2019
 
 ---
 
+### Testing for Vulnerabilities
+
+The action, `testVulnerabilities`, tests for vulnerabilities, both from security and safety perspectives.
+
+The main motivation behind this action is to cover the **security** of the Thing. From pre-determined sets of usernames and passwords, this action involves performing penetration testing with dictionary attacks. It also performs some common safety tests similar to those done under `testThing`.
+
+Perform steps 1 - 6 as described above, then send a `POST` request **with no body** to `http://your-address:8980/wot-test-bench/actions/testVulnerabilities`. Read the test report by sending a `GET` request to `http://your-address:8980/wot-test-bench/properties/testReport`.
+
+### Structure of the Vulnerability Report
+
+Mainly consists of two parts: `propertyReports` containing reports of `properties`, and `actionReports` containing those of `actions`.
+
+Each one of these reports consists of:
+
+1. `propertyName` / `actionName` to distinguish from other properties/actions.
+
+2. `security`, which contains
+   - `passedDictionaryAttack` indicating whether the credentials needed to access this property/action (directly or indirectly) are found in the pre-determined username-password combinations. **true** unless a suitable pair of credentials are found by dictionary attack.
+
+   - `description`, used for human readability purposes.
+
+   - *optional* `id` and `pw`: these two contains the username and password *if* `passedDictionaryAttack` is `false`.
+
+3. `safety`, which contains
+   - *(if property report)* `isReadable` indicating whether this property can be read. **Must** be compared with the property in the TD. In an non-erroneous case, they should match. *e.g.* for a `writeOnly` property this should be **false**.
+
+   - *(if property report)* `isWritable` indicating whether this property can be written. **Must** be compared with the property in the TD. In an non-erroneous case, they should match. *e.g.* for a `readOnly` property this should be **false**.
+
+   - `exceptionTypes` indicating the types that **should not** be optimally accepted. If not empty, then those types are accepted by the property/action, you should check for those *exception* types in your implementation.
+
+
+**Notes**  
+- **ALWAYS** call `initiate` after writing `thingUnderTestTD` if you are going to perform `testThing` or `testVulnerabilities` only.
+
+- Depending on where the Thing is hosted and number of `InteractionAffordance`s, this test may take quite some time.
+- Currently only supports HTTP/HTTPs.
+- Currently only supports `basic` and `oauth2` with `client_credentials` flow. 
+- Dictionary attacks are performed on the Thing in case of `basic` security scheme, and on the `token` server in case of `oauth2`.
+- In this README, the phrase ***types that should not be optimally allowed*** is frequently used and those are the types that are **not** given in the TD, which should be *optimally* avoided on the implementation side. *e.g.* a `boolean` for a `number` type of property.
+- If the `InteractionAffordance` has a different security schema than the one under `security` of the TD, `testVulnerabilities` throws.
+---
+
 -   This link provides all possible postman interaction examples [https://documenter.getpostman.com/view/4378601/RWEmHGBq](https://documenter.getpostman.com/view/4378601/RWEmHGBq).
 
 -   How to use testbench screencast video can be found here [https://youtu.be/BDMbXZ2O7KI](https://youtu.be/BDMbXZ2O7KI).
 
 -   You can use your browser and the GET requests to inspect all properties during the procedure.
 
-## How does the testing work?
+## How does the conformance testing work?
 
 -   During the whole testing process every step is logged in the CLI if logMode is enabled. Additionally any sent or received Data is written
     into the test report together with an analysis of the process.
@@ -222,6 +270,41 @@ TD Version Used: Princeton Testfest 2019
 ### TLDR
 
 <img src="readme-images/testingProcess.svg" align="center" height="400" width="400">
+
+## How does the vulnerability testing work?
+
+### Starting Phase
+   - The security scheme and the string covering that scheme are determined.
+   - The usernames and passwords (found under `Resources/`) are read from files. If `fastMode` is **true** (this is the case when `testVulnerabilities` is called from `fastTest`), then only a small number of username-password pairs are tested, as testing may take significant time intervals which is not the case wanted in `fastTest`.
+
+### Main Phase
+   - The thing is checked if it has properties and actions.
+
+   - If it has properties, then:
+      - Every property is checked if it is `writeOnly` or not.
+
+         - If `writeOnly`:
+
+            - The request options are created for the `writeproperty` operation, then dictionary attack is performed.
+
+            - If dictionary attack finds suitable credentials OR credentials are given via config file, then safety tests are performed.
+
+            - During safety testing, property is first checked for writing types that should and should not be optimally allowed, then checked if it is readable.
+
+         - If not `writeonly`:
+            - The request options are created for the `readproperty` operation, then dictionary attack is performed.
+
+            - If dictionary attack finds suitable credentials OR credentials are given via config file, then safety tests are performed.
+
+            - During safety testing, property is first checked if it is readable, then checked if it is writable. While performing writing tests, property is checked with types that should and should not be optimally allowed.
+
+   - If it has actions, then for every action:
+
+        - The request options are created for the `invokeaction` operation, then dictionary attack is performed.
+
+        - If dictionary attack finds suitable credentials OR credentials are given via config file, then safety tests are performed.
+
+        - During safety testing, action are tested if they accept types that should not be optimally allowed.
 
 ## To-Do
 

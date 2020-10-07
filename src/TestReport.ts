@@ -1,6 +1,7 @@
 import fs = require("fs")
 var mkdirp = require("mkdirp")
 import { ListeningType } from "./utilities"
+import { stringify } from "querystring"
 
 /**
  * A single subTest result containing a resultId and an optional resultMessage.
@@ -351,5 +352,108 @@ export class TestReport {
         } catch (error) {
             console.log("Report could not be stored")
         }
+    }
+}
+interface SecurityReport{
+    passedDictionaryAttack: boolean;
+    id?: string;
+    pw?: string;
+    description?: string;
+}
+export class PropertyReport{
+    propertyName: string;
+    security: SecurityReport;
+    safety?: object;
+
+    constructor(name: string){
+        this.propertyName = name;
+        this.security = {
+            passedDictionaryAttack: true,
+        }
+    }
+    public createSafetyReport(){
+        this.safety = {
+            isReadable: false,
+            isWritable: false,
+            exceptionTypes: Array<string>()
+        };
+    }
+    /**
+     * Adds accepted types for the property.
+     */
+    public addType(type: string){
+        this['safety']['exceptionTypes'].push(type);
+    }
+    public isReadable(ans: boolean){
+        this['safety']['isReadable'] = ans;
+    }
+    public isWritable(ans: boolean){
+        this['safety']['isWritable'] = ans;
+    }
+    public addDescription(msg: string){
+        this.security.description = msg;
+    }
+    public addCredentials(id: string, pw: string){
+        this.security.id = id;
+        this.security.pw = pw;
+    }
+}
+export class ActionReport {
+    actionName: string;
+    security: SecurityReport;
+    safety?: object;
+
+    constructor(name: string){
+        this.actionName = name;
+        this.security ={
+            passedDictionaryAttack: true
+        };
+    }
+    public createSafetyReport(){
+        this.safety = {
+            exceptionTypes: Array<string>()
+        };
+    }
+    /**
+     * Adds accepted types for the action.
+     */
+    public addType(type: string){
+        this.safety['exceptionTypes'].push(type);
+    }
+    public addDescription(msg: string){
+        this.security.description = msg;
+    }
+    public addCredentials(id: string, pw: string){
+        this.security.id = id;
+        this.security.pw = pw;
+    }
+}
+export class VulnerabilityReport {
+    description: string;
+    scheme: string;
+    propertyReports?: Array<PropertyReport>;
+    actionReports?: Array<ActionReport>;
+
+    constructor(){
+        this.description = "Vulnerability test results";
+        this.scheme = "";
+        this.propertyReports = null;
+        this.actionReports = Array<ActionReport>();
+        this.propertyReports = Array<PropertyReport>();
+    }
+    public createPropertyReport(name: string){
+        this.propertyReports.push(new PropertyReport(name));
+    }
+    public createActionReport(name: string){
+        this.actionReports.push(new ActionReport(name));
+    }
+}
+export class TotalReport{
+    conformance: TestReport;
+    vulnerabilities: VulnerabilityReport;
+
+    constructor(conf: TestReport, vuln: VulnerabilityReport){
+        this.conformance = conf;
+        this.vulnerabilities = vuln;
     }
 }
