@@ -107,6 +107,16 @@ function allTestPassed(allTestCases) {
     return !allTestCases.some((testCase) => testCase.passed == false)
 }
 
+function propertySafetyReportArray(arr){
+    result = [];
+
+    for (var i = 0; i < arr.length; i++){
+        result.push([arr[i]['safety']['isReadable'], arr[i]['safety']['isWritable']]);
+    }
+    return result;
+}
+
+
 /**
  * Tests the fastTest action:
  * - The testbench is sent a TD for both faultyThing and perfectThing.
@@ -117,7 +127,7 @@ function allTestPassed(allTestCases) {
 describe("Action: fastTest", function () {
     describe("Test faultyThing", function () {
         it("Fast Test", function (done) {
-            this.timeout(20000)
+            this.timeout(50000)
 
             // Setting the test config.
             chai.request(address_testbench)
@@ -127,21 +137,75 @@ describe("Action: fastTest", function () {
                     // Making sure the test config is used for the test run.
                     await sleepInMs(1000)
                 })
-
+            // console.log('faultyThingTD', JSON.stringify(faultyThingTD));
             // Send some Form Data
             chai.request(address_testbench)
                 .post("/wot-test-bench/actions/fastTest")
                 .send(faultyThingTD)
                 .end(function (err, res) {
-                    let allTestCases = getAllTestCases(res.body)
+                    let allTestCases = getAllTestCases(res.body['conformance'])
+                    let vulnResults = res.body['vulnerabilities'];
+
                     expect(allTestCases.length, "Did not report the correct amount of Testcases.").to.be.equal(28) //Check if all TestCases have been generated.
 
                     // Expected failed/passed sequence.
                     expectedArray = [true, false, false, false, true, false, false, true, false, false, true, false, false, false]
                     // Testing the first test scenario.
-                    expect(getPassedFailedArray(res.body[0][0]), "First test sequence not as expected").is.eql(expectedArray)
+                    expect(getPassedFailedArray(res.body['conformance'][0][0]), "First test sequence not as expected").is.eql(expectedArray)
                     // Testing the second test scenario.
-                    expect(getPassedFailedArray(res.body[0][1]), "Second test sequence not as expected").is.eql(expectedArray)
+                    expect(getPassedFailedArray(res.body['conformance'][0][1]), "Second test sequence not as expected").is.eql(expectedArray)
+
+                    expect(vulnResults['propertyReports'].length, "Did not report the correct amount of propertyReports.").to.be.equal(8);
+                    expect(vulnResults['actionReports'].length, "Did not report the correct amount of actionReports.").to.be.equal(5);
+
+                    let expectedPropertySafetyResults = [
+                        [true, true],
+                        [true, true],
+                        [true, false],
+                        [true, false],
+                        [true, true],
+                        [true, false],
+                        [true, false],
+                        [true, true]
+                    ];
+                    expect(propertySafetyReportArray(vulnResults['propertyReports']), "Safety reports did not match with the expected ones.").to.be.eql(expectedPropertySafetyResults);
+
+                    expect(vulnResults['actionReports'][0]['safety']['exceptionTypes'], "First action's exceptionTypes did not match with the expected ones.").to.be.eql([
+                        "object",
+                        "array",
+                        "string",
+                        "integer",
+                        "boolean"
+                    ]);
+                    expect(vulnResults['actionReports'][1]['safety']['exceptionTypes'], "Second action's exceptionTypes did not match with the expected ones.").to.be.eql([
+                        "object",
+                        "array",
+                        "string",
+                        "integer",
+                        "number",
+                        "boolean"
+                    ]);
+                    expect(vulnResults['actionReports'][2]['safety']['exceptionTypes'], "Third action's exceptionTypes did not match with the expected ones.").to.be.eql([
+                        "object",
+                        "array",
+                        "integer",
+                        "number",
+                        "boolean"
+                    ]);
+                    expect(vulnResults['actionReports'][3]['safety']['exceptionTypes'], "Fourth action's exceptionTypes did not match with the expected ones.").to.be.eql([
+                        "array",
+                        "string",
+                        "integer",
+                        "number",
+                        "boolean"
+                    ]);
+                    expect(vulnResults['actionReports'][4]['safety']['exceptionTypes'], "Fifth action's exceptionTypes did not match with the expected ones.").to.be.eql([
+                        "object",
+                        "string",
+                        "integer",
+                        "number",
+                        "boolean"
+                    ]);
 
                     expect(err).to.be.null
                     done()
@@ -151,7 +215,7 @@ describe("Action: fastTest", function () {
 
     describe("Test perfectThing", function () {
         it("Fast Test", function (done) {
-            this.timeout(10000)
+            this.timeout(50000)
 
             // Setting the default config.
             chai.request(address_testbench)
@@ -161,15 +225,69 @@ describe("Action: fastTest", function () {
                     // Making sure the default config is used for the test run.
                     await sleepInMs(1000)
                 })
+            // console.log('perfectThingTD', JSON.stringify(perfectThingTD));
             // Send some Form Data
             chai.request(address_testbench)
                 .post("/wot-test-bench/actions/fastTest")
                 .send(perfectThingTD)
                 .end(function (err, res) {
-                    let allTestCases = getAllTestCases(res.body)
+                    let allTestCases = getAllTestCases(res.body['conformance'])
+                    let vulnResults = res.body['vulnerabilities'];
+
                     //console.log(allTestCases); //Can be used to log TestResults for debugging purposes.
                     expect(allTestCases.length, "Did not report the correct amount of Testcases.").to.be.equal(24) //Check if all TestCases have been generated.
                     expect(allTestPassed(allTestCases, "Not all Testcases passed for Action: fastTest.")).to.be.true //Check if all TestCases have passed.
+                    
+                    expect(vulnResults['propertyReports'].length, "Did not report the correct amount of propertyReports.").to.be.equal(5);
+                    expect(vulnResults['actionReports'].length, "Did not report the correct amount of actionReports.").to.be.equal(5);
+
+                    let expectedPropertySafetyResults = [
+                        [ true, true ],
+                        [ true, true ],
+                        [ true, false ],
+                        [ true, true ],
+                        [ true, true ]
+                    ];
+                    
+                    expect(propertySafetyReportArray(vulnResults['propertyReports']), "Safety reports did not match with the expected ones.").to.be.eql(expectedPropertySafetyResults);
+                    
+                    expect(vulnResults['actionReports'][0]['safety']['exceptionTypes'], "First action's exceptionTypes did not match with the expected ones.").to.be.eql([
+                        "object",
+                        "array",
+                        "string",
+                        "integer",
+                        "boolean"
+                    ]);
+                    expect(vulnResults['actionReports'][1]['safety']['exceptionTypes'], "Second action's exceptionTypes did not match with the expected ones.").to.be.eql([
+                        "object",
+                        "array",
+                        "string",
+                        "integer",
+                        "number",
+                        "boolean"
+                    ]);
+                    expect(vulnResults['actionReports'][2]['safety']['exceptionTypes'], "Third action's exceptionTypes did not match with the expected ones.").to.be.eql([
+                        "object",
+                        "array",
+                        "integer",
+                        "number",
+                        "boolean"
+                    ]);
+                    expect(vulnResults['actionReports'][3]['safety']['exceptionTypes'], "Fourth action's exceptionTypes did not match with the expected ones.").to.be.eql([
+                        "array",
+                        "string",
+                        "integer",
+                        "number",
+                        "boolean"
+                    ]);
+                    expect(vulnResults['actionReports'][4]['safety']['exceptionTypes'], "Fifth action's exceptionTypes did not match with the expected ones.").to.be.eql([
+                        "object",
+                        "string",
+                        "integer",
+                        "number",
+                        "boolean"
+                    ]);
+
                     expect(err).to.be.null
                     done()
                 })

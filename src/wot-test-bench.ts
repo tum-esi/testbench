@@ -464,6 +464,7 @@ srv.start()
 
                             // Creating propertyReport with the name of the property.
                             report.createPropertyReport(Object.keys(td['properties'])[i]);
+                            report.propertyReports[i].createSecurityReport();
 
                             if (!property.writeOnly){ // Property can be read, supposedly?
                                 try{
@@ -647,6 +648,7 @@ srv.start()
 
                             // Create action report with the name of the action.
                             report.createActionReport(Object.keys(td['actions'])[i]);
+                            report.actionReports[i].createSecurityReport();
 
                             var actionOptions = createRequestOptions(myURL, method);
 
@@ -707,6 +709,7 @@ srv.start()
                                 
                                     let property: any = properties[i];
                                     report.createPropertyReport(Object.keys(td['properties'])[i]);
+                                    report.propertyReports[i].createSecurityReport();
 
                                     if (!property.writeOnly){ // Can be read?
 
@@ -824,7 +827,8 @@ srv.start()
                                     let action: any = actions[i];
 
                                     report.createActionReport(Object.keys(td['actions'])[i]);
-
+                                    report.actionReports[i].createSecurityReport();
+                                    
                                     if (weakCredentials || (givenToken != null)){ // Have a token.
                                         report.actionReports[i].security.passedDictionaryAttack = !weakCredentials;
 
@@ -863,6 +867,177 @@ srv.start()
                             throw 'This oauth flow cannot be tested for now.';
                     }
                     break;
+                case "nosec":
+                    report.scheme = 'nosec';
+
+                    if (td['properties'] != undefined){
+                        const properties: any = Object.values(td['properties']);
+
+                        for (var i=0; i < properties.length; i++){
+                            let property: any = properties[i];
+
+                            // Creating propertyReport with the name of the property.
+                            report.createPropertyReport(Object.keys(td['properties'])[i]);
+
+                            if (!property.writeOnly){ // Property can be read, supposedly?
+                                try{
+                                    // First tries to 'readproperty'.
+                                    var form = getForm('readproperty', property.forms);
+
+                                    // Check if the interaction has a different security scheme.
+                                    if (form['security'] != undefined){
+                                        if (Array.isArray(form['security'])){
+                                            if (!form['security'].includes(schemeName))
+                                                return "Testing multiple security schemas are not currently available.";
+                                        }
+                                        else if (form['security'] != schemeName)
+                                            return "Testing multiple security schemas are not currently available.";
+                                    }
+                                    
+                                    var propertyURL: URL = new URL(form['href']);
+                                    var method: string = form['htv:methodName'];
+                                    
+                                    if(method == null) method = 'GET';
+            
+                                    var propertyOptions: object = createRequestOptions(propertyURL, method);
+                                    report.propertyReports[i].createSafetyReport();
+
+                                    // Making sure that the property is readable.
+                                    let isReadable = await fetch(propertyURL, propertyOptions);
+                                    if (isReadable.ok)
+                                        report.propertyReports[i].isReadable(true);
+
+                                    // Trying to 'writeproperty' with different types.
+                                    form = getForm('writeproperty', property.forms);
+        
+                                    // This time 'form' can be null in case 'property' is 'readOnly'.
+                                    if (form != null){
+                                        propertyURL= new URL(form['href']);
+                                        method = form['htv:methodName'];
+        
+                                        if (method == null) method = 'PUT';
+        
+                                        propertyOptions = createRequestOptions(propertyURL, method);
+
+                                        var contentType: string = form['contentType'];
+        
+                                        if (contentType == undefined) contentType = 'application/json';
+                                        propertyOptions['headers']['Content-Type'] = contentType;
+
+                                        // Types that should not be normally allowed.
+                                        var types: string[] = await typeFuzz(property.type, propertyURL, propertyOptions);                                    
+                                        types.forEach(type => report.propertyReports[i].addType(type));
+        
+                                        // Trying to write the real type, if cannot write any exceptional type.
+                                        if (types.length == 0){
+                                            propertyOptions['body'] = JSON.stringify(jsf(property));
+
+                                            let isWritable = await fetch(propertyURL, propertyOptions);
+                                            if (isWritable.ok)
+                                                report.propertyReports[i].isWritable(true);
+                                        }
+                                        else report.propertyReports[i].isWritable(true);
+                                    }
+                                    else report.propertyReports[i].addDescription('TestBench could not find the credentials, neither from brute-forcing nor from given config file. Thus, could not test safety of property.');
+                                }
+                                catch(e){
+                                    logFormatted('::::ERROR::::: Brute-forcing property resulted in error:', e);
+                                }
+                            }
+                            else{ // Property is 'writeonly'.
+                                try{
+                                    // First tries to 'writeproperty', then tries to 'readproperty'.
+                                    var form = getForm('writeproperty', property.forms);
+
+                                    // Check if the interaction has a different security schema.
+                                    if (form['security'] != undefined){
+                                        if (Array.isArray(form['security'])){
+                                            if (!form['security'].includes(schemeName))
+                                                return "Testing multiple security schemas are not currently available.";
+                                        }
+                                        else if (form['security'] != schemeName)
+                                            return "Testing multiple security schemas are not currently available.";
+                                    }
+
+                                    var propertyURL: URL = new URL(form['href']);
+                                    var method: string = form['htv:methodName'];
+            
+                                    if (method == null) method = 'PUT';
+            
+                                    var propertyOptions: object = createRequestOptions(propertyURL, method);
+                                    var contentType: string = form['contentType'];
+                                    
+                                    if (contentType == undefined) contentType = 'application/json';
+                                    
+                                    propertyOptions['headers']['Content-Type'] = contentType;
+                                    propertyOptions['body'] = JSON.stringify(jsf(property));
+            
+                                    report.propertyReports[i].createSafetyReport();
+                                    
+                                    propertyOptions['headers']['Authorization'] = 'Basic ' + creds;
+        
+                                    let isWritable = await fetch(propertyURL, propertyOptions)
+                                    if (isWritable.ok)
+                                        report.propertyReports[i].isWritable(true);
+
+                                    // Types that should not be normally allowed.
+                                    var types: string[] = await typeFuzz(property.type, propertyURL, propertyOptions);
+                                    types.forEach(type => report.propertyReports[i].addType(type));
+        
+                                    propertyOptions['method'] = 'GET';
+                                    delete propertyOptions['body'];
+        
+                                    var isReadable = await fetch(propertyURL.toString(), propertyOptions);
+                                    if (isReadable.ok) report.propertyReports[i].isReadable(true);
+                                }
+                                catch{
+                                    logFormatted('::::ERROR::::: Brute-forcing property resulted in error.');
+                                }
+                            }
+                        }
+                    }
+                    if (td['actions'] != undefined){
+                        const actions: Array<any> = Object.values(td['actions']);
+                        
+                        for(var i=0; i < actions.length; i++){
+                            let action: any = actions[i];
+
+                            var form = getForm('invokeaction', action.forms); // Cannot be null.
+
+                            // Check if the interaction has a different security schema.
+                            if (form['security'] != undefined){
+                                if (Array.isArray(form['security'])){
+                                    if (!form['security'].includes(schemeName))
+                                        return "Testing multiple security schemas are not currently available.";
+                                }
+                                else if (form['security'] != schemeName)
+                                    return "Testing multiple security schemas are not currently available.";
+                            }
+
+                            var myURL: URL = new URL(form['href']);
+                            var method: string = form['htv:methodName'];
+                            if (method == undefined) method = 'POST';
+
+                            // Create action report with the name of the action.
+                            report.createActionReport(Object.keys(td['actions'])[i]);
+
+                            var actionOptions = createRequestOptions(myURL, method);
+
+                            if (action.input != undefined) // Fill body appropriately.
+                                actionOptions['body'] = JSON.stringify(jsf(action['input']));                            
+
+                                report.actionReports[i].createSafetyReport();
+
+                                // Types that should not be normally allowed.
+                                var types: string[];
+                                if(action.input != undefined)
+                                    types = await typeFuzz(action.input.type, myURL, actionOptions);
+                                else
+                                    types = await typeFuzz(null, myURL, actionOptions);
+                                
+                                types.forEach(type => report.actionReports[i].addType(type));
+                        }
+                    }
             }
             await TestBenchT.writeProperty('testReport', report);
             fastMode = false;

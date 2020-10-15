@@ -362,14 +362,16 @@ interface SecurityReport{
 }
 export class PropertyReport{
     propertyName: string;
-    security: SecurityReport;
+    security?: SecurityReport;
     safety?: object;
 
     constructor(name: string){
         this.propertyName = name;
+    }
+    public createSecurityReport(){
         this.security = {
             passedDictionaryAttack: true,
-        }
+        };
     }
     public createSafetyReport(){
         this.safety = {
@@ -400,11 +402,14 @@ export class PropertyReport{
 }
 export class ActionReport {
     actionName: string;
-    security: SecurityReport;
+    security?: SecurityReport;
     safety?: object;
 
     constructor(name: string){
         this.actionName = name;
+        
+    }
+    public createSecurityReport(){
         this.security ={
             passedDictionaryAttack: true
         };

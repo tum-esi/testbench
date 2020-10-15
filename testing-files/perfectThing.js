@@ -53,10 +53,10 @@ srv.start().then((WoT) => {
                 items: {
                     type: "number",
                 },
-            },
-            readOnly: false,
-            writeOnly: false,
-            observable: false,
+                readOnly: false,
+                writeOnly: false,
+                observable: false,
+            }
         },
         actions: {
             setCounter: {

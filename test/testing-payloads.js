@@ -40,15 +40,20 @@ export const faultyThingTD = {
             writeOnly: false,
             forms: [
                 {
+                    href:"http://localhost:8083/TestServient/properties/display",
+                    contentType:"application/json",
+                    op:["readproperty","writeproperty"]
+                },
+                {
                     href: "coap://localhost:8084/TestServient/properties/display",
                     contentType: "application/json",
                     op: ["readproperty", "writeproperty", "observeproperty", "unobserveproperty"],
-                },
+                }
             ],
         },
         counter: {
             type: "number",
-            observable: false,
+            observable: true,
             readOnly: false,
             writeOnly: false,
             forms: [
@@ -57,6 +62,12 @@ export const faultyThingTD = {
                     contentType: "application/json",
                     op: ["readproperty", "writeproperty"],
                 },
+                // {
+                //     href:"http://localhost:8083/TestServient/properties/counter/observable",
+                //     contentType:"application/json",
+                //     op:["observeproperty"],
+                //     subprotocol:"longpoll"
+                // },
                 {
                     href: "coap://localhost:8084/TestServient/properties/counter",
                     contentType: "application/json",
@@ -73,12 +84,12 @@ export const faultyThingTD = {
                 {
                     href: "http://localhost:8083/TestServient/properties/temperature",
                     contentType: "application/json",
-                    op: ["readproperty", "writeproperty"],
+                    op: ["readproperty"],
                 },
                 {
                     href: "coap://localhost:8084/TestServient/properties/temperature",
                     contentType: "application/json",
-                    op: ["readproperty", "writeproperty"],
+                    op: ["readproperty"],
                 },
             ],
         },
@@ -91,9 +102,23 @@ export const faultyThingTD = {
             writeOnly: false,
             forms: [
                 {
+                    href:"http://localhost:8083/TestServient/properties/faultyPercent",
+                    contentType:"application/json",
+                    op:["readproperty"],
+                    "htv:methodName":"GET"
+                },
+                // {
+                //     href: "http://localhost:8083/TestServient/properties/faultyPercent/observable",
+                //     contentType: "application/json",
+                //     op: [
+                //         "observeproperty"
+                //     ],
+                //     subprotocol: "longpoll"
+                // },
+                {
                     href: "coap://localhost:8084/TestServient/properties/faultyPercent",
                     contentType: "application/json",
-                    op: ["readproperty", "writeproperty", "observeproperty", "unobserveproperty"],
+                    op: ["readproperty", "observeproperty", "unobserveproperty"],
                 },
             ],
         },
@@ -356,6 +381,22 @@ export const perfectThingTD = {
             writeOnly: false,
             forms: [
                 {
+                    href: "http://localhost:8081/TestServient/properties/display",
+                    contentType: "application/json",
+                    op: [
+                        "readproperty",
+                        "writeproperty"
+                    ]
+                },
+                {
+                    href: "http://localhost:8081/TestServient/properties/display/observable",
+                    contentType: "application/json",
+                    op: [
+                        "observeproperty"
+                    ],
+                    subprotocol: "longpoll"
+                },
+                {
                     href: "coap://localhost:8082/TestServient/properties/display",
                     contentType: "application/json",
                     op: ["readproperty", "writeproperty", "observeproperty", "unobserveproperty"],
@@ -364,10 +405,18 @@ export const perfectThingTD = {
         },
         counter: {
             type: "number",
-            observable: true,
+            observable: false,
             readOnly: false,
             writeOnly: false,
             forms: [
+                {
+                    href: "http://localhost:8081/TestServient/properties/counter",
+                    contentType: "application/json",
+                    op: [
+                        "readproperty",
+                        "writeproperty"
+                    ]
+                },
                 {
                     href: "coap://localhost:8082/TestServient/properties/counter",
                     contentType: "application/json",
@@ -381,6 +430,22 @@ export const perfectThingTD = {
             observable: true,
             writeOnly: false,
             forms: [
+                {
+                    href: "http://localhost:8081/TestServient/properties/temperature",
+                    contentType: "application/json",
+                    op: [
+                        "readproperty"
+                    ],
+                    "htv:methodName": "GET"
+                },
+                {
+                    href: "http://localhost:8081/TestServient/properties/temperature/observable",
+                    contentType: "application/json",
+                    op: [
+                        "observeproperty"
+                    ],
+                    subprotocol: "longpoll"
+                },
                 {
                     href: "coap://localhost:8082/TestServient/properties/temperature",
                     contentType: "application/json",
