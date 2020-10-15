@@ -142,9 +142,9 @@ srv.start()
             await TestBenchT.writeProperty("thingUnderTestTD", thingTD)
             //write it into tutTD prop
             //call initiate
-            await TestBenchT.invokeAction("initiate", false)
+            await TestBenchT.invokeAction("initiate", true)
             //call testThing
-            await TestBenchT.invokeAction("testThing", false)
+            await TestBenchT.invokeAction("testThing", true)
             //read testReport
             const conformanceReport = await TestBenchT.readProperty('testReport');
             // call testVulnerabilities
@@ -292,11 +292,18 @@ srv.start()
             try{ // Reading common passwords & usernames.
                 var passwords: string;
                 var ids: string;
+                const testConfig: any = await TestBenchT.readProperty('testConfig');
 
                 if (fastMode){
-                    // This is the case when 'testVulnerabilities' is called from the 'fastTest' action. Uses short lists in order not to take a long time.
-                    passwords = fs.readFileSync('Resources/passwords-short.txt', 'utf-8');
-                    ids = fs.readFileSync('Resources/usernames-short.txt', 'utf-8');
+                    if (testConfig['testMode'] == true){
+                        passwords = fs.readFileSync('Resources/passwords-for-test.txt', 'utf-8');
+                        ids = fs.readFileSync('Resources/usernames-for-test.txt', 'utf-8');
+                    }
+                    else{
+                        // This is the case when 'testVulnerabilities' is called from the 'fastTest' action. Uses short lists in order not to take a long time.
+                        passwords = fs.readFileSync('Resources/passwords-short.txt', 'utf-8');
+                        ids = fs.readFileSync('Resources/usernames-short.txt', 'utf-8');
+                    }
                 }
                 else{
                     passwords = fs.readFileSync('Resources/passwords.txt', 'utf-8');
@@ -325,7 +332,6 @@ srv.start()
             async function isPredictable(myURL: URL, options: object, location?: string): Promise<boolean>{
                 for (var id of idArray){
                     for (var pw of pwArray){
-
                         try{
                             switch(scheme){
                                 case 'basic':

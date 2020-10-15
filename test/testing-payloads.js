@@ -27,6 +27,7 @@ export const testConfig = {
         },
     },
     credentials: {},
+    testMode: true
 }
 
 export const faultyThingTD = {
