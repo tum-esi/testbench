@@ -142,9 +142,9 @@ srv.start()
             await TestBenchT.writeProperty("thingUnderTestTD", thingTD)
             //write it into tutTD prop
             //call initiate
-            await TestBenchT.invokeAction("initiate", true)
+            await TestBenchT.invokeAction("initiate", false)
             //call testThing
-            await TestBenchT.invokeAction("testThing", true)
+            await TestBenchT.invokeAction("testThing", false)
             //read testReport
             const conformanceReport = await TestBenchT.readProperty('testReport');
             // call testVulnerabilities
@@ -828,7 +828,7 @@ srv.start()
 
                                     report.createActionReport(Object.keys(td['actions'])[i]);
                                     report.actionReports[i].createSecurityReport();
-                                    
+
                                     if (weakCredentials || (givenToken != null)){ // Have a token.
                                         report.actionReports[i].security.passedDictionaryAttack = !weakCredentials;
 
