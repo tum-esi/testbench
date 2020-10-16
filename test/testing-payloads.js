@@ -26,8 +26,7 @@ export const testConfig = {
             MsSubscribeTimeout: 1000,
         },
     },
-    credentials: {},
-    testMode: true
+    credentials: {}
 }
 
 export const faultyThingTD = {
@@ -63,12 +62,6 @@ export const faultyThingTD = {
                     contentType: "application/json",
                     op: ["readproperty", "writeproperty"],
                 },
-                // {
-                //     href:"http://localhost:8083/TestServient/properties/counter/observable",
-                //     contentType:"application/json",
-                //     op:["observeproperty"],
-                //     subprotocol:"longpoll"
-                // },
                 {
                     href: "coap://localhost:8084/TestServient/properties/counter",
                     contentType: "application/json",
@@ -108,14 +101,6 @@ export const faultyThingTD = {
                     op:["readproperty"],
                     "htv:methodName":"GET"
                 },
-                // {
-                //     href: "http://localhost:8083/TestServient/properties/faultyPercent/observable",
-                //     contentType: "application/json",
-                //     op: [
-                //         "observeproperty"
-                //     ],
-                //     subprotocol: "longpoll"
-                // },
                 {
                     href: "coap://localhost:8084/TestServient/properties/faultyPercent",
                     contentType: "application/json",

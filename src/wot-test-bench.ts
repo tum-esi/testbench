@@ -295,15 +295,9 @@ srv.start()
                 const testConfig: any = await TestBenchT.readProperty('testConfig');
 
                 if (fastMode){
-                    if (testConfig['testMode'] == true){
-                        passwords = fs.readFileSync('Resources/passwords-for-test.txt', 'utf-8');
-                        ids = fs.readFileSync('Resources/usernames-for-test.txt', 'utf-8');
-                    }
-                    else{
-                        // This is the case when 'testVulnerabilities' is called from the 'fastTest' action. Uses short lists in order not to take a long time.
-                        passwords = fs.readFileSync('Resources/passwords-short.txt', 'utf-8');
-                        ids = fs.readFileSync('Resources/usernames-short.txt', 'utf-8');
-                    }
+                    // This is the case when 'testVulnerabilities' is called from the 'fastTest' action. Uses short lists in order not to take a long time.
+                    passwords = fs.readFileSync('Resources/passwords-short.txt', 'utf-8');
+                    ids = fs.readFileSync('Resources/usernames-short.txt', 'utf-8');
                 }
                 else{
                     passwords = fs.readFileSync('Resources/passwords.txt', 'utf-8');
