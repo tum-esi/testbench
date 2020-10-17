@@ -5,13 +5,16 @@ var fs = require('fs');
 var util = require('util');
 
 var log_file = fs.createWriteStream(__dirname + '/faultyThing.debug.log', {flags : 'w'});
-var log_stdout = process.stdout;
 
 console.log = function(d) { //
   log_file.write(util.format(d) + '\n');
 };
 
-let srv = new Servient()
+let srv = new Servient({
+    "log":{
+        "level": 0
+    }
+})
 let httpSrvObj = { port: 8083 }
 srv.addServer(new HttpServer(httpSrvObj))
 let coapSrvObj = { port: 8084 }

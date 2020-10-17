@@ -19,6 +19,13 @@ import { stringify } from "querystring"
 
 var jsf = require("json-schema-faker")
 const fs = require("fs")
+var util = require('util');
+
+var log_file = fs.createWriteStream(__dirname + '/testBench.debug.log', {flags : 'w'});
+
+console.log = function(d) { //
+  log_file.write(util.format(d) + '\n');
+};
 
 var configFile = "default-config.json"
 if (process.argv.length > 2) {
