@@ -301,12 +301,12 @@ srv.start()
 
                 if (fastMode){
                     // This is the case when 'testVulnerabilities' is called from the 'fastTest' action. Uses short lists in order not to take a long time.
-                    passwords = fs.readFileSync('Resources/passwords-short.txt', 'utf-8');
-                    ids = fs.readFileSync('Resources/usernames-short.txt', 'utf-8');
+                    passwords = fs.readFileSync('passwords-short.txt', 'utf-8');
+                    ids = fs.readFileSync('usernames-short.txt', 'utf-8');
                 }
                 else{
-                    passwords = fs.readFileSync('Resources/passwords.txt', 'utf-8');
-                    ids = fs.readFileSync('Resources/usernames.txt', 'utf-8');
+                    passwords = fs.readFileSync('passwords.txt', 'utf-8');
+                    ids = fs.readFileSync('usernames.txt', 'utf-8');
                 }
 
                 const pwLines: Array<string> = passwords.split(/\r?\n/);
