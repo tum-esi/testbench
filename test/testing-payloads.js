@@ -425,14 +425,6 @@ export const perfectThingTD = {
                     "htv:methodName": "GET"
                 },
                 {
-                    href: "http://localhost:8081/TestServient/properties/temperature/observable",
-                    contentType: "application/json",
-                    op: [
-                        "observeproperty"
-                    ],
-                    subprotocol: "longpoll"
-                },
-                {
                     href: "coap://localhost:8082/TestServient/properties/temperature",
                     contentType: "application/json",
                     op: ["readproperty", ["observeproperty", "unobserveproperty"]],

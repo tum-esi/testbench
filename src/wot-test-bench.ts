@@ -14,8 +14,6 @@ import { Tester } from "./Tester"
 import { parseArgs, configPath, tdPaths } from "./config"
 import { testConfig, ListeningType, logFormatted } from "./utilities"
 import { TestReport, VulnerabilityReport, TotalReport } from "./TestReport"
-import { type } from "os"
-import { stringify } from "querystring"
 
 var jsf = require("json-schema-faker")
 const fs = require("fs")

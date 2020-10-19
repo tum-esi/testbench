@@ -10,11 +10,7 @@ console.log = function(d) { //
   log_file.write(util.format(d) + '\n');
 };
 
-let srv = new Servient({
-    "log":{
-        "level": 0
-    }
-})
+let srv = new Servient()
 let httpSrvObj = { port: 8081 }
 srv.addServer(new HttpServer(httpSrvObj))
 let coapSrvObj = { port: 8082 }

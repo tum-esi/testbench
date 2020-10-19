@@ -234,8 +234,8 @@ describe("Action: fastTest", function () {
                     let allTestCases = getAllTestCases(res.body['conformance'])
                     let vulnResults = res.body['vulnerabilities'];
 
-                    //console.log(allTestCases); //Can be used to log TestResults for debugging purposes.
-                    expect(allTestCases.length, "Did not report the correct amount of Testcases.").to.be.equal(24) //Check if all TestCases have been generated.
+                    console.log(allTestCases); //Can be used to log TestResults for debugging purposes.
+                    expect(allTestCases.length, "Did not report the correct amount of Testcases.").to.be.equal(25) //Check if all TestCases have been generated.
                     expect(allTestPassed(allTestCases, "Not all Testcases passed for Action: fastTest.")).to.be.true //Check if all TestCases have passed.
                     
                     expect(vulnResults['propertyReports'].length, "Did not report the correct amount of propertyReports.").to.be.equal(5);
