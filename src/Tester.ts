@@ -8,6 +8,7 @@ It is possible to define multiple test scenarios with each having different requ
 After the test a test report can be generated and analyzed to get more meaning of the results.
 !!! tut means Thing Under Test
  */
+import * as fetch from "node-fetch";
 import * as wot from "wot-typescript-definitions"
 import * as Utils from "./utilities"
 import {
@@ -19,7 +20,11 @@ import {
     Payload,
     EventTestReportContainer,
     EventData,
+    VulnerabilityReport
 } from "./TestReport"
+
+const fs = require("fs");
+var jsf = require("json-schema-faker");
 
 export class Tester {
     private tutTd: wot.ThingDescription //the TD that belongs to the Thing under Test
@@ -877,5 +882,784 @@ export class Tester {
 
         self.log("First Test Phase has finished without an error.")
         return self.testReport
+    }
+    public async testVulnerabilities(fastMode: boolean){
+        // Read TD from the property.
+        const td = this.tutTd;
+
+        // Arrays to store pre-determined set of credentials.
+        var pwArray: Array<string> = [];
+        var idArray: Array<string> = [];
+
+        var scheme: string; // Underlying security scheme.
+        var schemeName: string; // Covering name for security scheme.
+
+        var report: VulnerabilityReport = new VulnerabilityReport();
+        
+        // Variables to pass credentials or token.
+        var username: string;
+        var password: string;
+        var token: string;
+
+        // Assuming single security scheme.
+        if (Array.isArray[td['security']]){
+            if (td['security'].length !== 1){
+                throw "Error: multiple security schemes cannot be tested for now.";
+            } else{
+                schemeName = td['security'][0];
+                scheme = td['securityDefinitions'][schemeName]["scheme"];
+            }
+        }
+        else{
+            schemeName = td['security'];
+            scheme = td['securityDefinitions'][schemeName]["scheme"];
+        }
+
+        try{ // Reading common passwords & usernames.
+            var passwords: string;
+            var ids: string;
+
+            if (fastMode){
+                // This is the case when 'testVulnerabilities' is called from the 'fastTest' action. Uses short lists in order not to take a long time.
+                passwords = fs.readFileSync('assets/passwords-short.txt', 'utf-8');
+                ids = fs.readFileSync('assets/usernames-short.txt', 'utf-8');
+            }
+            else{
+                passwords = fs.readFileSync('assets/passwords.txt', 'utf-8');
+                ids = fs.readFileSync('assets/usernames.txt', 'utf-8');
+            }
+
+            const pwLines: Array<string> = passwords.split(/\r?\n/);
+            const idLines: Array<string> = ids.split(/\r?\n/);
+
+            pwLines.forEach((line) => pwArray.push(line));
+            idLines.forEach((line) => idArray.push(line));
+        }
+        catch(err){
+            console.error('Error while trying to read usernames and passwords:', err);
+            process.exit(1);
+        }
+        /**
+         * The main brute-forcing function.
+         * @param myURL URL to be tested.
+         * @param options Options for the required HTTP(s) request.
+         * @param location Determines where credentials will be stored.
+         */
+        async function isPredictable(myURL: URL, options: object, location?: string): Promise<boolean>{
+            for (var id of idArray){
+                for (var pw of pwArray){
+                    try{
+                        switch(scheme){
+                            case 'basic':
+                                if (location === 'header'){
+                                    options['headers']['Authorization'] = 'Basic ' + 
+                                            Buffer.from(id + ":" + pw).toString("base64");
+                                }
+                                else // TODO: Add other "in" parameters.
+                                    throw 'Currently auth. info can only be stored at the header.';
+                                break;
+                            case 'oauth2':
+                                options['body'].set('client_id', id);
+                                options['body'].set('client_secret', pw);
+                                break;
+                        }
+                        var result: any = await fetch(myURL.toString(), options);
+                        if (result.ok){
+                            username = id;
+                            password = pw;
+
+                            if (scheme == 'oauth2')
+                                token = (await result.json())['access_token'];
+                            return true;
+                        }
+                    }
+                    catch(e){
+                        throw e;
+                    }
+                }
+            }
+            // Will return false if no id-pw pair passes, indicating not-weak credentials.
+            return false;
+        }
+        /**
+         * Tries sending requests with types other than the given one.
+         * @param type input type of InteractionAffordance, if exists.
+         * @param myURL URL of the related form.
+         * @param options Request options.
+         */
+        async function typeFuzz(type: string, myURL: URL, options: object){
+            var accepts: Array<string> = [];
+            
+            try{
+                if(type != 'object'){
+                    options['body'] = JSON.stringify({key: 'value'});
+                    var response = await fetch(myURL.toString(), options);
+                    if (response.ok) accepts.push('object');
+                }
+                if (type != 'array'){
+                    options['body'] = JSON.stringify([1,2,3]);
+                    var response = await fetch(myURL.toString(), options);
+                    if (response.ok) accepts.push('array');
+                }
+                if (type != 'string'){
+                    options['body'] = 'TYPEFUZZ';
+                    var response = await fetch(myURL.toString(), options);
+                    if (response.ok) accepts.push('string');
+                }
+                if (type != 'integer'){
+                    options['body'] = JSON.stringify(42);
+                    var response = await fetch(myURL.toString(), options);
+                    if (response.ok) accepts.push('integer');
+                }
+                if (type != 'number'){
+                    options['body'] = JSON.stringify(2.71828182846);
+                    var response = await fetch(myURL.toString(), options);
+                    if (response.ok) accepts.push('number');
+                }
+                if (type != 'boolean'){
+                    options['body'] = JSON.stringify(true);
+                    var response = await fetch(myURL.toString(), options);
+                    if (response.ok) accepts.push('boolean');
+                }
+            }
+            catch(e){
+                throw 'typeFuzz() resulted in an error:';
+            }
+            return accepts;
+        }
+        /**
+         * Return credentials of tut, if exists.
+         */
+        function getCredentials(): string {
+            let creds:object = this.testConfig.credentials[td['id']]
+
+            if (creds != undefined){
+                if (scheme == 'basic')
+                    return Buffer.from(creds['username'] + ':' + creds['password']).toString('base64');
+                if (scheme == 'oauth2')
+                    return creds['token'];
+            }
+            else
+                return null;
+        }
+        /**
+         * Simple function to create HTTP(s) request options from given parameters.
+         */
+        function createRequestOptions(url: URL, op: string): object{
+            return {
+                hostname: url.hostname,
+                path: url.pathname,
+                port: url.port,
+                headers:{},
+                method: op
+            }
+        }
+        /**
+         * Returns the related form of the InteractionAffordance with given op.
+         */
+        function getForm(op: string, forms: Array<any>){
+
+            for (var i = 0; i < forms.length; i++){
+                if (forms[i]['op'].includes(op))
+                    return forms[i];
+            }
+            return null;
+        }
+        switch(scheme){
+            case "basic":
+                var location: string; // The 'in' parameter of the TD Spec.
+                report.scheme = 'basic';
+
+                if(!td['securityDefinitions'][schemeName]['in']){ // Default value.
+                    location = 'header';
+                }
+                else{
+                    location = td['securityDefinitions'][schemeName]['in'];
+                }
+
+                if (td['properties'] != undefined){ // Properties exist.
+
+                    const properties: any = Object.values(td['properties']);
+                    
+                    for (var i=0; i < properties.length; i++){
+                        let property: any = properties[i];
+
+                        // Creating propertyReport with the name of the property.
+                        report.createPropertyReport(Object.keys(td['properties'])[i]);
+                        report.propertyReports[i].createSecurityReport();
+
+                        if (!property.writeOnly){ // Property can be read, supposedly?
+                            try{
+                                // First tries to 'readproperty'.
+                                var form = getForm('readproperty', property.forms);
+
+                                // Check if the interaction has a different security scheme.
+                                if (form['security'] != undefined){
+                                    if (Array.isArray(form['security'])){
+                                        if (!form['security'].includes(schemeName))
+                                            throw "Testing multiple security schemas are not currently available.";
+                                    }
+                                    else if (form['security'] != schemeName)
+                                        throw "Testing multiple security schemas are not currently available.";
+                                }
+                                
+                                var propertyURL: URL = new URL(form['href']);
+                                var method: string = form['htv:methodName'];
+                                
+                                if(method == null) method = 'GET';
+        
+                                var propertyOptions: object = createRequestOptions(propertyURL, method);
+        
+                                // Brute-forcing with 'GET' requests, with the help of above lines.
+                                var weakCredentials: boolean = await isPredictable(propertyURL, propertyOptions, location);
+                                const creds: string = getCredentials();
+                                
+                                if (weakCredentials || (creds != null)){ // Have credentials: either from brute-force or they are already given.
+                                    report.propertyReports[i].security.passedDictionaryAttack = !weakCredentials;
+        
+                                    report.propertyReports[i].createSafetyReport();
+                                    
+                                    if (!weakCredentials) { // Bruteforce failed, test 'readproperty' with given credentials.
+                                        propertyOptions['headers']['Authorization'] = 'Basic ' + creds;
+
+                                        // Making sure that the property is readable.
+                                        let isReadable = await fetch(propertyURL.toString(), propertyOptions);
+                                        if (isReadable.ok)
+                                            report.propertyReports[i].isReadable(true);
+
+                                        report.propertyReports[i].addDescription('Not weak username-password');
+                                    }
+                                    else {
+                                        // If brute-force successes it is already readable.
+                                        report.propertyReports[i].isReadable(true);
+                                        report.propertyReports[i].addDescription('Weak username-password');
+                                        report.propertyReports[i].addCredentials(username, password);
+                                    }
+                                    // Trying to 'writeproperty' with different types.
+                                    form = getForm('writeproperty', property.forms);
+        
+                                    // This time 'form' can be null in case 'property' is 'readOnly'.
+                                    if (form != null){
+                                        propertyURL= new URL(form['href']);
+                                        method = form['htv:methodName'];
+        
+                                        if (method == null) method = 'PUT';
+        
+                                        propertyOptions = createRequestOptions(propertyURL, method);
+
+                                        var contentType: string = form['contentType'];
+        
+                                        if (contentType == undefined) contentType = 'application/json';
+                                        propertyOptions['headers']['Content-Type'] = contentType;
+
+                                        if(!weakCredentials)
+                                            propertyOptions['headers']['Authorization'] = 'Basic ' + creds;
+                                        else
+                                            propertyOptions['headers']['Authorization'] = 'Basic ' +
+                                                Buffer.from(username + ':' + password).toString('base64');
+
+                                        // Types that should not be normally allowed.
+                                        var types: string[] = await typeFuzz(property.type, propertyURL, propertyOptions);                                    
+                                        types.forEach(type => report.propertyReports[i].addType(type));
+        
+                                        // Trying to write the real type, if cannot write any exceptional type.
+                                        if (types.length == 0){
+                                            propertyOptions['body'] = JSON.stringify(jsf(property));
+
+                                            let isWritable = await fetch(propertyURL.toString(), propertyOptions);
+                                            if (isWritable.ok)
+                                                report.propertyReports[i].isWritable(true);
+                                        }
+                                        else report.propertyReports[i].isWritable(true);
+                                    }
+                                }     
+                                else report.propertyReports[i].addDescription('TestBench could not find the credentials, neither from brute-forcing nor from given config file. Thus, could not test safety of property.');
+                            }
+                            catch(e){
+                                throw '::::ERROR::::: Brute-forcing property resulted in error:' + e;
+                            }
+                        }
+                        else{ // Property is 'writeonly'.
+                            try{
+                                // First tries to 'writeproperty', then tries to 'readproperty'.
+                                var form = getForm('writeproperty', property.forms);
+
+                                // Check if the interaction has a different security schema.
+                                if (form['security'] != undefined){
+                                    if (Array.isArray(form['security'])){
+                                        if (!form['security'].includes(schemeName))
+                                            throw "Testing multiple security schemas are not currently available.";
+                                    }
+                                    else if (form['security'] != schemeName)
+                                        throw "Testing multiple security schemas are not currently available.";
+                                }
+
+                                var propertyURL: URL = new URL(form['href']);
+                                var method: string = form['htv:methodName'];
+        
+                                if (method == null) method = 'PUT';
+        
+                                var propertyOptions: object = createRequestOptions(propertyURL, method);
+                                var contentType: string = form['contentType'];
+                                
+                                if (contentType == undefined) contentType = 'application/json';
+                                
+                                propertyOptions['headers']['Content-Type'] = contentType;
+                                propertyOptions['body'] = JSON.stringify(jsf(property));
+        
+                                var weakCredentials: boolean = await isPredictable(propertyURL, propertyOptions, location);
+                                const creds: string = getCredentials();
+        
+                                if (weakCredentials || (creds != null)){ // Have credentials.
+                                    report.propertyReports[i].security.passedDictionaryAttack = !weakCredentials;
+                                    report.propertyReports[i].createSafetyReport();
+                                    
+                                    if (!weakCredentials) {
+                                        propertyOptions['headers']['Authorization'] = 'Basic ' + creds;
+        
+                                        let isWritable = await fetch(propertyURL.toString(), propertyOptions)
+                                        if (isWritable.ok)
+                                            report.propertyReports[i].isWritable(true);
+
+                                        report.propertyReports[i].addDescription('Not weak username-password');
+                                    }
+                                    else {
+                                        report.propertyReports[i].addDescription('Weak username-password');
+                                        report.propertyReports[i].isWritable(true);
+                                        report.propertyReports[i].addCredentials(username, password);
+                                    }
+                                    // Types that should not be normally allowed.
+                                    var types: string[] = await typeFuzz(property.type, propertyURL, propertyOptions);
+                                    types.forEach(type => report.propertyReports[i].addType(type));
+        
+                                    propertyOptions['method'] = 'GET';
+                                    delete propertyOptions['body'];
+        
+                                    var isReadable: any = await fetch(propertyURL.toString(), propertyOptions);
+                                    if (isReadable.ok) report.propertyReports[i].isReadable(true);
+                                }
+                                else report.propertyReports[i].addDescription('TestBench could not find the credentials, neither from brute-forcing nor from given config file. Thus, could not test safety of property.');
+                            }
+                            catch(e){
+                                throw '::::ERROR::::: Brute-forcing property resulted in error:'+e;
+                            }
+                        }
+                    }
+                }
+                if (td['actions'] != undefined){
+                    const actions: Array<any> = Object.values(td['actions']);
+                    
+                    for(var i=0; i < actions.length; i++){
+                        let action: any = actions[i];
+
+                        var form = getForm('invokeaction', action.forms); // Cannot be null.
+
+                        // Check if the interaction has a different security schema.
+                        if (form['security'] != undefined){
+                            if (Array.isArray(form['security'])){
+                                if (!form['security'].includes(schemeName))
+                                    throw "Testing multiple security schemas are not currently available.";
+                            }
+                            else if (form['security'] != schemeName)
+                                throw "Testing multiple security schemas are not currently available.";
+                        }
+
+                        var myURL: URL = new URL(form['href']);
+                        var method: string = form['htv:methodName'];
+                        if (method == undefined) method = 'POST';
+
+                        // Create action report with the name of the action.
+                        report.createActionReport(Object.keys(td['actions'])[i]);
+                        report.actionReports[i].createSecurityReport();
+
+                        var actionOptions = createRequestOptions(myURL, method);
+
+                        if (action.input != undefined) // Fill body appropriately.
+                            actionOptions['body'] = JSON.stringify(jsf(action['input']));
+                        
+                        var weakCredentials: boolean = await isPredictable(myURL, actionOptions, location);
+                        var creds: string = getCredentials();
+
+                        if(weakCredentials || (creds != null)){ // Have credentials.
+                            report.actionReports[i].security.passedDictionaryAttack = !weakCredentials;
+                            report.actionReports[i].createSafetyReport();
+
+                            if(!weakCredentials){
+                                actionOptions['headers']['Authorization'] = 'Basic ' + creds;
+                                report.actionReports[i].addDescription('Not weak username-password');
+                            }
+                            else{
+                                report.actionReports[i].addDescription('Weak username-password');
+                                report.actionReports[i].addCredentials(username, password);
+                            }
+                            // Types that should not be normally allowed.
+                            var types: string[];
+                            if(action.input != undefined)
+                                types = await typeFuzz(action.input.type, myURL, actionOptions);
+                            else
+                                types = await typeFuzz(null, myURL, actionOptions);
+                            
+                            types.forEach(type => report.actionReports[i].addType(type));
+                        }
+                        else report.actionReports[i].addDescription('TestBench could not find the credentials, neither from brute-forcing nor from given config file. Thus, could not test safety of action.');
+                    }
+                }
+                break;
+            case "oauth2":
+                const flow: string = td['securityDefinitions'][schemeName].flow; // Authorization flow.
+                const params: URLSearchParams = new URLSearchParams(); // Used to create the required body.
+
+                report.scheme = 'oauth2';
+
+                switch(flow){
+                    case "client_credentials":
+                        // URL of the token server to be brute-forced.
+                        const tokenURL: URL = new URL(td['securityDefinitions'][schemeName].token);
+
+                        params.append('grant_type', 'client_credentials');
+
+                        var options = createRequestOptions(tokenURL, 'POST');
+                        options['body'] = params;
+
+                        const weakCredentials: boolean = await isPredictable(tokenURL, options);
+                        const givenToken: string = getCredentials();
+
+                        if (td['properties'] != undefined){ // Properties exist.
+                            const properties: Array<any> = Object.values(td['properties']);
+
+                            for (var i=0; i < properties.length; i++){
+                            
+                                let property: any = properties[i];
+                                report.createPropertyReport(Object.keys(td['properties'])[i]);
+                                report.propertyReports[i].createSecurityReport();
+
+                                if (!property.writeOnly){ // Can be read?
+
+                                    if (weakCredentials || (givenToken != null)){ // Have a token.
+                                        report.propertyReports[i].security.passedDictionaryAttack = !weakCredentials;
+
+                                        report.propertyReports[i].createSafetyReport();
+
+                                        var form = getForm('readproperty', property.forms);
+                                        var myURL: URL = new URL(form['href']);
+                                        var method: string = form['htv:methodName'];
+                                        if (method == undefined) method = 'GET';
+
+                                        options = createRequestOptions(myURL, method);
+                                        
+                                        if (!weakCredentials){
+                                            options['headers']['Authorization'] = 'Bearer ' + givenToken;
+                                            report.propertyReports[i].addDescription('Not weak username-password on token server.');
+                                        }
+                                        else {
+                                            options['headers']['Authorization'] = 'Bearer ' + token;
+                                            report.propertyReports[i].addDescription('Weak username-password pair on token server.');
+                                            report.propertyReports[i].addCredentials(username, password);
+                                        }
+
+                                        // Should test for readability.
+                                        var isReadable: any = await fetch(myURL.toString(), options);
+                                        if (isReadable.ok)
+                                            report.propertyReports[i].isReadable(true);
+
+                                        form = getForm('writeproperty', property.forms);
+
+                                        if (form != null){ // 'form' can be null in case the property is readOnly.
+                                            myURL = new URL(form['href']);
+                                            method = form['htv:methodName'];
+                                            if (method == undefined) method = 'PUT';
+
+                                            options = createRequestOptions(myURL, method);
+
+                                            var contentType: string = form['contentType'];
+                                            if (contentType == undefined) contentType = 'application/json';
+
+                                            options['headers']['Content-Type'] = contentType;
+
+                                            if (!weakCredentials)
+                                                options['headers']['Authorization'] = 'Bearer ' + givenToken;
+                                            else
+                                                options['headers']['Authorization'] = 'Bearer ' + token;
+
+                                            options['body'] = JSON.stringify(jsf(property));
+    
+                                            let isWritable = await fetch(myURL.toString(), options);
+                                            if (isWritable.ok)
+                                                report.propertyReports[i].isWritable(true);
+
+                                            // Types that should not be normally allowed.
+                                            var types: Array<string> = await typeFuzz(property.type, myURL, options);
+                                            types.forEach(type => report.propertyReports[i].addType(type));
+                                        }
+                                    }
+                                    else report.propertyReports[i].addDescription('TestBench could not get a suitable token, neither from brute-forcing nor from given config file. Thus, could not test safety of property.');
+                                }
+                                else{ // Property 'writeonly'
+                                    if (weakCredentials || (givenToken != null)){
+                                        report.propertyReports[i].security.passedDictionaryAttack = !weakCredentials;
+                                        
+                                        report.propertyReports[i].createSafetyReport();
+
+                                        var form = getForm('writeproperty', property.forms);
+                                        var myURL: URL = new URL(form['href']);
+                                        var method: string = form['htv:methodName'];
+                                        if(method == null) method = 'PUT';
+
+                                        options = createRequestOptions(myURL, method);
+
+                                        var contentType: string = form['contentType'];
+                                        if (contentType == undefined) contentType = 'application/json';
+
+                                        options['headers']['Content-Type'] = contentType;
+
+                                        if (!weakCredentials){
+                                            options['headers']['Authorization'] = 'Bearer ' + givenToken;
+                                            report.propertyReports[i].addDescription('Not weak username-password on token server');
+                                        }
+                                        else {
+                                            options['headers']['Authorization'] = 'Bearer ' + token;
+                                            report.propertyReports[i].addDescription('Weak username-password pair on token server.');
+                                            report.propertyReports[i].addCredentials(username, password);
+                                        }
+
+                                        options['body'] = JSON.stringify(jsf(property));
+
+                                        var isWritable: any = await fetch(myURL.toString(), options);
+                                        if (isWritable.ok)
+                                            report.propertyReports[i].isWritable(true);
+                                        // Types that should not be normally allowed.
+                                        var types: Array<string> = await typeFuzz(property.type, myURL, options);
+                                        types.forEach(type => report.propertyReports[i].addType(type));
+
+                                        options['method'] = 'GET';
+                                        delete options['body'];
+            
+                                        var isReadable: any = await fetch(myURL.toString(), options);
+                                        if (isReadable.ok) report.propertyReports[i].isReadable(true);
+                                    }
+                                    else report.propertyReports[i].addDescription('TestBench could not get a suitable token, neither from brute-forcing nor from given config file. Thus, could not test safety of property.');
+                                }
+                            }
+                        }
+                        if (td['actions'] != undefined){
+                            const actions: Array<any> = Object.values(td['actions']);
+
+                            for (var i=0; i < actions.length; i++){
+                            
+                                let action: any = actions[i];
+
+                                report.createActionReport(Object.keys(td['actions'])[i]);
+                                report.actionReports[i].createSecurityReport();
+
+                                if (weakCredentials || (givenToken != null)){ // Have a token.
+                                    report.actionReports[i].security.passedDictionaryAttack = !weakCredentials;
+
+                                    report.actionReports[i].createSafetyReport();
+
+                                    var form = getForm('invokeaction', action.forms);
+                                    var myURL: URL = new URL(form['href']);
+                                    var method: string = form['htv:methodName'];
+                                    if (method == undefined) method = 'POST';
+
+                                    options = createRequestOptions(myURL, method);
+
+                                    if (!weakCredentials) {
+                                        options['headers']['Authorization'] = 'Bearer ' + givenToken;
+                                        report.actionReports[i].addDescription('Strong username-password on token server.');
+                                    }
+                                    else {
+                                        options['headers']['Authorization'] = 'Bearer ' + token;
+                                        report.actionReports[i].addDescription('Weak username-password pair on token server.');
+                                        report.actionReports[i].addCredentials(username, password);
+                                    }
+                                    // Types that should not be normally allowed.
+                                    var types: string[];
+                                    if (action.input != undefined)
+                                        types = await typeFuzz(action.input.type, myURL, options);
+                                    else
+                                        types = await typeFuzz(null, myURL, options);
+
+                                    types.forEach(type => report.actionReports[i].addType(type));
+                                }
+                                else report.actionReports[i].addDescription('TestBench could not get a suitable token, neither from brute-forcing nor from given config file. Thus, could not test safety of action.');
+                            }
+                        }
+                        break;
+                    default:
+                        throw 'This oauth flow cannot be tested for now.';
+                }
+                break;
+            case "nosec":
+                report.scheme = 'nosec';
+
+                if (td['properties'] != undefined){
+                    const properties: any = Object.values(td['properties']);
+
+                    for (var i=0; i < properties.length; i++){
+                        let property: any = properties[i];
+
+                        // Creating propertyReport with the name of the property.
+                        report.createPropertyReport(Object.keys(td['properties'])[i]);
+
+                        if (!property.writeOnly){ // Property can be read, supposedly?
+                            try{                                
+                                // First tries to 'readproperty'.
+                                var form = getForm('readproperty', property.forms);
+
+                                // Check if the interaction has a different security scheme.
+                                if (form['security'] != undefined){
+                                    if (Array.isArray(form['security'])){
+                                        if (!form['security'].includes(schemeName))
+                                            throw "Testing multiple security schemas are not currently available.";
+                                    }
+                                    else if (form['security'] != schemeName)
+                                        throw "Testing multiple security schemas are not currently available.";
+                                }
+                                
+                                var propertyURL: URL = new URL(form['href']);
+                                var method: string = form['htv:methodName'];
+                                
+                                if(method == null) method = 'GET';
+        
+                                var propertyOptions: object = createRequestOptions(propertyURL, method);
+                                report.propertyReports[i].createSafetyReport();
+
+                                // Making sure that the property is readable.
+                                let isReadable: any = await fetch(propertyURL.toString(), propertyOptions);
+                                if (isReadable.ok)
+                                    report.propertyReports[i].isReadable(true);
+
+                                // Trying to 'writeproperty' with different types.
+                                form = getForm('writeproperty', property.forms);
+
+                                // This time 'form' can be null in case 'property' is 'readOnly'.
+                                if (form != null){
+                                    propertyURL= new URL(form['href']);
+                                    method = form['htv:methodName'];
+    
+                                    if (method == null) method = 'PUT';
+    
+                                    propertyOptions = createRequestOptions(propertyURL, method);
+
+                                    var contentType: string = form['contentType'];
+    
+                                    if (contentType == undefined) contentType = 'application/json';
+                                    propertyOptions['headers']['Content-Type'] = contentType;
+
+                                    // Types that should not be normally allowed.
+                                    var types: string[] = await typeFuzz(property.type, propertyURL, propertyOptions);                                    
+                                    types.forEach(type => report.propertyReports[i].addType(type));
+    
+                                    // Trying to write the real type, if cannot write any exceptional type.
+                                    if (types.length == 0){
+                                        propertyOptions['body'] = JSON.stringify(jsf(property));
+
+                                        let isWritable = await fetch(propertyURL.toString(), propertyOptions);
+                                        if (isWritable.ok)
+                                            report.propertyReports[i].isWritable(true);
+                                    }
+                                    else report.propertyReports[i].isWritable(true);
+                                }
+                            }
+                            catch(e){
+                                throw "Safety tests for nosec resulted in error:" + e;
+                            }
+                        }
+                        else{ // Property is 'writeonly'.
+                            try{
+                                // First tries to 'writeproperty', then tries to 'readproperty'.
+                                var form = getForm('writeproperty', property.forms);
+
+                                // Check if the interaction has a different security schema.
+                                if (form['security'] != undefined){
+                                    if (Array.isArray(form['security'])){
+                                        if (!form['security'].includes(schemeName))
+                                            throw "Testing multiple security schemas are not currently available.";
+                                    }
+                                    else if (form['security'] != schemeName)
+                                        throw "Testing multiple security schemas are not currently available.";
+                                }
+
+                                var propertyURL: URL = new URL(form['href']);
+                                var method: string = form['htv:methodName'];
+        
+                                if (method == null) method = 'PUT';
+        
+                                var propertyOptions: object = createRequestOptions(propertyURL, method);
+                                var contentType: string = form['contentType'];
+                                
+                                if (contentType == undefined) contentType = 'application/json';
+                                
+                                propertyOptions['headers']['Content-Type'] = contentType;
+                                propertyOptions['body'] = JSON.stringify(jsf(property));
+        
+                                report.propertyReports[i].createSafetyReport();
+                                
+                                propertyOptions['headers']['Authorization'] = 'Basic ' + creds;
+    
+                                let isWritable = await fetch(propertyURL.toString(), propertyOptions)
+                                if (isWritable.ok)
+                                    report.propertyReports[i].isWritable(true);
+
+                                // Types that should not be normally allowed.
+                                var types: string[] = await typeFuzz(property.type, propertyURL, propertyOptions);
+                                types.forEach(type => report.propertyReports[i].addType(type));
+    
+                                propertyOptions['method'] = 'GET';
+                                delete propertyOptions['body'];
+    
+                                var isReadable: any = await fetch(propertyURL.toString(), propertyOptions);
+                                if (isReadable.ok) report.propertyReports[i].isReadable(true);
+                            }
+                            catch(e){
+                                throw "Safety tests for nosec resulted in error:" + e;
+                            }
+                        }
+                    }
+                }
+                if (td['actions'] != undefined){
+                    const actions: Array<any> = Object.values(td['actions']);
+                    
+                    for(var i=0; i < actions.length; i++){
+                        let action: any = actions[i];
+
+                        var form = getForm('invokeaction', action.forms); // Cannot be null.
+
+                        // Check if the interaction has a different security schema.
+                        if (form['security'] != undefined){
+                            if (Array.isArray(form['security'])){
+                                if (!form['security'].includes(schemeName))
+                                    throw "Testing multiple security schemas are not currently available.";
+                            }
+                            else if (form['security'] != schemeName)
+                                throw "Testing multiple security schemas are not currently available.";
+                        }
+
+                        var myURL: URL = new URL(form['href']);
+                        var method: string = form['htv:methodName'];
+                        if (method == undefined) method = 'POST';
+
+                        // Create action report with the name of the action.
+                        report.createActionReport(Object.keys(td['actions'])[i]);
+
+                        var actionOptions = createRequestOptions(myURL, method);
+
+                        if (action.input != undefined) // Fill body appropriately.
+                            actionOptions['body'] = JSON.stringify(jsf(action['input']));                            
+
+                            report.actionReports[i].createSafetyReport();
+
+                            // Types that should not be normally allowed.
+                            var types: string[];
+                            if(action.input != undefined)
+                                types = await typeFuzz(action.input.type, myURL, actionOptions);
+                            else
+                                types = await typeFuzz(null, myURL, actionOptions);
+                            
+                            types.forEach(type => report.actionReports[i].addType(type));
+                    }
+                }
+        }
+        return report;
     }
 }
