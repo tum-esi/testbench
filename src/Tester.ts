@@ -1031,16 +1031,21 @@ export class Tester {
          * Return credentials of tut, if exists.
          */
         function getCredentials(): string {
-            let creds:object = this.testConfig.credentials[td['id']]
+            try{
+                let creds:object = JSON.parse(fs.readFileSync("default-config.json", "utf8"))['credentials'][td['id']];
 
-            if (creds != undefined){
-                if (scheme == 'basic')
-                    return Buffer.from(creds['username'] + ':' + creds['password']).toString('base64');
-                if (scheme == 'oauth2')
-                    return creds['token'];
+                if (creds != undefined){
+                    if (scheme == 'basic')
+                        return Buffer.from(creds['username'] + ':' + creds['password']).toString('base64');
+                    if (scheme == 'oauth2')
+                        return creds['token'];
+                }
+                else
+                    return null;
             }
-            else
-                return null;
+            catch(e){
+                console.log("error: " + e);
+            }
         }
         /**
          * Simple function to create HTTP(s) request options from given parameters.
@@ -1077,10 +1082,9 @@ export class Tester {
                     location = td['securityDefinitions'][schemeName]['in'];
                 }
 
-                if (td['properties'] != undefined){ // Properties exist.
-
+                if (td['properties'] != undefined){ // Properties exist.                    
                     const properties: any = Object.values(td['properties']);
-                    
+
                     for (var i=0; i < properties.length; i++){
                         let property: any = properties[i];
 
@@ -1206,14 +1210,15 @@ export class Tester {
                                 
                                 propertyOptions['headers']['Content-Type'] = contentType;
                                 propertyOptions['body'] = JSON.stringify(jsf(property));
-        
+                                        
                                 var weakCredentials: boolean = await isPredictable(propertyURL, propertyOptions, location);
                                 const creds: string = getCredentials();
-        
+
                                 if (weakCredentials || (creds != null)){ // Have credentials.
                                     report.propertyReports[i].security.passedDictionaryAttack = !weakCredentials;
                                     report.propertyReports[i].createSafetyReport();
                                     
+
                                     if (!weakCredentials) {
                                         propertyOptions['headers']['Authorization'] = 'Basic ' + creds;
         
@@ -1231,7 +1236,7 @@ export class Tester {
                                     // Types that should not be normally allowed.
                                     var types: string[] = await typeFuzz(property.type, propertyURL, propertyOptions);
                                     types.forEach(type => report.propertyReports[i].addType(type));
-        
+
                                     propertyOptions['method'] = 'GET';
                                     delete propertyOptions['body'];
         
