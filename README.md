@@ -222,15 +222,3 @@ TD Version Used: Princeton Testfest 2019
 ### TLDR
 
 <img src="readme-images/testingProcess.svg" align="center" height="400" width="400">
-
-## To-Do
-
-In the order of priority, the following need to be implemented
-
-1. Simple Report Creation
-2. Event Testing (in order of priority)
-    1. Testing whether you can subscribe to events
-    2. Testing whether you can unsubscribe from events
-    3. Testing whether the JSON delivered by event match the JSON Schema
-3. Observable Property Testing: Need to define the objectives
-4. Coap and MQTT server
