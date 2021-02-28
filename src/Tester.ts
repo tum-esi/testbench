@@ -8,6 +8,7 @@ It is possible to define multiple test scenarios with each having different requ
 After the test a test report can be generated and analyzed to get more meaning of the results.
 !!! tut means Thing Under Test
  */
+import * as fs from "fs";
 import * as fetch from "node-fetch";
 import * as wot from "wot-typescript-definitions"
 import * as Utils from "./utilities"
@@ -23,7 +24,6 @@ import {
     VulnerabilityReport
 } from "./TestReport"
 
-const fs = require("fs");
 var jsf = require("json-schema-faker");
 
 export class Tester {
@@ -1089,7 +1089,7 @@ export class Tester {
                         let property: any = properties[i];
 
                         // Creating propertyReport with the name of the property.
-                        report.createPropertyReport(Object.keys(td['properties'])[i]);
+                        report.createVulnPropertyReport(Object.keys(td['properties'])[i]);
                         report.propertyReports[i].createSecurityReport();
 
                         if (!property.writeOnly){ // Property can be read, supposedly?
@@ -1101,15 +1101,23 @@ export class Tester {
                                 if (form['security'] != undefined){
                                     if (Array.isArray(form['security'])){
                                         if (!form['security'].includes(schemeName))
-                                            throw "Testing multiple security schemas are not currently available.";
+                                            throw "Testing multiple security schemes are not currently available.";
                                     }
                                     else if (form['security'] != schemeName)
-                                        throw "Testing multiple security schemas are not currently available.";
+                                        throw "Testing multiple security schemes are not currently available.";
                                 }
                                 
                                 var propertyURL: URL = new URL(form['href']);
+
+                                // Checking to see if any binding other than http(s) is used.
+                                if(!propertyURL.toString().startsWith("http")){
+                                    report.propertyReports[i].addDescription("Currently only HTTP(s) bindings are supported. Thus, property could not be tested.");
+                                    continue;
+                                }
+                                // Extracting http(s) method, if exists.
                                 var method: string = form['htv:methodName'];
                                 
+                                // Default method for 'readproperty'
                                 if(method == null) method = 'GET';
         
                                 var propertyOptions: object = createRequestOptions(propertyURL, method);
@@ -1145,6 +1153,12 @@ export class Tester {
                                     // This time 'form' can be null in case 'property' is 'readOnly'.
                                     if (form != null){
                                         propertyURL= new URL(form['href']);
+
+                                        if(!propertyURL.toString().startsWith("http")){
+                                            report.propertyReports[i].addDescription("Currently only HTTP(s) bindings are supported. Thus, write tests for the property could not be conducted.");
+                                            continue;
+                                        }
+
                                         method = form['htv:methodName'];
         
                                         if (method == null) method = 'PUT';
@@ -1188,24 +1202,34 @@ export class Tester {
                                 // First tries to 'writeproperty', then tries to 'readproperty'.
                                 var form = getForm('writeproperty', property.forms);
 
-                                // Check if the interaction has a different security schema.
+                                // Check if the interaction has a different security scheme.
                                 if (form['security'] != undefined){
                                     if (Array.isArray(form['security'])){
                                         if (!form['security'].includes(schemeName))
-                                            throw "Testing multiple security schemas are not currently available.";
+                                            throw "Testing multiple security schemes are not currently available.";
                                     }
                                     else if (form['security'] != schemeName)
-                                        throw "Testing multiple security schemas are not currently available.";
+                                        throw "Testing multiple security schemes are not currently available.";
                                 }
 
                                 var propertyURL: URL = new URL(form['href']);
+
+                                // Checking to see if any binding other than http(s) is used.
+                                if(!propertyURL.toString().startsWith("http")){
+                                    report.propertyReports[i].addDescription("Currently only HTTP(s) bindings are supported. Thus, property could not be tested.");
+                                    continue;
+                                }
+                                // Extracting http(s) method, if exists.
                                 var method: string = form['htv:methodName'];
         
+                                // Default method for 'writeproperty'
                                 if (method == null) method = 'PUT';
         
+                                // Creating the needed request options object and filling it.
                                 var propertyOptions: object = createRequestOptions(propertyURL, method);
                                 var contentType: string = form['contentType'];
                                 
+                                // Default value of 'contentType'.
                                 if (contentType == undefined) contentType = 'application/json';
                                 
                                 propertyOptions['headers']['Content-Type'] = contentType;
@@ -1218,17 +1242,17 @@ export class Tester {
                                     report.propertyReports[i].security.passedDictionaryAttack = !weakCredentials;
                                     report.propertyReports[i].createSafetyReport();
                                     
-
-                                    if (!weakCredentials) {
+                                    if (!weakCredentials) { // Credentials provided via config file.
                                         propertyOptions['headers']['Authorization'] = 'Basic ' + creds;
         
+                                        // Trying to 'writeproperty' with the provided credentials.
                                         let isWritable = await fetch(propertyURL.toString(), propertyOptions)
                                         if (isWritable.ok)
                                             report.propertyReports[i].isWritable(true);
 
                                         report.propertyReports[i].addDescription('Not weak username-password');
                                     }
-                                    else {
+                                    else { // The case where dictionary attack found out the username and password.
                                         report.propertyReports[i].addDescription('Weak username-password');
                                         report.propertyReports[i].isWritable(true);
                                         report.propertyReports[i].addCredentials(username, password);
@@ -1237,6 +1261,7 @@ export class Tester {
                                     var types: string[] = await typeFuzz(property.type, propertyURL, propertyOptions);
                                     types.forEach(type => report.propertyReports[i].addType(type));
 
+                                    // Trying to 'readproperty'
                                     propertyOptions['method'] = 'GET';
                                     delete propertyOptions['body'];
         
@@ -1257,25 +1282,33 @@ export class Tester {
                     for(var i=0; i < actions.length; i++){
                         let action: any = actions[i];
 
+                        // Create action report with the name of the action.
+                        report.createVulnActionReport(Object.keys(td['actions'])[i]);
+                        report.actionReports[i].createSecurityReport();
+
                         var form = getForm('invokeaction', action.forms); // Cannot be null.
 
-                        // Check if the interaction has a different security schema.
+                        // Check if the interaction has a different security scheme.
                         if (form['security'] != undefined){
                             if (Array.isArray(form['security'])){
                                 if (!form['security'].includes(schemeName))
-                                    throw "Testing multiple security schemas are not currently available.";
+                                    throw "Testing multiple security schemes are not currently available.";
                             }
                             else if (form['security'] != schemeName)
-                                throw "Testing multiple security schemas are not currently available.";
+                                throw "Testing multiple security schemes are not currently available.";
                         }
 
                         var myURL: URL = new URL(form['href']);
-                        var method: string = form['htv:methodName'];
-                        if (method == undefined) method = 'POST';
 
-                        // Create action report with the name of the action.
-                        report.createActionReport(Object.keys(td['actions'])[i]);
-                        report.actionReports[i].createSecurityReport();
+                        if(!myURL.toString().startsWith("http")){
+                            report.actionReports[i].addDescription("Currently only HTTP(s) bindings are supported. Thus, action could not be tested.");
+                            continue;
+                        }
+
+                        // Extracting http(s) method, if exists.
+                        var method: string = form['htv:methodName'];
+                        // Default method for 'invokeaction'
+                        if (method == undefined) method = 'POST';
 
                         var actionOptions = createRequestOptions(myURL, method);
 
@@ -1289,11 +1322,11 @@ export class Tester {
                             report.actionReports[i].security.passedDictionaryAttack = !weakCredentials;
                             report.actionReports[i].createSafetyReport();
 
-                            if(!weakCredentials){
+                            if(!weakCredentials){ // Credentials provided via config file.
                                 actionOptions['headers']['Authorization'] = 'Basic ' + creds;
                                 report.actionReports[i].addDescription('Not weak username-password');
                             }
-                            else{
+                            else{ // The case where dictionary attack found out the username and password.
                                 report.actionReports[i].addDescription('Weak username-password');
                                 report.actionReports[i].addCredentials(username, password);
                             }
@@ -1321,6 +1354,7 @@ export class Tester {
                         // URL of the token server to be brute-forced.
                         const tokenURL: URL = new URL(td['securityDefinitions'][schemeName].token);
 
+                        // Creating and filling the required body.
                         params.append('grant_type', 'client_credentials');
 
                         var options = createRequestOptions(tokenURL, 'POST');
@@ -1335,7 +1369,7 @@ export class Tester {
                             for (var i=0; i < properties.length; i++){
                             
                                 let property: any = properties[i];
-                                report.createPropertyReport(Object.keys(td['properties'])[i]);
+                                report.createVulnPropertyReport(Object.keys(td['properties'])[i]);
                                 report.propertyReports[i].createSecurityReport();
 
                                 if (!property.writeOnly){ // Can be read?
@@ -1347,16 +1381,22 @@ export class Tester {
 
                                         var form = getForm('readproperty', property.forms);
                                         var myURL: URL = new URL(form['href']);
+
+                                        if(!myURL.toString().startsWith("http")){
+                                            report.propertyReports[i].addDescription("Currently only HTTP(s) bindings are supported. Thus, property could not be tested.");
+                                            continue;
+                                        }
+
                                         var method: string = form['htv:methodName'];
-                                        if (method == undefined) method = 'GET';
+                                        if (method == undefined) method = 'GET'; // Default method for 'readproperty'.
 
                                         options = createRequestOptions(myURL, method);
                                         
-                                        if (!weakCredentials){
+                                        if (!weakCredentials){ // Token provided via config file.
                                             options['headers']['Authorization'] = 'Bearer ' + givenToken;
                                             report.propertyReports[i].addDescription('Not weak username-password on token server.');
                                         }
-                                        else {
+                                        else { // The case where dictionary attack found out the username and password.
                                             options['headers']['Authorization'] = 'Bearer ' + token;
                                             report.propertyReports[i].addDescription('Weak username-password pair on token server.');
                                             report.propertyReports[i].addCredentials(username, password);
@@ -1367,25 +1407,36 @@ export class Tester {
                                         if (isReadable.ok)
                                             report.propertyReports[i].isReadable(true);
 
+                                        // Trying to 'writeproperty'.
                                         form = getForm('writeproperty', property.forms);
 
                                         if (form != null){ // 'form' can be null in case the property is readOnly.
                                             myURL = new URL(form['href']);
+
+                                            if(!myURL.toString().startsWith("http")){
+                                                report.propertyReports[i].addDescription("Currently only HTTP(s) bindings are supported. Thus, write tests for the property could not be conducted.");
+                                                continue;
+                                            }
+
                                             method = form['htv:methodName'];
-                                            if (method == undefined) method = 'PUT';
+                                            if (method == undefined) method = 'PUT'; // Default method for 'writeproperty'.
 
                                             options = createRequestOptions(myURL, method);
 
                                             var contentType: string = form['contentType'];
-                                            if (contentType == undefined) contentType = 'application/json';
+                                            if (contentType == undefined) contentType = 'application/json'; // Default value for 'contentType'
 
                                             options['headers']['Content-Type'] = contentType;
+
+                                            // Placing token (either directly provided or accessed by performing dictionary attacks) to see
+                                            // if the property can be 'written'.
 
                                             if (!weakCredentials)
                                                 options['headers']['Authorization'] = 'Bearer ' + givenToken;
                                             else
                                                 options['headers']['Authorization'] = 'Bearer ' + token;
 
+                                            // Filling the body of the request appropriately.
                                             options['body'] = JSON.stringify(jsf(property));
     
                                             let isWritable = await fetch(myURL.toString(), options);
@@ -1399,29 +1450,39 @@ export class Tester {
                                     }
                                     else report.propertyReports[i].addDescription('TestBench could not get a suitable token, neither from brute-forcing nor from given config file. Thus, could not test safety of property.');
                                 }
-                                else{ // Property 'writeonly'
-                                    if (weakCredentials || (givenToken != null)){
+                                else{ 
+                                    // Property is 'writeonly'. 
+                                    // First tries to 'writeproperty' with the native type of the property, and then tries to 'write' other types.
+                                    // Finally, tries to 'readproperty'.
+                                    
+                                    if (weakCredentials || (givenToken != null)){ // Have a token.
                                         report.propertyReports[i].security.passedDictionaryAttack = !weakCredentials;
                                         
                                         report.propertyReports[i].createSafetyReport();
 
                                         var form = getForm('writeproperty', property.forms);
                                         var myURL: URL = new URL(form['href']);
+
+                                        if(!myURL.toString().startsWith("http")){
+                                            report.propertyReports[i].addDescription("Currently only HTTP(s) bindings are supported. Thus, property could not be tested.")
+                                            continue;
+                                        }
+
                                         var method: string = form['htv:methodName'];
-                                        if(method == null) method = 'PUT';
+                                        if(method == null) method = 'PUT'; // Default method for 'writeproperty'.
 
                                         options = createRequestOptions(myURL, method);
 
                                         var contentType: string = form['contentType'];
-                                        if (contentType == undefined) contentType = 'application/json';
+                                        if (contentType == undefined) contentType = 'application/json'; // Default value for 'contentType'.
 
                                         options['headers']['Content-Type'] = contentType;
 
-                                        if (!weakCredentials){
+                                        if (!weakCredentials){ // Token provided via config file.
                                             options['headers']['Authorization'] = 'Bearer ' + givenToken;
                                             report.propertyReports[i].addDescription('Not weak username-password on token server');
                                         }
-                                        else {
+                                        else { // The case where dictionary attack found out the username and password.
                                             options['headers']['Authorization'] = 'Bearer ' + token;
                                             report.propertyReports[i].addDescription('Weak username-password pair on token server.');
                                             report.propertyReports[i].addCredentials(username, password);
@@ -1432,10 +1493,12 @@ export class Tester {
                                         var isWritable: any = await fetch(myURL.toString(), options);
                                         if (isWritable.ok)
                                             report.propertyReports[i].isWritable(true);
+
                                         // Types that should not be normally allowed.
                                         var types: Array<string> = await typeFuzz(property.type, myURL, options);
                                         types.forEach(type => report.propertyReports[i].addType(type));
 
+                                        // Tries to 'readproperty', which should not be normally allowed.
                                         options['method'] = 'GET';
                                         delete options['body'];
             
@@ -1453,7 +1516,7 @@ export class Tester {
                             
                                 let action: any = actions[i];
 
-                                report.createActionReport(Object.keys(td['actions'])[i]);
+                                report.createVulnActionReport(Object.keys(td['actions'])[i]);
                                 report.actionReports[i].createSecurityReport();
 
                                 if (weakCredentials || (givenToken != null)){ // Have a token.
@@ -1463,16 +1526,22 @@ export class Tester {
 
                                     var form = getForm('invokeaction', action.forms);
                                     var myURL: URL = new URL(form['href']);
+
+                                    if(!myURL.toString().startsWith("http")){
+                                        report.actionReports[i].addDescription("Currently only HTTP(s) bindings are supported. Thus, action could not be tested.");
+                                        continue;
+                                    }
+
                                     var method: string = form['htv:methodName'];
-                                    if (method == undefined) method = 'POST';
+                                    if (method == undefined) method = 'POST'; // Default method for 'invokeaction'.
 
                                     options = createRequestOptions(myURL, method);
 
-                                    if (!weakCredentials) {
+                                    if (!weakCredentials) { // Token provided via config file.
                                         options['headers']['Authorization'] = 'Bearer ' + givenToken;
                                         report.actionReports[i].addDescription('Strong username-password on token server.');
                                     }
-                                    else {
+                                    else { // The case where dictionary attack found out the username and password.
                                         options['headers']['Authorization'] = 'Bearer ' + token;
                                         report.actionReports[i].addDescription('Weak username-password pair on token server.');
                                         report.actionReports[i].addCredentials(username, password);
@@ -1504,7 +1573,7 @@ export class Tester {
                         let property: any = properties[i];
 
                         // Creating propertyReport with the name of the property.
-                        report.createPropertyReport(Object.keys(td['properties'])[i]);
+                        report.createVulnPropertyReport(Object.keys(td['properties'])[i]);
 
                         if (!property.writeOnly){ // Property can be read, supposedly?
                             try{                                
@@ -1515,16 +1584,22 @@ export class Tester {
                                 if (form['security'] != undefined){
                                     if (Array.isArray(form['security'])){
                                         if (!form['security'].includes(schemeName))
-                                            throw "Testing multiple security schemas are not currently available.";
+                                            throw "Testing multiple security schemes are not currently available.";
                                     }
                                     else if (form['security'] != schemeName)
-                                        throw "Testing multiple security schemas are not currently available.";
+                                        throw "Testing multiple security schemes are not currently available.";
                                 }
                                 
                                 var propertyURL: URL = new URL(form['href']);
+
+                                if(!propertyURL.toString().startsWith("http")){
+                                    report.propertyReports[i].addDescription("Currently only HTTP(s) bindings are supported. Thus, property could not be tested.");
+                                    continue;
+                                }
+
                                 var method: string = form['htv:methodName'];
                                 
-                                if(method == null) method = 'GET';
+                                if(method == null) method = 'GET'; // Default method for 'readproperty'.
         
                                 var propertyOptions: object = createRequestOptions(propertyURL, method);
                                 report.propertyReports[i].createSafetyReport();
@@ -1540,22 +1615,28 @@ export class Tester {
                                 // This time 'form' can be null in case 'property' is 'readOnly'.
                                 if (form != null){
                                     propertyURL= new URL(form['href']);
+
+                                    if(!propertyURL.toString().startsWith("http")){
+                                        report.propertyReports[i].addDescription("Currently only HTTP(s) bindings are supported. Thus, write tests for the property could not be conducted.");
+                                        continue;
+                                    }
+
                                     method = form['htv:methodName'];
     
-                                    if (method == null) method = 'PUT';
+                                    if (method == null) method = 'PUT'; // Default method for 'writeproperty'.
     
                                     propertyOptions = createRequestOptions(propertyURL, method);
 
                                     var contentType: string = form['contentType'];
     
-                                    if (contentType == undefined) contentType = 'application/json';
+                                    if (contentType == undefined) contentType = 'application/json'; // Default value for 'contentType'.
                                     propertyOptions['headers']['Content-Type'] = contentType;
 
                                     // Types that should not be normally allowed.
                                     var types: string[] = await typeFuzz(property.type, propertyURL, propertyOptions);                                    
                                     types.forEach(type => report.propertyReports[i].addType(type));
     
-                                    // Trying to write the real type, if cannot write any exceptional type.
+                                    // Trying to write the defined type, if cannot write any exceptional type.
                                     if (types.length == 0){
                                         propertyOptions['body'] = JSON.stringify(jsf(property));
 
@@ -1575,25 +1656,31 @@ export class Tester {
                                 // First tries to 'writeproperty', then tries to 'readproperty'.
                                 var form = getForm('writeproperty', property.forms);
 
-                                // Check if the interaction has a different security schema.
+                                // Check if the interaction has a different security scheme.
                                 if (form['security'] != undefined){
                                     if (Array.isArray(form['security'])){
                                         if (!form['security'].includes(schemeName))
-                                            throw "Testing multiple security schemas are not currently available.";
+                                            throw "Testing multiple security schemes are not currently available.";
                                     }
                                     else if (form['security'] != schemeName)
-                                        throw "Testing multiple security schemas are not currently available.";
+                                        throw "Testing multiple security schemes are not currently available.";
                                 }
 
                                 var propertyURL: URL = new URL(form['href']);
+
+                                if(!propertyURL.toString().startsWith("http")){
+                                    report.propertyReports[i].addDescription("Currently only HTTP(s) bindings are supported. Thus, property could not be tested.");
+                                    continue;
+                                }
+
                                 var method: string = form['htv:methodName'];
         
-                                if (method == null) method = 'PUT';
+                                if (method == null) method = 'PUT'; // Default method for 'writeproperty'.
         
                                 var propertyOptions: object = createRequestOptions(propertyURL, method);
                                 var contentType: string = form['contentType'];
                                 
-                                if (contentType == undefined) contentType = 'application/json';
+                                if (contentType == undefined) contentType = 'application/json'; // Default value for 'contentType'.
                                 
                                 propertyOptions['headers']['Content-Type'] = contentType;
                                 propertyOptions['body'] = JSON.stringify(jsf(property));
@@ -1602,6 +1689,7 @@ export class Tester {
                                 
                                 propertyOptions['headers']['Authorization'] = 'Basic ' + creds;
     
+                                //Trying to see if the property is, really, 'writable'.
                                 let isWritable = await fetch(propertyURL.toString(), propertyOptions)
                                 if (isWritable.ok)
                                     report.propertyReports[i].isWritable(true);
@@ -1610,6 +1698,7 @@ export class Tester {
                                 var types: string[] = await typeFuzz(property.type, propertyURL, propertyOptions);
                                 types.forEach(type => report.propertyReports[i].addType(type));
     
+                                // Trying to see if the property can be read, which should not optimally be the case.
                                 propertyOptions['method'] = 'GET';
                                 delete propertyOptions['body'];
     
@@ -1630,38 +1719,44 @@ export class Tester {
 
                         var form = getForm('invokeaction', action.forms); // Cannot be null.
 
-                        // Check if the interaction has a different security schema.
+                        // Check if the interaction has a different security scheme.
                         if (form['security'] != undefined){
                             if (Array.isArray(form['security'])){
                                 if (!form['security'].includes(schemeName))
-                                    throw "Testing multiple security schemas are not currently available.";
+                                    throw "Testing multiple security schemes are not currently available.";
                             }
                             else if (form['security'] != schemeName)
-                                throw "Testing multiple security schemas are not currently available.";
+                                throw "Testing multiple security schemes are not currently available.";
                         }
 
                         var myURL: URL = new URL(form['href']);
+
+                        if(!myURL.toString().startsWith("http")){
+                            report.actionReports[i].addDescription("Currently only HTTP(s) bindings are supported. Thus, action could not be tested.")
+                            continue;
+                        }
+
                         var method: string = form['htv:methodName'];
-                        if (method == undefined) method = 'POST';
+                        if (method == undefined) method = 'POST'; // Default value for 'invokeaction'.
 
                         // Create action report with the name of the action.
-                        report.createActionReport(Object.keys(td['actions'])[i]);
+                        report.createVulnActionReport(Object.keys(td['actions'])[i]);
 
                         var actionOptions = createRequestOptions(myURL, method);
 
                         if (action.input != undefined) // Fill body appropriately.
                             actionOptions['body'] = JSON.stringify(jsf(action['input']));                            
 
-                            report.actionReports[i].createSafetyReport();
+                        report.actionReports[i].createSafetyReport();
 
-                            // Types that should not be normally allowed.
-                            var types: string[];
-                            if(action.input != undefined)
-                                types = await typeFuzz(action.input.type, myURL, actionOptions);
-                            else
-                                types = await typeFuzz(null, myURL, actionOptions);
-                            
-                            types.forEach(type => report.actionReports[i].addType(type));
+                        // Types that should not be normally allowed.
+                        var types: string[];
+                        if(action.input != undefined)
+                            types = await typeFuzz(action.input.type, myURL, actionOptions);
+                        else
+                            types = await typeFuzz(null, myURL, actionOptions);
+                        
+                        types.forEach(type => report.actionReports[i].addType(type));
                     }
                 }
         }

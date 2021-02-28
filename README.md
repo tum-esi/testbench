@@ -154,7 +154,7 @@ The action, `testVulnerabilities`, tests for vulnerabilities, both from security
 
 The main motivation behind this action is to cover the **security** of the Thing. From pre-determined sets of usernames and passwords, this action involves performing penetration testing with dictionary attacks. It also performs some common safety tests similar to those done under `testThing`.
 
-Perform steps 1 - 6 as described above, then send a `POST` request **with no body** to `http://your-address:8980/wot-test-bench/actions/testVulnerabilities`. Read the test report by sending a `GET` request to `http://your-address:8980/wot-test-bench/properties/testReport`.
+Perform steps 1 - 6 as described above, then send a `POST` request with a body containing **true** or **false** *(indicating whether to perform a relatively faster and less covering test or not, **true:** a small subset of all combinations, **false:** all combinations)* to `http://your-address:8980/wot-test-bench/actions/testVulnerabilities`. Read the test report by sending a `GET` request to `http://your-address:8980/wot-test-bench/properties/testReport`.
 
 ### Structure of the Vulnerability Report
 
@@ -183,11 +183,11 @@ Each one of these reports consists of:
 - **ALWAYS** call `initiate` after writing `thingUnderTestTD` if you are going to perform `testThing` or `testVulnerabilities` only.
 
 - Depending on where the Thing is hosted and number of `InteractionAffordance`s, this test may take quite some time.
-- Currently only supports HTTP/HTTPs.
-- Currently only supports `basic` and `oauth2` with `client_credentials` flow. 
+- **Currently only supports HTTP/HTTPs.**
+- **Currently only supports `basic` and `oauth2` with `client_credentials` flow.**
 - Dictionary attacks are performed on the Thing in case of `basic` security scheme, and on the `token` server in case of `oauth2`.
 - In this README, the phrase ***types that should not be optimally allowed*** is frequently used and those are the types that are **not** given in the TD, which should be *optimally* avoided on the implementation side. *e.g.* a `boolean` for a `number` type of property.
-- If the `InteractionAffordance` has a different security schema than the one under `security` of the TD, `testVulnerabilities` throws.
+- If the `InteractionAffordance` has a different security scheme than the one under `security` of the TD, `testVulnerabilities` throws.
 ---
 
 -   This link provides all possible postman interaction examples [https://documenter.getpostman.com/view/4378601/RWEmHGBq](https://documenter.getpostman.com/view/4378601/RWEmHGBq).

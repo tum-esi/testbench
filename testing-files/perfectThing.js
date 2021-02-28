@@ -1,14 +1,6 @@
 var Servient = require("@node-wot/core").Servient
 var HttpServer = require("@node-wot/binding-http").HttpServer
 var CoapServer = require("@node-wot/binding-coap").CoapServer
-var fs = require("fs");
-var util = require('util');
-
-var log_file = fs.createWriteStream(__dirname + '/perfectThing.debug.log', {flags : 'w'});
-
-console.log = function(d) { //
-  log_file.write(util.format(d) + '\n');
-};
 
 let srv = new Servient()
 let httpSrvObj = { port: 8081 }

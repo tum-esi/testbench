@@ -155,21 +155,32 @@ describe("Action: fastTest", function () {
                     // Testing the second test scenario.
                     expect(getPassedFailedArray(res.body['conformance'][0][1]), "Second test sequence not as expected").is.eql(expectedArray)
 
+                    // Since there are eight properties, there must be exactly eight reports corresponding for these properties.
                     expect(vulnResults['propertyReports'].length, "Did not report the correct amount of propertyReports.").to.be.equal(8);
+
+                    // Since there are five actions, there must be exactly five reports corresponding for these actions.
                     expect(vulnResults['actionReports'].length, "Did not report the correct amount of actionReports.").to.be.equal(5);
 
                     let expectedPropertySafetyResults = [
-                        [true, true],
-                        [true, true],
-                        [true, false],
-                        [true, false],
-                        [true, true],
-                        [true, false],
-                        [true, false],
-                        [true, true]
+                        [true, true],  // The first property, namely display, must be both readable and writable as it is neither writeOnly nor readOnly.
+                        [true, true],  // The second property, namely counter, must be both readable and writable as it is neither writeOnly nor readOnly.
+                        [true, false], // The third property, namely temperature, must be readable and not writable as it is readOnly.
+                        [true, false], // The fourth property, namely faultyPercent, must be readable and not writable as it is readOnly.
+                        [true, true],  // The fifth property, namely wrongWritable, must be both readable and writable as it is neither writeOnly nor readOnly.
+                        [true, false], // The sixth property, namely wrongDataTypeNumber, must be readable and not writable as it is readOnly.
+                        [true, false], // The seventh property, namely wrongDataTypeObject, must be readable and not writable as it is readOnly.
+                        [true, true]   // The eighth property, namely testArray, must be both readable and writable as it is neither writeOnly nor readOnly.
                     ];
+
+                    // Testing whether the actual results match with the expected ones.
                     expect(propertySafetyReportArray(vulnResults['propertyReports']), "Safety reports did not match with the expected ones.").to.be.eql(expectedPropertySafetyResults);
 
+                    // Since there is no control internally, and safety tests performed by testVulnerabilites test for those types other than the action's defined type, below results
+                    // are the types complementing the action's input type, if exists, to all probable types. If no input is defined for an action, all available types are accepted by
+                    // the action (as there is no type checking performed on faultyThing).
+
+                    
+                    // setCounter is defined to have input of type number yet, in contrast, accepts all other types below.
                     expect(vulnResults['actionReports'][0]['safety']['exceptionTypes'], "First action's exceptionTypes did not match with the expected ones.").to.be.eql([
                         "object",
                         "array",
@@ -177,6 +188,8 @@ describe("Action: fastTest", function () {
                         "integer",
                         "boolean"
                     ]);
+
+                    // getTemperature is defined to have no input yet, in contrast, accepts all types.
                     expect(vulnResults['actionReports'][1]['safety']['exceptionTypes'], "Second action's exceptionTypes did not match with the expected ones.").to.be.eql([
                         "object",
                         "array",
@@ -185,6 +198,8 @@ describe("Action: fastTest", function () {
                         "number",
                         "boolean"
                     ]);
+
+                    // setDisplay is defined to have input of type string yet, in contrast, accepts all other types below.
                     expect(vulnResults['actionReports'][2]['safety']['exceptionTypes'], "Third action's exceptionTypes did not match with the expected ones.").to.be.eql([
                         "object",
                         "array",
@@ -192,6 +207,8 @@ describe("Action: fastTest", function () {
                         "number",
                         "boolean"
                     ]);
+
+                    // setTestObject is defined to have input of type object yet, in contrast, accepts all other types below.
                     expect(vulnResults['actionReports'][3]['safety']['exceptionTypes'], "Fourth action's exceptionTypes did not match with the expected ones.").to.be.eql([
                         "array",
                         "string",
@@ -199,6 +216,8 @@ describe("Action: fastTest", function () {
                         "number",
                         "boolean"
                     ]);
+
+                    // longTakingAction is defined to have input of type array yet, in contrast, accepts all other types below.
                     expect(vulnResults['actionReports'][4]['safety']['exceptionTypes'], "Fifth action's exceptionTypes did not match with the expected ones.").to.be.eql([
                         "object",
                         "string",
@@ -234,23 +253,32 @@ describe("Action: fastTest", function () {
                     let allTestCases = getAllTestCases(res.body['conformance'])
                     let vulnResults = res.body['vulnerabilities'];
 
-                    console.log(allTestCases); //Can be used to log TestResults for debugging purposes.
+                    //console.log(allTestCases); //Can be used to log TestResults for debugging purposes.
                     expect(allTestCases.length, "Did not report the correct amount of Testcases.").to.be.equal(25) //Check if all TestCases have been generated.
                     expect(allTestPassed(allTestCases, "Not all Testcases passed for Action: fastTest.")).to.be.true //Check if all TestCases have passed.
                     
+                    // Since there are five properties, there must be exactly five reports corresponding for these properties.
                     expect(vulnResults['propertyReports'].length, "Did not report the correct amount of propertyReports.").to.be.equal(5);
+
+                    // Since there are five actions, there must be exactly five reports corresponding for these actions.
                     expect(vulnResults['actionReports'].length, "Did not report the correct amount of actionReports.").to.be.equal(5);
 
                     let expectedPropertySafetyResults = [
-                        [ true, true ],
-                        [ true, true ],
-                        [ true, false ],
-                        [ true, true ],
-                        [ true, true ]
+                        [ true, true ],  // The first property, namely display, must be both readable and writable as it is neither writeOnly nor readOnly.
+                        [ true, true ],  // The second property, namely counter, must be both readable and writable as it is neither writeOnly nor readOnly.
+                        [ true, false ], // The third property, namely temperature, must be readable and not writable as it is readOnly.
+                        [ true, true ],  // The fourth property, namely testObject, must be both readable and writable as it is neither writeOnly nor readOnly.
+                        [ true, true ]   // The fifth property, namely testArray, must be both readable and writable as it is neither writeOnly nor readOnly.
                     ];
                     
+                    // Testing whether the actual results match with the expected ones.
                     expect(propertySafetyReportArray(vulnResults['propertyReports']), "Safety reports did not match with the expected ones.").to.be.eql(expectedPropertySafetyResults);
                     
+                    // Since there is no control internally, and safety tests performed by testVulnerabilites test for those types other than the action's defined type, below results
+                    // are the types complementing the action's input type, if exists, to all probable types. If no input is defined for an action, all available types are accepted by
+                    // the action (as there is no type checking performed on perfectThing).
+
+                    // setCounter is defined to have input of type number yet, in contrast, accepts all other types below.
                     expect(vulnResults['actionReports'][0]['safety']['exceptionTypes'], "First action's exceptionTypes did not match with the expected ones.").to.be.eql([
                         "object",
                         "array",
@@ -258,6 +286,8 @@ describe("Action: fastTest", function () {
                         "integer",
                         "boolean"
                     ]);
+
+                    // getTemperature is defined to have no input yet, in contrast, accepts all types.
                     expect(vulnResults['actionReports'][1]['safety']['exceptionTypes'], "Second action's exceptionTypes did not match with the expected ones.").to.be.eql([
                         "object",
                         "array",
@@ -266,6 +296,8 @@ describe("Action: fastTest", function () {
                         "number",
                         "boolean"
                     ]);
+
+                    // setDisplay is defined to have input of type string yet, in contrast, accepts all other types below.
                     expect(vulnResults['actionReports'][2]['safety']['exceptionTypes'], "Third action's exceptionTypes did not match with the expected ones.").to.be.eql([
                         "object",
                         "array",
@@ -273,6 +305,8 @@ describe("Action: fastTest", function () {
                         "number",
                         "boolean"
                     ]);
+
+                    // setTestObject is defined to have input of type object yet, in contrast, accepts all other types below.
                     expect(vulnResults['actionReports'][3]['safety']['exceptionTypes'], "Fourth action's exceptionTypes did not match with the expected ones.").to.be.eql([
                         "array",
                         "string",
@@ -280,6 +314,8 @@ describe("Action: fastTest", function () {
                         "number",
                         "boolean"
                     ]);
+
+                    // setTestArray is defined to have input of type array yet, in contrast, accepts all other types below.
                     expect(vulnResults['actionReports'][4]['safety']['exceptionTypes'], "Fifth action's exceptionTypes did not match with the expected ones.").to.be.eql([
                         "object",
                         "string",

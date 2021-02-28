@@ -358,12 +358,13 @@ interface SecurityReport{
     passedDictionaryAttack: boolean;
     id?: string;
     pw?: string;
-    description?: string;
+    //description?: string;
 }
-export class PropertyReport{
+export class VulnPropertyReport{
     propertyName: string;
     security?: SecurityReport;
     safety?: object;
+    description?: string;
 
     constructor(name: string){
         this.propertyName = name;
@@ -393,21 +394,22 @@ export class PropertyReport{
         this['safety']['isWritable'] = ans;
     }
     public addDescription(msg: string){
-        this.security.description = msg;
+        //this.security.description = msg;
+        this.description = msg;
     }
     public addCredentials(id: string, pw: string){
         this.security.id = id;
         this.security.pw = pw;
     }
 }
-export class ActionReport {
+export class VulnActionReport {
     actionName: string;
     security?: SecurityReport;
     safety?: object;
+    description?: string;
 
     constructor(name: string){
         this.actionName = name;
-        
     }
     public createSecurityReport(){
         this.security ={
@@ -426,7 +428,8 @@ export class ActionReport {
         this.safety['exceptionTypes'].push(type);
     }
     public addDescription(msg: string){
-        this.security.description = msg;
+        //this.security.description = msg;
+        this.description = msg;
     }
     public addCredentials(id: string, pw: string){
         this.security.id = id;
@@ -436,21 +439,21 @@ export class ActionReport {
 export class VulnerabilityReport {
     description: string;
     scheme: string;
-    propertyReports?: Array<PropertyReport>;
-    actionReports?: Array<ActionReport>;
+    propertyReports?: Array<VulnPropertyReport>;
+    actionReports?: Array<VulnActionReport>;
 
     constructor(){
         this.description = "Vulnerability test results";
         this.scheme = "";
         this.propertyReports = null;
-        this.actionReports = Array<ActionReport>();
-        this.propertyReports = Array<PropertyReport>();
+        this.actionReports = Array<VulnActionReport>();
+        this.propertyReports = Array<VulnPropertyReport>();
     }
-    public createPropertyReport(name: string){
-        this.propertyReports.push(new PropertyReport(name));
+    public createVulnPropertyReport(name: string){
+        this.propertyReports.push(new VulnPropertyReport(name));
     }
-    public createActionReport(name: string){
-        this.actionReports.push(new ActionReport(name));
+    public createVulnActionReport(name: string){
+        this.actionReports.push(new VulnActionReport(name));
     }
 }
 export class TotalReport{
