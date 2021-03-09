@@ -10,8 +10,9 @@
     "SchemaLocation": "Resources/InteractionSchemas/",
     "TestReportsLocation": "Reports/",
     "TestDataLocation": "Resources/fake-data.json",
+    "TimeBetweenRequests": 25,
     "ActionTimeout": 4000,
-    "Scenarios": 2,
+    "Scenarios": 4,
     "Repetitions": 1,
     "EventAndObservePOptions": {
         "Asynchronous": {
@@ -26,5 +27,10 @@
             "MsSubscribeTimeout": 1000
         }
     },
-    "credentials": {}
+    "credentials": {
+        "urn:dev:ops:32473-sensehat-004":{
+            "username": "guest",
+            "password": "welcometoremotelab"
+        }
+    }
 }

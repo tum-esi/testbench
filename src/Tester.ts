@@ -219,9 +219,9 @@ export class Tester {
                 case SubscriptionStatus.Timeout:
                     self.log(
                         "Timed out when trying to subscribe to " +
-                            interactionSpecifier +
-                            ". Due to the design of node-wot this can mean either the subscription was unsuccessful or " +
-                            "the subscription was successful but no data was received."
+                        interactionSpecifier +
+                        ". Due to the design of node-wot this can mean either the subscription was unsuccessful or " +
+                        "the subscription was successful but no data was received."
                     )
                     container.passed = true
                     container.subscriptionReport.passed = true
@@ -273,9 +273,9 @@ export class Tester {
                     // received data is not JSON
                     self.log(
                         receivedDataMsg +
-                            "[index: " +
-                            indexOfEventData +
-                            "]: received unexpected (no data property for this even in the TD), non JSON conformal data."
+                        "[index: " +
+                        indexOfEventData +
+                        "]: received unexpected (no data property for this even in the TD), non JSON conformal data."
                     )
                     const result = new Result(98, "Received unexpected (no data property for this event in TD), non JSON conformal return value.")
                     container.eventDataReport.received.push(
@@ -289,11 +289,11 @@ export class Tester {
                 }
                 self.log(
                     receivedDataMsg +
-                        "[index: " +
-                        indexOfEventData +
-                        ']: received unexpected (no data property for this event in TD) data: "' +
-                        JSON.stringify(receivedData, null, " ") +
-                        '"'
+                    "[index: " +
+                    indexOfEventData +
+                    ']: received unexpected (no data property for this event in TD) data: "' +
+                    JSON.stringify(receivedData, null, " ") +
+                    '"'
                 )
                 const result = new Result(99, "Received unexpected (no data property for this event in TD) event data.")
                 container.eventDataReport.received.push(new EventData(receivedTimeStamp, receivedData, result))
@@ -347,16 +347,16 @@ export class Tester {
                     // If Subscription failed Cancellation can not work.
                     self.log(
                         "Problem when trying to unsubscribe from " +
-                            interactionSpecifier +
-                            ": The testbench was never subscribed due to a subscription error (see previous messages and subscriptionReport)."
+                        interactionSpecifier +
+                        ": The testbench was never subscribed due to a subscription error (see previous messages and subscriptionReport)."
                     )
                     container.passed = true
                     container.cancellationReport.passed = true
                     container.cancellationReport.result = new Result(
                         100,
                         "Subscription cancellation test not possible: The testbench was never subscribed to " +
-                            testMode +
-                            " due to a subscription error (see subscriptionReport)."
+                        testMode +
+                        " due to a subscription error (see subscriptionReport)."
                     )
                     break
                 case SubscriptionStatus.Timeout:
@@ -364,8 +364,8 @@ export class Tester {
                     // his own handling.
                     self.log(
                         "Problem when trying to unsubscribe from " +
-                            interactionSpecifier +
-                            ": The testbench was never subscribed or was subscribed but never received any data (see previous messages, subscriptionReport and eventDataReport/observedDataReport)."
+                        interactionSpecifier +
+                        ": The testbench was never subscribed or was subscribed but never received any data (see previous messages, subscriptionReport and eventDataReport/observedDataReport)."
                     )
                     container.passed = true
                     container.cancellationReport.passed = true
@@ -379,13 +379,13 @@ export class Tester {
                         // thus receiving the data packages.
                         self.log(
                             "The following output of node-wot describes unsubscribing from " +
-                                interactionSpecifier +
-                                " but due to the design of node-wot this output is identical for " +
-                                "unsuccessful subscription and successful subscription with no emitted event."
+                            interactionSpecifier +
+                            " but due to the design of node-wot this output is identical for " +
+                            "unsuccessful subscription and successful subscription with no emitted event."
                         )
                         if (testMode == Utils.InteractionType.Event) await self.tut.unsubscribeEvent(interactionName)
                         else await self.tut.unobserveProperty(interactionName)
-                    } catch {}
+                    } catch { }
                     break
                 case SubscriptionStatus.Successful:
                     // Testing cancellation only makes sense if subscription worked.
@@ -495,8 +495,8 @@ export class Tester {
                     }
                     self.log(
                         actionName +
-                            "received unexpected (action did not have an output property in TD) return value: " +
-                            JSON.stringify(receivedData, null, " ")
+                        "received unexpected (action did not have an output property in TD) return value: " +
+                        JSON.stringify(receivedData, null, " ")
                     )
                     container.report.received = receivedData
                     container.report.result = new Result(99, "Received unexpected (action did not have an output property in TD) return value.")
@@ -877,5 +877,359 @@ export class Tester {
 
         self.log("First Test Phase has finished without an error.")
         return self.testReport
+    }
+
+    //--------------------------------------------------Marcus Code-------------------------------------------------------------------------------------------
+    /**
+     * This function starts the testing on the Operation Level. This means it tests all Interaction Affordances and checks if they respond. 
+     */
+    public async testingOpCov(): Promise<any> {
+        const self = this
+        let Full_Report: any = []
+        let rep = 1
+
+        try {
+            let property = this.tutTd.properties
+            for (let prop in property) {
+                const interaction: any = Utils.getInteractionByName(this.tutTd, Utils.InteractionType.Property, prop)
+                const isWritable = !interaction.readOnly;
+                const isReadable = !interaction.writeOnly;
+                for (let i = 0; i < rep; i++) {
+                    if (isWritable) {
+                        let value = Utils.creatValidInput(property[prop])
+                        try {
+                            await this.tut.writeProperty(prop, value)
+                            let result = "OP level writeProperty Success"
+                            Full_Report.push(Utils.createMiniReport(result, "write", prop, true, value))
+                            await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
+                        } catch (error) {
+                            Full_Report.push(Utils.createMiniReport(error, "write", prop, false, value))
+                            console.log(error)
+                        }
+                    }
+                    if (isReadable) {
+                        try {
+                            let data = await this.tut.readProperty(prop)
+                            let result = "OP level readProperty Success"
+                            Full_Report.push(Utils.createMiniReport(result, "read", prop, true, undefined, data))
+                            await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
+                        } catch (error) {
+                            Full_Report.push(Utils.createMiniReport(error, "read", prop, false, undefined))
+                            console.log(error)
+                        }
+                    };
+                }
+            }
+
+            let action = this.tutTd.actions
+
+            for (let act in action) {
+                const interaction: any = Utils.getInteractionByName(this.tutTd, Utils.InteractionType.Action, act)
+                const isWritable = interaction.input;
+                for (let i = 0; i < rep; i++) {
+                    // not sure if return_value is the actual output of the request and even part of operational coverage ?
+                    if (isWritable) {
+                        let requests_m = Utils.creatValidInput(action[act].input)
+                        try {
+                            let return_value: any = await this.tut.invokeAction(act, requests_m)
+                            let result = "OP level invokeAction with payload Success"
+                            Full_Report.push(Utils.createMiniReport(result, "act", act, true, requests_m, return_value))
+                            await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
+                        } catch (error) {
+                            console.log(error)
+                            Full_Report.push(Utils.createMiniReport(error, "act", act, false, requests_m, undefined))
+                        }
+                    } else {
+                        try {
+                            let return_value: any = await this.tut.invokeAction(act)
+                            let result = "OP level invokeAction without payload Success"
+                            Full_Report.push(Utils.createMiniReport(result, "act", act, true, undefined, return_value))
+                            await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
+                        } catch (error) {
+                            console.log(error)
+                            Full_Report.push(Utils.createMiniReport(error, "act", act, false, undefined))
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            self.log("Testing Operation Coverage has finished with an error (see previous messages).")
+            throw Error
+        }
+        self.log("Operation Test Phase has finished without an error.")
+        return Full_Report
+    }
+
+    /**
+     * This function starts the testing on the Parameter Level. This means it tests all Interaction Affordances with input paramerters and creates requests
+     * including all necessary parameters.
+     */
+    public async testingParamCov(): Promise<any> {
+        const self = this
+        let Full_Report: any = []
+
+        try {
+            let property = this.tutTd.properties
+            for (let prop in property) {
+                const interaction: any = Utils.getInteractionByName(this.tutTd, Utils.InteractionType.Property, prop)
+                const isWritable = !interaction.readOnly;
+                if (isWritable) {
+                    let value = Utils.creatValidInput(property[prop])
+                    try {
+                        await this.tut.writeProperty(prop, value)
+                        let result = "Parameter level writeProperty Success"
+                        Full_Report.push(Utils.createMiniReport(result, "write", prop, true, value))
+                        await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
+                    } catch (error) {
+                        Full_Report.push(Utils.createMiniReport(error, "write", prop, false, value))
+                        console.log(error)
+                    }
+                }
+
+            }
+
+            let action = this.tutTd.actions
+
+            for (let act in action) {
+                const interaction: any = Utils.getInteractionByName(this.tutTd, Utils.InteractionType.Action, act)
+                const isWritable = interaction.input;
+
+                if (isWritable) {
+                    let requests_m = Utils.creatValidInput(action[act].input)
+                    try {
+                        let return_value: any = await this.tut.invokeAction(act, requests_m)
+                        let result = "Parameter level invokeAction Success"
+                        Full_Report.push(Utils.createMiniReport(result, "act", act, true, requests_m, return_value))
+                        await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
+                    } catch (error) {
+                        Full_Report.push(Utils.createMiniReport(error, "act", act, false, requests_m))
+                        console.log(error)
+                    }
+                }
+
+            }
+        } catch (error) {
+            self.log("Testing Parameter Coverage has finished with an error (see previous messages).")
+            throw Error
+        }
+        self.log("Parameter Test Phase has finished without an error.")
+        return Full_Report
+    }
+
+    /**
+     * This function starts the testing on the Input Level. It sends the created test data to all Interaction Affordances with an input and records
+     * the resopnse of the SuT.
+     */
+
+    public async testingInputCov(): Promise<any> {
+        const self = this
+        let Full_Report: any = []
+
+
+        try {
+            let property = this.tutTd.properties
+            let requests_p = Utils.getTestData(this.testConfig)
+            let numbers_p = Utils.getNumberElements(this.testConfig, Utils.InteractionType.Property)
+
+            for (let prop in property) {
+                const interaction: any = Utils.getInteractionByName(this.tutTd, Utils.InteractionType.Property, prop)
+                const isWritable = !interaction.readOnly;
+                const isReadable = !interaction.writeOnly;
+                if (isWritable) {
+                    for (let i = 0; i < numbers_p[prop]; i++) {
+
+                        try {
+                            await this.tut.writeProperty(prop, requests_p.Property[prop][i])
+                            let result = "Input level writeProperty Success"
+                            await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
+
+                            if (isReadable) {
+                                //read property and check if it is the same as the writen value before
+                                let value: any = await this.tut.readProperty(prop)
+
+                                if (JSON.stringify(value) == JSON.stringify(requests_p.Property[prop][i])) {
+                                    result = "Input level read/writeProperty Success : Read value the same as Write value"
+                                    Full_Report.push(Utils.createMiniReport(result, "write", prop, true, requests_p.Property[prop][i]))
+                                } else {
+                                    result = "Input level read/writeProperty Fail : Read value not the same as Write value"
+                                    Full_Report.push(Utils.createMiniReport(result, "write", prop, false, requests_p.Property[prop][i]))
+                                }
+                                await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
+                            } else {
+                                Full_Report.push(Utils.createMiniReport(result, "write", prop, true, requests_p.Property[prop][i]))
+                            }
+                        } catch (error) {
+                            Full_Report.push(Utils.createMiniReport(error, "write", prop, false, requests_p.Property[prop][i]))
+                            console.log(error)
+                        }
+
+                    }
+                };
+            }
+
+            let action = this.tutTd.actions
+            let requests_m = Utils.getTestData(this.testConfig)
+            let numbers_m = Utils.getNumberElements(this.testConfig, Utils.InteractionType.Action)
+
+            for (let act in action) {
+                const interaction: any = Utils.getInteractionByName(this.tutTd, Utils.InteractionType.Action, act)
+                const isWritable = interaction.input;
+                if (isWritable) {
+                    for (let i = 0; i < numbers_m[act]; i++) {
+                        try {
+                            let return_value: any = await this.tut.invokeAction(act, requests_m.Action[act][i])
+                            let result = "Input level invokeAction Success"
+                            Full_Report.push(Utils.createMiniReport(result, "act", act, true, requests_m.Action[act][i], return_value))
+                            await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
+                        } catch (error) {
+                            Full_Report.push(Utils.createMiniReport(error, "act", act, false, requests_m.Action[act][i]))
+                            console.log(error)
+                        }
+                    }
+                }
+            }
+
+
+        } catch {
+            self.log("Testing Input Coverage has finished with an error (see previous messages).")
+            throw Error
+        }
+
+        self.log("Input Test Phase has finished without an error.")
+        return Full_Report
+    }
+
+    /**
+     * This function starts the testing on the Output Level. It inspects all Interaction Affordances and checks if the given output or lack there of
+     * corresponds to the underlying Thing Description. It also validates received output against the TD.
+     */
+
+    public async testingOutputCov(): Promise<any> {
+        const self = this
+        let Full_Report: any = []
+
+        try {
+            //test all Properties and Actions
+            let property = this.tutTd.properties
+            for (let prop in property) {
+                const interaction: any = Utils.getInteractionByName(this.tutTd, Utils.InteractionType.Property, prop)
+                const isWritable = !interaction.readOnly;
+                const isReadable = !interaction.writeOnly;
+                if (isWritable) {
+                    let value = Utils.creatValidInput(property[prop])
+                    try {
+                        let return_value: any = await this.tut.writeProperty(prop, value)
+                        let result = "Output level writeProperty Success : No Output detected"
+                        if (return_value == undefined) {
+                            Full_Report.push(Utils.createMiniReport(result, "write", prop, true, value))
+                        } else {
+                            // IMPORTANT ---> This does not wotk right now bc writeproperty does not return anything ever (node-wot problem ?)
+                            result = "Output level writeProperty Fail : Request returns a payload"
+                            //Full_Report.push(Utils.createMiniReport(result,"write",prop,false,value,return_value))
+                        }
+                        await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
+                    } catch (error) {
+                        Full_Report.push(Utils.createMiniReport(error, "write", prop, false, value))
+                        console.log(error)
+                    }
+                }
+                if (isReadable) {
+                    try {
+                        let return_value: any = await this.tut.readProperty(prop)
+                        let validation = Utils.validateResponse(prop, return_value, self.testConfig.SchemaLocation, Utils.SchemaType.Property)
+                        if (validation) {
+                            Full_Report.push(Utils.createMiniReport(validation, "read", prop, false, undefined, return_value))
+                        } else {
+                            let result = "Output level readProperty Success : Output received and valid"
+                            Full_Report.push(Utils.createMiniReport(result, "read", prop, true, undefined, return_value))
+                        }
+                        await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
+                    } catch (error) {
+                        Full_Report.push(Utils.createMiniReport(error, "read", prop, false, undefined))
+                        console.log(error)
+                    }
+                };
+            }
+
+            let action = this.tutTd.actions
+
+            for (let act in action) {
+                const interaction: any = Utils.getInteractionByName(this.tutTd, Utils.InteractionType.Action, act)
+                const isWritable = interaction.input;
+
+                if (isWritable) {
+                    let requests_m = Utils.creatValidInput(action[act].input)
+                    try {
+                        let return_value: any = await this.tut.invokeAction(act, requests_m)
+                        if (!interaction.hasOwnProperty("output")) {
+                            let result = "Output level invokeAction with payload Success : No Output defined and no Output received"
+                            if (return_value == undefined) {
+                                Full_Report.push(Utils.createMiniReport(result, "act", act, true, requests_m))
+                            } else {
+                                result = "Output level invokeAction with payload Fail : No Output defined but Output received"
+                                Full_Report.push(Utils.createMiniReport(result, "act", act, false, requests_m, return_value))
+                            }
+                        }else{
+                            // requests with output defined -> check if output is valid
+                            let validation = Utils.validateResponse(act, return_value, self.testConfig.SchemaLocation, Utils.SchemaType.Action)
+                            let result = "Output level invokeAction with payload Fail : Output received and invalid"
+                            if (validation){
+                                Full_Report.push(Utils.createMiniReport(result,"act",act,false,requests_m,return_value))
+                            }else{
+                                result = "Output level invokeAction with payload Success : Output received and valid"
+                                Full_Report.push(Utils.createMiniReport(result,"act",act,true,requests_m,return_value))
+                            }
+                        }
+                        await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
+                    } catch (error) {
+                        console.log(error)
+                        Full_Report.push(Utils.createMiniReport(error, "act", act, false, requests_m, undefined))
+                    }
+                }else {
+                    try {
+                        let return_value: any = await this.tut.invokeAction(act)
+                        if (!interaction.hasOwnProperty("output")) {
+                            let result = "Output level invokeAction without payload Success : No Output defined and no Output received"
+                            if (return_value == undefined) {
+                                Full_Report.push(Utils.createMiniReport(result, "act", act, true, undefined))
+                            } else {
+                                result = "Output level invokeAction without payload Fail : No Output defined but Output received"
+                                Full_Report.push(Utils.createMiniReport(result, "act", act, false, undefined, return_value))
+                            }
+                        }else{
+                            let validation = Utils.validateResponse(act, return_value, self.testConfig.SchemaLocation, Utils.SchemaType.Action)
+                            let result = "Output level invokeAction without payload Fail : Output received and invalid"
+                            if (validation){
+                                Full_Report.push(Utils.createMiniReport(result,"act",act,true,undefined,return_value))
+                            }else{
+                                result = "Output level invokeAction without payload Success : Output received and valid"
+                                Full_Report.push(Utils.createMiniReport(result,"act",act,true,undefined,return_value))
+                            }
+                        }
+                        await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
+                    } catch (error) {
+                        console.log(error)
+                        Full_Report.push(Utils.createMiniReport(error, "act", act, false, undefined))
+                    }
+                }
+            }
+
+        } catch (error) {
+            self.log("Testing Output Coverage has finished with an error (see previous messages).")
+            throw Error
+        }
+        self.log("Output Test Phase has finished without an error.")
+        return Full_Report
+    }
+
+    public async testingResult(testReport: any) {
+        try {
+            console.log("T1 : " + Utils.countResults(testReport.T1));
+            console.log("T2 : " + Utils.countResults(testReport.T2));
+            console.log("T3 : " + Utils.countResults(testReport.T3));
+            console.log("T4 : " + Utils.countResults(testReport.T4));
+        } catch (error) {
+            console.log(error)
+        }
     }
 }

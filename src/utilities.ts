@@ -1,4 +1,5 @@
 import * as wot from "wot-typescript-definitions"
+import * as Generator from "./Generator"
 var fs = require("fs")
 var mkdirp = require("mkdirp")
 var jsf = require("json-schema-faker")
@@ -37,6 +38,7 @@ export interface testConfig {
     SchemaLocation?: string
     TestReportsLocation?: string
     TestDataLocation?: string
+    TimeBetweenRequests?: number
     ActionTimeout?: number
     Scenarios?: number
     Repetitions?: number
@@ -98,13 +100,15 @@ export class CodeGenerator {
     public requests: any
     constructor(tdesc: wot.ThingDescription, testConf: any) {
         this.td = tdesc
-        this.generateFakeData(testConf, tdesc)
+        //Toggle between the two Generator types to change the generation of testdata
+        //this.generateFakeData(testConf, tdesc)
+        this.generateFakeDataMarcus(testConf, tdesc)
         this.requests = this.getRequests(testConf.TestDataLocation)
     }
     private createRequest(requestName: string, loc: string, pat: string): JSON {
         try {
             let scheme = JSON.parse(fs.readFileSync(loc + "Requests/" + requestName + "-" + pat + ".json", "utf8"))
-            return jsf(scheme)
+            return jsf.generate(scheme)
         } catch (Error) {
             return null
         }
@@ -131,6 +135,53 @@ export class CodeGenerator {
             requests[SchemaType.Action][action] = []
             for (let scenario = 0; scenario < testConf.Scenarios; scenario++) {
                 requests[SchemaType.Action][action].push(this.createRequest(action, testConf.SchemaLocation, SchemaType.Action))
+            }
+        }
+
+        for (let event in tdesc.events) {
+            requests[SchemaType.EventSubscription][event] = []
+            requests[SchemaType.EventCancellation][event] = []
+            for (let scenario = 0; scenario < testConf.Scenarios; scenario++) {
+                requests[SchemaType.EventSubscription][event].push(this.createRequest(event, testConf.SchemaLocation, SchemaType.EventSubscription))
+                requests[SchemaType.EventCancellation][event].push(this.createRequest(event, testConf.SchemaLocation, SchemaType.EventCancellation))
+            }
+        }
+
+        fs.writeFileSync(testConf.TestDataLocation, JSON.stringify(requests, null, " "))
+    }
+
+    public generateFakeDataMarcus(testConf: any, tdesc: wot.ThingDescription) {
+        // create interaction list: no optimized solution: -----------
+        var requests = {
+            [SchemaType.Property]: {},
+            [SchemaType.Action]: {},
+            [SchemaType.EventSubscription]: {},
+            [SchemaType.EventCancellation]: {},
+        }
+
+        for (let property in tdesc.properties) {
+            requests[SchemaType.Property][property] = []
+            if (!tdesc.properties[property].readOnly) {
+                // START here with sensible data generation
+                let array_prop = Generator.fuzzGenerator(tdesc,tdesc.properties, property)
+
+                array_prop.forEach(element => {
+                    requests[SchemaType.Property][property].push(element);
+                })
+                
+        
+            }
+        }
+
+        for (let action in tdesc.actions) {
+            requests[SchemaType.Action][action] = []
+            if (tdesc.actions[action].input) {
+                let array_act = Generator.fuzzGenerator(tdesc,tdesc.actions, action)
+
+                array_act.forEach(element => {
+                    requests[SchemaType.Action][action].push(element);
+                })
+        
             }
         }
 
@@ -316,7 +367,7 @@ export function sleepInMs(ms: number) {
 }
 
 /**
- * A deferred promise object that can be resolved and rejected from another function.
+ * A deferred promise object that can be resolved and rejected from another function. 
  */
 export class DeferredPromise {
     resolve
@@ -335,4 +386,117 @@ export class DeferredPromise {
         this.catch = this._promise.catch.bind(this._promise)
         this[Symbol.toStringTag] = "Promise"
     }
+}
+// ------------------------Marcus Code ----------------------------------------------
+/*
+export function getMaxNumberElements (testConf: any, interactionType: any){
+    try {
+        let fake_data = JSON.parse(fs.readFileSync(testConf.TestDataLocation, "utf8"));
+        let fake_property = fake_data.Property
+        let max_count = 0;
+        var countObj = new Object();
+
+        for (let prop in fake_property){
+            var count = fake_property[prop].length;
+            countObj[prop] = count;
+            if (count >= max_count){
+                max_count = count;
+            }
+        }
+        
+        return max_count;
+    }
+    catch (Error) {
+        return null;
+    }
+}
+*/
+export function getNumberElements (testConf: any, interactionType: any){
+    try {
+        let fake_data = JSON.parse(fs.readFileSync(testConf.TestDataLocation, "utf8"));
+        let fake_property = fake_data[interactionType]
+
+        var countObj = new Object();
+
+        for (let prop in fake_property){
+            var count = fake_property[prop].length;
+            countObj[prop] = count;
+        }
+        
+        return countObj;
+    }
+    catch (Error) {
+        return null;
+    }
+}
+
+export function getTestData(testConf){
+    let requests_m = JSON.parse(fs.readFileSync(testConf.TestDataLocation, "utf8"));
+    return requests_m
+}
+
+export function creatValidInput(schema){
+    return jsf.generate(schema)
+}
+
+export function createMiniReport(result: any,interaction_type: string, interaction_name: string, pass: boolean, payload: any, response?: any){
+    let mini_report : any = {}
+
+    let unix_timestamp = Date.now();
+    var date = new Date(unix_timestamp);
+    // Hours part from the timestamp
+    var hours = date.getHours();
+    // Minutes part from the timestamp
+    var minutes = "0" + date.getMinutes();
+    // Seconds part from the timestamp
+    var seconds = "0" + date.getSeconds();
+    var formattedTime = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+
+    if (interaction_type == "write"){
+        mini_report = {
+            "name": interaction_name,
+            "passed": pass,
+            "time": formattedTime,
+            "writeInteraction":{
+                "payload": payload,
+                "result": result
+            }
+        }
+    }
+    if (interaction_type == "read"){
+        mini_report = {
+            "name": interaction_name,
+            "passed": pass,
+            "time": formattedTime,
+            "readInteraction":{
+                "response": response,
+                "result": result
+            }
+        }
+    }
+    if (interaction_type == "act"){
+        mini_report = {
+            "name": interaction_name,
+            "passed": pass,
+            "time": formattedTime,
+            "actionInteraction":{
+                "payload": payload,
+                "response": response,
+                "result": result
+            }
+        }
+    }
+    return mini_report
+}
+
+export function countResults(miniReport: Array<any>){
+    var length: number = miniReport.length;
+    var passed: number = 0;
+    for(var i = 0; i < length; i++){
+        if(miniReport[i].passed){
+            passed = passed +1;
+        }
+    }
+
+    return [passed,length];
 }
