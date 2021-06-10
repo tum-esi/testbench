@@ -271,6 +271,7 @@ Each one of these reports consists of:
 
 <img src="readme-images/testingProcess.svg" align="center" height="400" width="400">
 
+
 ## How does the vulnerability testing work?
 
 ### Starting Phase
@@ -317,3 +318,4 @@ In the order of priority, the following need to be implemented
     3. Testing whether the JSON delivered by event match the JSON Schema
 3. Observable Property Testing: Need to define the objectives
 4. Coap and MQTT server
+
