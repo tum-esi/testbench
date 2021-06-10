@@ -11,8 +11,18 @@ import { CoapsClientFactory } from "@node-wot/binding-coap"
 import { Tester } from "./Tester"
 import { parseArgs, configPath, tdPaths } from "./config"
 import { testConfig, ListeningType, logFormatted } from "./utilities"
-import { TestReport } from "TestReport"
-const fs = require("fs")
+import { TestReport, VulnerabilityReport, TotalReport } from "./TestReport"
+import * as fs from "fs";
+
+//const fs = require("fs")
+//var util = require('util');
+
+/*var log_file = fs.createWriteStream(__dirname + '/testBench.debug.log', {flags : 'w'});
+
+console.log = function(d) { //
+  log_file.write(util.format(d) + '\n');
+};*/
+
 var configFile = "default-config.json"
 if (process.argv.length > 2) {
     parseArgs(tdPaths)
@@ -113,10 +123,19 @@ srv.start()
                     },
                     description: "By invoking this action, the testing starts and produces a test report that can be read. Not necessary for fastTest",
                 },
+                testVulnerabilities: {
+                    input:{
+                        type: "boolean"
+                    },
+                    description: "Tests some basic security and safety vulnerabilities"
+                }
             },
         })
 
         let tester: Tester = null
+        
+        //let fastMode: boolean = false;
+        
         // init property values
         await TestBenchT.writeProperty("testConfig", testConfig)
         await TestBenchT.writeProperty("testBenchStatus", "")
@@ -131,8 +150,21 @@ srv.start()
             await TestBenchT.invokeAction("initiate", true)
             //call testThing
             await TestBenchT.invokeAction("testThing", true)
-            //call testThing
-            return await TestBenchT.readProperty("testReport")
+            //read testReport
+            
+            const conformanceReport = await TestBenchT.readProperty('testReport');
+
+            // call testVulnerabilities
+            
+            //fastMode = true;
+            await TestBenchT.invokeAction('testVulnerabilities', true);
+            const vulnReport = await TestBenchT.readProperty('testReport');
+            var totalReport: TotalReport = new TotalReport(conformanceReport, vulnReport);
+
+            //create new report containing both conformance results and vulnerability results.
+            await TestBenchT.writeProperty('testReport', totalReport);
+            //write to testReport
+            return await TestBenchT.readProperty("testReport");
             //return the simplified version
         })
         /* update config file, gets tutTD if not "", consume tutTD, adds
@@ -144,7 +176,6 @@ srv.start()
                 logFormatted(":::::ERROR::::: Init: write testReport property failed")
                 return "Could not reinitialize the test report"
             }
-
             try {
                 var newConf = await TestBenchT.readProperty("testConfig")
             } catch {
@@ -152,10 +183,9 @@ srv.start()
                 return "Initiation failed"
             }
             testConfig = await JSON.parse(JSON.stringify(newConf))
-
-            /* fs.writeFileSync('./default-config.json',
-                        JSON.stringify(testConfig, null, ' ')); */
+            
             srv.addCredentials(testConfig.credentials)
+
             try {
                 var tutTD = await TestBenchT.readProperty("thingUnderTestTD")
             } catch {
@@ -228,10 +258,18 @@ srv.start()
                 }
             }
         })
+        
+        // Tests the Thing for security and safety.
+        TestBenchT.setActionHandler("testVulnerabilities", async (fastMode: boolean) => {
+            const vulnReport: VulnerabilityReport = await tester.testVulnerabilities(fastMode);
+            //fastMode = false;
+            await TestBenchT.writeProperty('testReport', vulnReport);
+        })
 
         await TestBenchT.expose()
         console.info(TestBenchT.getThingDescription().title + " ready")
     })
-    .catch(() => {
-        logFormatted(":::::ERROR::::: Servient startup failed")
+    .catch((err) => {
+        // logFormatted(":::::ERROR::::: Servient startup failed", e)
+        console.error('Err:', err);
     })
