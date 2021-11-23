@@ -1,4 +1,5 @@
 // Creates a JSON file with randomly generted inputs.
+import { SchemaType } from "utilities";
 import * as wot from "wot-typescript-definitions"
 var fs = require("fs");
 var jsf = require("json-schema-faker")
@@ -34,6 +35,7 @@ function arrayToObject(array) {
 }
 
 // Try to assess type if type is not given in InteractionAffordance
+// TODO: doing it for other types and PR to playground
 function assessType(scheme){
     let type = undefined;
 
@@ -42,6 +44,30 @@ function assessType(scheme){
     }
     if(scheme.hasOwnProperty("items")){
         type = "array"
+    }
+    
+    if(scheme.hasOwnProperty("minimum") || scheme.hasOwnProperty("maximum")){
+        //possibly check if min/max is an even number. if not then type = number
+        if (scheme.hasOwnProperty("minimum")){
+            if(scheme.minimum % 1 == 0){
+                type = "integer"
+            }
+            else{
+                type = "number"
+            }
+        }
+        if (scheme.hasOwnProperty("maximum")){
+            if(scheme.maximum % 1 == 0){
+                type = "integer"
+            }
+            else{
+                type = "number"
+            }
+        }
+
+    }
+    if(scheme.hasOwnProperty("minLength") || scheme.hasOwnProperty("maxLength")){
+        type = "string"
     }
 
     return type
@@ -95,7 +121,10 @@ function checkIntSpecialCases(input_schema) {
 }
 
 //--------------------Number------------------------------
-
+/**
+ * 
+ * @param input_schema 
+ */
 function checkNumbSpecialCases(input_schema) {
     
     let helper_array = []
@@ -234,8 +263,12 @@ function checkObjectProp(input_schema) {
                 }
             }
         }
+        return obj_helper
     }
-    return obj_helper
+    else{
+        return undefined
+    }
+    
 }
 
 //Checks for properties with minima in nested Objects
@@ -452,6 +485,7 @@ function checkNestedMaxArray(tdProp, currentProp) {
 export function fuzzGenerator(td,tdProp, currentProp) {
     
     let helper_array = []
+    let input_array: Array <any> = []
 
     if(td.actions == tdProp){
         var schema = tdProp[currentProp].input
@@ -473,11 +507,13 @@ export function fuzzGenerator(td,tdProp, currentProp) {
         let edge_cases = checkIntSpecialCases(schema)
         edge_cases.forEach(element => {
             helper_array.push(element);
+            input_array.push("special");
         })
         
 
         for (let i = 0; i < 10; i++) {
             helper_array.push(jsf.generate(schema));
+            input_array.push("random");
         }
         
     }
@@ -487,43 +523,54 @@ export function fuzzGenerator(td,tdProp, currentProp) {
         let edge_cases = checkNumbSpecialCases(schema)
         edge_cases.forEach(element => {
             helper_array.push(element);
+            input_array.push("special");
         })
         
 
-        for (let i = 0; i < 2; i++) {
+        for (let i = 0; i < 10; i++) {
             helper_array.push(jsf.generate(schema));
+            input_array.push("random");
         }
         
     }
     
     if (schema.type == 'string') {
+        //check special cases
+        let specProp = stringSpecialCases(schema)
+        if (specProp != undefined){
+            helper_array.push(jsf.generate(specProp));
+            input_array.push("empty");
+        }
         //check length
         let array_minmax = checkStrEdgeCases(schema)
         //create valid random data
         if(array_minmax[0] != undefined){
             helper_array.push(array_minmax[0]);
+            input_array.push("special");
         }
         if(array_minmax[1] != undefined){
             helper_array.push(array_minmax[1]);
+            input_array.push("special");
         }
         for (let i = 0; i < 15; i++) {
             helper_array.push(jsf.generate(schema));
-        }
-        //check special cases
-        let specProp = stringSpecialCases(schema)
-        if (specProp != undefined){
-            helper_array.push(jsf.generate(specProp));
+            input_array.push("random");
         }
     } 
     if (schema.type == 'object') {
-        //build fct that produces empty object if no requirment
+        //build fct that produces empty object if no requirment of minimum elements
         let empty = checkEmptyObject(interaction);
         if(empty){
             helper_array.push({});
+            input_array.push("empty");
         }
         //fct which checks if # properties == # requrired and builds object with only required
         let ObjProp = checkObjectProp(schema);
-        helper_array.push(jsf.generate(ObjProp));
+        if (ObjProp != undefined){
+            helper_array.push(jsf.generate(ObjProp));
+            input_array.push("special");
+        }
+        
 
         //Check for minimum in nested Objects
         let help_array_min = []
@@ -532,6 +579,7 @@ export function fuzzGenerator(td,tdProp, currentProp) {
         }
         if(Object.keys(help_array_min[0]).length !== 0){
             helper_array.push(arrayToObject(help_array_min))
+            input_array.push("special");
         }
 
         //Check for maximum in nested Objects
@@ -542,12 +590,14 @@ export function fuzzGenerator(td,tdProp, currentProp) {
         
         if(Object.keys(help_array_max[0]).length !== 0){
             helper_array.push(arrayToObject(help_array_max))
+            input_array.push("special");
         }
         
 
         //Generate a 10 random objects
         for (let i = 0; i < 10; i++) {
             helper_array.push(jsf.generate(schema));
+            input_array.push("random");
         }
     }
     
@@ -560,9 +610,11 @@ export function fuzzGenerator(td,tdProp, currentProp) {
                 dummy_array0.push(dummy_array1[0][0])
             }
             helper_array.push(dummy_array0)
+            input_array.push("special");
         }
         else{
             helper_array.push(dummy_array1[0])
+            input_array.push("special");
         }
         
         let dummy_array2 = []
@@ -573,14 +625,17 @@ export function fuzzGenerator(td,tdProp, currentProp) {
                 dummy_array2.push(dummy_array3[0][0])
             }
             helper_array.push(dummy_array2)
+            input_array.push("special");
         }
         else{
             helper_array.push(dummy_array3[0])
+            input_array.push("special");
         }
         
 
         for (let i = 0; i < 5; i++) {
             helper_array.push(jsf.generate(schema));
+            input_array.push("random");
         }
 
     }
@@ -588,9 +643,10 @@ export function fuzzGenerator(td,tdProp, currentProp) {
     if (schema.type == 'boolean') {
         
         helper_array.push(true);
+        input_array.push("special");
         helper_array.push(false);
+        input_array.push("special");
     }
 
-
-    return helper_array
+    return [helper_array, input_array]
 }

@@ -98,12 +98,14 @@ export enum SchemaType {
 export class CodeGenerator {
     private td: wot.ThingDescription
     public requests: any
+    //public input_types: Array <any>
+    public input_types: Object
     constructor(tdesc: wot.ThingDescription, testConf: any) {
         this.td = tdesc
         //Toggle between the two Generator types to change the generation of testdata
         //this.generateFakeData(testConf, tdesc)
-        this.generateFakeDataMarcus(testConf, tdesc)
-        this.requests = this.getRequests(testConf.TestDataLocation)
+        this.input_types = this.generateFakeDataMarcus(testConf, tdesc) //TODO
+        this.requests = this.getRequests(testConf.TestDataLocation) 
     }
     private createRequest(requestName: string, loc: string, pat: string): JSON {
         try {
@@ -158,30 +160,44 @@ export class CodeGenerator {
             [SchemaType.EventSubscription]: {},
             [SchemaType.EventCancellation]: {},
         }
-
+        var types = {
+            [SchemaType.Property]: {},
+            [SchemaType.Action]: {},
+            [SchemaType.EventSubscription]: {},
+            [SchemaType.EventCancellation]: {},
+        }
+        
         for (let property in tdesc.properties) {
             requests[SchemaType.Property][property] = []
+            types[SchemaType.Property][property] = []
             if (!tdesc.properties[property].readOnly) {
                 // START here with sensible data generation
-                let array_prop = Generator.fuzzGenerator(tdesc,tdesc.properties, property)
-
+                let [array_prop, data_type] = Generator.fuzzGenerator(tdesc,tdesc.properties, property)
+                
                 array_prop.forEach(element => {
                     requests[SchemaType.Property][property].push(element);
                 })
                 
-        
+                
+                data_type.forEach(element => {
+                    types[SchemaType.Property][property].push(element);
+                })
             }
         }
 
         for (let action in tdesc.actions) {
             requests[SchemaType.Action][action] = []
+            types[SchemaType.Action][action] = []
             if (tdesc.actions[action].input) {
-                let array_act = Generator.fuzzGenerator(tdesc,tdesc.actions, action)
-
+                //let array_act
+                let [array_act, data_type] = Generator.fuzzGenerator(tdesc,tdesc.actions, action)
+                
                 array_act.forEach(element => {
                     requests[SchemaType.Action][action].push(element);
                 })
-        
+                data_type.forEach(element => {
+                    types[SchemaType.Action][action].push(element);
+                })
             }
         }
 
@@ -195,6 +211,7 @@ export class CodeGenerator {
         }
 
         fs.writeFileSync(testConf.TestDataLocation, JSON.stringify(requests, null, " "))
+        return types
     }
     // helper function finds created data:
     public findRequestValue(requestsLoc, testScenario, schemaType: SchemaType, interactionName: string) {
@@ -411,6 +428,12 @@ export function getMaxNumberElements (testConf: any, interactionType: any){
     }
 }
 */
+
+/**
+ * Returns object with specific number of testcases for each interaction affordance 
+ * @param testConf The testConfig
+ * @param interactionType The type of Interaction 
+ */
 export function getNumberElements (testConf: any, interactionType: any){
     try {
         let fake_data = JSON.parse(fs.readFileSync(testConf.TestDataLocation, "utf8"));
@@ -430,16 +453,48 @@ export function getNumberElements (testConf: any, interactionType: any){
     }
 }
 
-export function getTestData(testConf){
+/**
+ * Rteurns the test Data generated in the initiation stage 
+ * @param testConf The testConfig
+ */
+export function getTestData(testConf: any){
     let requests_m = JSON.parse(fs.readFileSync(testConf.TestDataLocation, "utf8"));
     return requests_m
 }
-
-export function creatValidInput(schema){
+/**
+ * Returns a valid request input for a given schema 
+ * @param schema current interaction schema
+ */
+export function createValidInput(schema){ 
     return jsf.generate(schema)
 }
 
-export function createMiniReport(result: any,interaction_type: string, interaction_name: string, pass: boolean, payload: any, response?: any){
+export function removeDuplicates(array: Array <any>){
+    return array.filter((value:any,index:any)=> array.indexOf(value)=== index)
+}
+export function getCurrentTime(){
+    let unix_timestamp = Date.now();
+    var date = new Date(unix_timestamp);
+    // Hours part from the timestamp
+    var hours = date.getHours();
+    // Minutes part from the timestamp
+    var minutes = "0" + date.getMinutes();
+    // Seconds part from the timestamp
+    var seconds = "0" + date.getSeconds();
+    var formattedTime = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+
+    return formattedTime
+}
+/**
+ * Creates a object with the necessary information about a single test instance 
+ * @param result Human readable explaination of test result
+ * @param interaction_type Type of interaction determines the layout of the mini report
+ * @param interaction_name name of the interaction
+ * @param pass test passed the requirement true/false
+ * @param payload input that was send as payload of a request
+ * @param response response of the system under test
+ */
+export function createMiniReport(result: string,interaction_type: string, interaction_name: string, pass: boolean, payload: any, response?: any){
     let mini_report : any = {}
 
     let unix_timestamp = Date.now();
@@ -486,7 +541,99 @@ export function createMiniReport(result: any,interaction_type: string, interacti
             }
         }
     }
+    if (interaction_type == "eve"){
+        mini_report = {
+            "name": interaction_name,
+            "passed": pass,
+            "time": formattedTime,
+            "eventInteraction":{
+                "payload": payload,
+                "response": response,
+                "result": result
+            }
+        }
+    }
     return mini_report
+}
+
+export function createT3MiniReport(payload: any, interaction_type: string){
+    let mini_T3_report : any = {}
+
+    if(interaction_type == "property"){
+        mini_T3_report = {
+            "passed": undefined,
+            "time": undefined,
+            "payload": payload,
+            "result": undefined
+        }
+    }
+    if(interaction_type == "action"){
+        mini_T3_report = {
+            "passed": undefined,
+            "time": undefined,
+            "payload": payload,
+            "response": undefined,
+            "result": undefined
+        }
+    }
+
+    return mini_T3_report
+}
+
+export function createT3Report(data, type){
+    let initT3 = {}
+
+    let prop_data = data[Object.keys(data)[0]]
+    let act_data = data[Object.keys(data)[1]]
+    let prop_type = type[Object.keys(type)[0]]
+    let act_type = type[Object.keys(type)[1]]
+
+    let prop_keys = Object.keys(data[Object.keys(data)[0]])
+    let act_keys = Object.keys(data[Object.keys(data)[1]])
+
+    //let special_types = removeDuplicates(prop_type.values)
+
+    for(var key of prop_keys){
+        initT3[key] = {}
+
+        let special_types = removeDuplicates(prop_type[key])
+        for(var i = 0; i < special_types.length; i++){
+            initT3[key][special_types[i]] = []
+        }
+        //check if array is empty
+        var length = prop_data[key].length
+        if(length != 0){
+            
+            for(var i = 0; i < length; i++){
+                //create individual blank reports and push them into the respective type arrays
+                let mini_report = createT3MiniReport(prop_data[key][i],"property")
+                //initT3[key].push([prop_data[key][i],prop_type[key][i]])
+                initT3[key][prop_type[key][i]].push(mini_report)
+            }
+            
+        }
+    }
+    
+    for(var key of act_keys){
+        initT3[key] = {}
+        let special_types = removeDuplicates(act_type[key]) 
+        for(var i = 0; i < special_types.length; i++){
+            initT3[key][special_types[i]] = []
+        }
+        //check if array is empty
+        var length = act_data[key].length
+        if(length != 0){
+        
+            for(var i = 0; i < length; i++){
+                //create individual blank reports and push them into the respective type arrays
+                let mini_report = createT3MiniReport(act_data[key][i],"action")
+                initT3[key][act_type[key][i]].push(mini_report)
+            }
+            
+        }
+    }
+    
+    return initT3
 }
 
 export function countResults(miniReport: Array<any>){

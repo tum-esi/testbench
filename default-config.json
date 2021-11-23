@@ -5,12 +5,12 @@
         "allowSelfSigned": true
     },
     "coap": {
-        "port": 8981
+        "port": 5683
     },
     "SchemaLocation": "Resources/InteractionSchemas/",
     "TestReportsLocation": "Reports/",
     "TestDataLocation": "Resources/fake-data.json",
-    "TimeBetweenRequests": 25,
+    "TimeBetweenRequests": 200,
     "ActionTimeout": 4000,
     "Scenarios": 4,
     "Repetitions": 1,
@@ -29,6 +29,10 @@
     },
     "credentials": {
         "urn:dev:ops:32473-sensehat-004":{
+            "username": "guest",
+            "password": "welcometoremotelab"
+        },
+        "de:tum:ei:esi:fp:coffee:1-1":{
             "username": "guest",
             "password": "welcometoremotelab"
         }

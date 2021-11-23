@@ -21,12 +21,19 @@ if (process.argv.length > 2) {
 //getting the test config and extraction anything possible
 let testConfig: testConfig = JSON.parse(fs.readFileSync(configFile, "utf8"))
 let tbName: string = testConfig["TBname"]
-let tutName: string = "Marcus Thing"
+let tutName: string = "Testbench Thing"
+
+let main_Report = {
+    T1:[],
+    T2:[],
+    //T3:[], //TODO
+    T3:{},
+    T4:[],
+}
 
 //creating the Test Bench as a servient.
 //It will test the Thing as a client and interact with the tester as a Server
 let srv = new Servient()
-//srv.addCredentials(testConfig.credentials);
 console.log(srv)
 let httpServer = typeof testConfig.http.port === "number" ? new HttpServer(testConfig.http) : new HttpServer()
 let coapServer = typeof testConfig.coap.port === "number" ? new CoapServer(testConfig.coap.port) : new CoapServer()
@@ -155,7 +162,7 @@ srv.start()
                         type: "boolean",
                     },
                     description: "By invoking this action, the testing starts on all Level",
-                },
+                }
             }
         })
 
@@ -182,14 +189,9 @@ srv.start()
              Tester, set generated data to testData: */
         TestBenchT.setActionHandler("initiate", async (logMode: boolean) => {
             try {
-                let init_Report: object = {
-                    T1:[],
-                    T2:[],
-                    T3:[],
-                    T4:[],
-                }
+                
                 await TestBenchT.writeProperty("testReport", "[]")
-                await TestBenchT.writeProperty("testReportNew", init_Report)
+                //await TestBenchT.writeProperty("testReportNew", main_Report)
             } catch {
                 logFormatted(":::::ERROR::::: Init: write testReport property failed")
                 return "Could not reinitialize the test report"
@@ -228,6 +230,13 @@ srv.start()
                     logFormatted(":::::ERROR::::: Init: Set testData property failed")
                     return "Initiation failed"
                 }
+                try{
+                    main_Report.T3 = tester.inputTestReport
+                    await TestBenchT.writeProperty("testReportNew", main_Report)
+                }catch{
+                    logFormatted(":::::ERROR::::: Init: Set testReportNew property failed")
+                    return "Initiation failed"
+                }
                 return "Initiation was successful."
             } else if (returnCheck == 1) {
                 try {
@@ -240,7 +249,6 @@ srv.start()
             }
             return "Initiation failed"
         })
-
 
         // Tests the tut. If input true, logMode is on.
         TestBenchT.setActionHandler("testThing", async (logMode: boolean) => {
@@ -285,14 +293,28 @@ srv.start()
             logFormatted("------ START OF Operational Testing ------")
             try {
                 var testReportT1: any = await tester.testingOpCov()
-                let testReport: any = await TestBenchT.readProperty("testReportNew")
-                testReport.T1 = testReportT1
-                await TestBenchT.writeProperty("testReportNew", testReport)
+                //let testReport: any = await TestBenchT.readProperty("testReportNew")
+                main_Report.T1 = testReportT1
+                //testReport.T1 = testReportT1 // TODO
+                await TestBenchT.writeProperty("testReportNew", main_Report)
             } catch {
                 logFormatted(":::::ERROR::::: TestThing: Error during Operational test phase.")
                 return
             }
+            
+            //TODO check if events work and how we can incorporate them into the testing plan
+            secondTestingPhase()
 
+            async function secondTestingPhase() {
+                try {
+                    // Starting the second testing phase.
+                    const testReportHasChanged: boolean = await tester.secondTestingPhase(testConfig.Repetitions)
+                    //console.log(testReportHasChanged)
+                } catch {
+                    logFormatted(":::::ERROR::::: TestThing: Error during second test phase.")
+                }
+            }
+            
             return
         })
 
@@ -323,10 +345,12 @@ srv.start()
             await fs.writeFileSync(testConfig.TestDataLocation, JSON.stringify(data, null, " "))
             logFormatted("------ START OF Input Testing ------")
             try {
-                var testReportT3: any = await tester.testingInputCov()
-                let testReport: any = await TestBenchT.readProperty("testReportNew")
-                testReport.T3 = testReportT3
-                await TestBenchT.writeProperty("testReportNew", testReport)
+                // TODO get init testreport T3 into testingInputCov() and fill out every case. Also change readProperty("testReportNew")
+                //var testReportT3: any = await tester.testingInputCov()
+                //let testReport: any = await TestBenchT.readProperty("testReportNew")
+                //testReport.T3 = testReportT3
+                main_Report.T3 = await tester.testingInputCov(main_Report.T3)
+                await TestBenchT.writeProperty("testReportNew", main_Report)
             } catch {
                 logFormatted(":::::ERROR::::: TestThing: Error during Input test phase.")
                 return
