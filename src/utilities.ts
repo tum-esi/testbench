@@ -104,7 +104,7 @@ export class CodeGenerator {
         this.td = tdesc
         //Toggle between the two Generator types to change the generation of testdata
         //this.generateFakeData(testConf, tdesc)
-        this.input_types = this.generateFakeDataMarcus(testConf, tdesc) //TODO
+        this.input_types = this.generateFakeDataMarcus(testConf, tdesc)
         this.requests = this.getRequests(testConf.TestDataLocation) 
     }
     private createRequest(requestName: string, loc: string, pat: string): JSON {
@@ -189,7 +189,7 @@ export class CodeGenerator {
             requests[SchemaType.Action][action] = []
             types[SchemaType.Action][action] = []
             if (tdesc.actions[action].input) {
-                //let array_act
+                
                 let [array_act, data_type] = Generator.fuzzGenerator(tdesc,tdesc.actions, action)
                 
                 array_act.forEach(element => {
@@ -404,30 +404,7 @@ export class DeferredPromise {
         this[Symbol.toStringTag] = "Promise"
     }
 }
-// ------------------------Marcus Code ----------------------------------------------
-/*
-export function getMaxNumberElements (testConf: any, interactionType: any){
-    try {
-        let fake_data = JSON.parse(fs.readFileSync(testConf.TestDataLocation, "utf8"));
-        let fake_property = fake_data.Property
-        let max_count = 0;
-        var countObj = new Object();
 
-        for (let prop in fake_property){
-            var count = fake_property[prop].length;
-            countObj[prop] = count;
-            if (count >= max_count){
-                max_count = count;
-            }
-        }
-        
-        return max_count;
-    }
-    catch (Error) {
-        return null;
-    }
-}
-*/
 
 /**
  * Returns object with specific number of testcases for each interaction affordance 
@@ -591,7 +568,6 @@ export function createT3Report(data, type){
     let prop_keys = Object.keys(data[Object.keys(data)[0]])
     let act_keys = Object.keys(data[Object.keys(data)[1]])
 
-    //let special_types = removeDuplicates(prop_type.values)
 
     for(var key of prop_keys){
         initT3[key] = {}
@@ -645,5 +621,29 @@ export function countResults(miniReport: Array<any>){
         }
     }
 
+    return [passed,length];
+}
+
+export function countResultsT3(miniReportT3: object){
+    var number_properties: number = Object.keys(miniReportT3).length
+    
+    var passed: number = 0;
+    var length: number = 0;
+    for(var j = 0; j < number_properties; j++){
+        
+        var number_scenarios = Object.keys(Object.values(miniReportT3)[j]).length
+
+        for(var i = 0; i< number_scenarios; i++){
+            var testcases : any = Object.values(Object.values(Object.values(miniReportT3)[j]))[i]
+            var number_testcases: number = testcases.length
+            for(var k = 0; k < number_testcases; k++){
+                if(testcases[k].passed){
+                    passed = passed +1;
+                }
+                length = length +1;
+            }
+        }
+    }
+    
     return [passed,length];
 }

@@ -10,7 +10,7 @@
     "SchemaLocation": "Resources/InteractionSchemas/",
     "TestReportsLocation": "Reports/",
     "TestDataLocation": "Resources/fake-data.json",
-    "TimeBetweenRequests": 200,
+    "TimeBetweenRequests": 500,
     "ActionTimeout": 4000,
     "Scenarios": 4,
     "Repetitions": 1,
@@ -33,6 +33,102 @@
             "password": "welcometoremotelab"
         },
         "de:tum:ei:esi:fp:coffee:1-1":{
+            "username": "guest",
+            "password": "welcometoremotelab"
+        },
+        "urn:dev:ops:32473-ConveyorBelt-001":{
+            "username": "guest",
+            "password": "welcometoremotelab"
+        },
+        "urn:dev:ops:32473-ConveyorBelt-002":{
+            "username": "guest",
+            "password": "welcometoremotelab"
+        },
+        "urn:dev:ops:32473-HueDaylight-1234":{
+            "username": "guest",
+            "password": "welcometoremotelab"
+        },
+        "de:tum:ei:esi:flora":{
+            "username": "guest",
+            "password": "welcometoremotelab"
+        },
+        "urn:dev:ops:32473-HueLight-1":{
+            "username": "guest",
+            "password": "welcometoremotelab"
+        },
+        "urn:dev:ops:32473-HueLight-2":{
+            "username": "guest",
+            "password": "welcometoremotelab"
+        },
+        "urn:dev:ops:32473-HueSwitch-1234":{
+            "username": "guest",
+            "password": "welcometoremotelab"
+        },
+        "urn:dev:ops:32473-HueIndoorSensor-1":{
+            "username": "guest",
+            "password": "welcometoremotelab"
+        },
+        "urn:dev:ops:32473-HueIndoorSensor-2":{
+            "username": "guest",
+            "password": "welcometoremotelab"
+        },
+        "urn:dev:ops:32473-HueOutdoorSensor-1":{
+            "username": "guest",
+            "password": "welcometoremotelab"
+        },
+        "urn:dev:ops:32473-InfraredSensor-001":{
+            "username": "guest",
+            "password": "welcometoremotelab"
+        },
+        "urn:dev:ops:32473-InfraredSensor-002":{
+            "username": "guest",
+            "password": "welcometoremotelab"
+        },
+        "esi:pantilt:1":{
+            "username": "guest",
+            "password": "welcometoremotelab"
+        },
+        "esi:pantilt:2":{
+            "username": "guest",
+            "password": "welcometoremotelab"
+        },
+        "urn:dev:ops:32473-rainbowhat-001":{
+            "username": "guest",
+            "password": "welcometoremotelab"
+        },
+        "urn:dev:ops:32473-rainbowhat-002":{
+            "username": "guest",
+            "password": "welcometoremotelab"
+        },
+        "de:tum:ei:esi:phat":{
+            "username": "guest",
+            "password": "welcometoremotelab"
+        },
+        "urn:dev:ops:32473-sensehat-001":{
+            "username": "guest",
+            "password": "welcometoremotelab"
+        },
+        "urn:dev:ops:32473-sensehat-002":{
+            "username": "guest",
+            "password": "welcometoremotelab"
+        },
+        "urn:dev:ops:32473-sensehat-003":{
+            "username": "guest",
+            "password": "welcometoremotelab"
+        },
+        "urn:dev:ops:32473-UArm-001":{
+            "username": "guest",
+            "password": "welcometoremotelab"
+        },
+        "urn:dev:ops:32473-UnicornpHAT-001":{
+            "username": "guest",
+            "password": "welcometoremotelab"
+        },
+        "urn:dev:ops:32473-UnicornpHAT-002":{
+            "username": "guest",
+            "password": "welcometoremotelab"
+        },
+        "de:tum:ei:esi:dobot":{
             "username": "guest",
             "password": "welcometoremotelab"
         }

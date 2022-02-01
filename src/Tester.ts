@@ -26,7 +26,6 @@ export class Tester {
     private testConfig: Utils.testConfig //the file that describes various locations of the files that are needed. Must be configured by the user
     public codeGen: Utils.CodeGenerator //this will generate the requests to be sent to the tut
     public testReport: TestReport //after the testing, this will contain the bare results
-    //public inputTestReport: Array <any> //TODO
     public inputTestReport: Object
     private tut: wot.ConsumedThing // the thing under test
     private logMode: boolean // True if logMode is enabled, false otherwise.
@@ -136,8 +135,6 @@ export class Tester {
             messageAddition = ""
         }
         this.log("Test for Event " + eventName + " was " + messageAddition + "passed.")
-        // TODO Add marcus implementation here and add a event to new test report
-        //this.testReport.addMessage(testCycle, testScenario, container)
         return true
     }
 
@@ -151,7 +148,7 @@ export class Tester {
      * @param testMode
      * @param listeningType
      */
-    //TODO change this fct to work properly in T1 testing phase.
+
     public async testObserveOrEvent(
         container: EventTestReportContainer,
         interaction: any,
@@ -353,7 +350,6 @@ export class Tester {
             self.log("Trying to unsubscribe from " + interactionSpecifier + ".")
 
             // Different actions are needed depending on the subscriptionStatus.
-            console.log("unsub MAMA")
             switch (subscriptionStatus) {
                 case SubscriptionStatus.Error:
                     // If Subscription failed Cancellation can not work.
@@ -395,10 +391,8 @@ export class Tester {
                             " but due to the design of node-wot this output is identical for " +
                             "unsuccessful subscription and successful subscription with no emitted event."
                         )
-                        console.log(testMode)
                         if (testMode == Utils.InteractionType.Event){
                             await self.tut.unsubscribeEvent(interactionName)
-                            console.log("MAMAMAMA")
                         } 
                         else await self.tut.unobserveProperty(interactionName)
                     } catch { }
@@ -983,10 +977,10 @@ export class Tester {
 
             if (Object.keys(event).length != 0){
                 for (let eve in event) {
-                    //TODO events here
+                    
                     const container: EventTestReportContainer = new EventTestReportContainer(1, 1, eve)
                     let status = await this.testObserveOrEvent(container,this.tutTd.events[eve], Utils.InteractionType.Event, 2)
-                    console.log(status)
+
                     if (status == 0){
                         let result = "OP level Event reached timeout"
                         Full_Report.push(Utils.createMiniReport(result, "eve", eve, true, undefined))
@@ -1093,78 +1087,7 @@ export class Tester {
         const self = this
         let Full_Report: any = []
         let full_T3_report = testReport
-        // TODO rewrite the testing by looking into init report , test for the given value anf fill in the blanks
-        /*
-        try {
-            let property = this.tutTd.properties
-            let requests_p = Utils.getTestData(this.testConfig)
-            let numbers_p = Utils.getNumberElements(this.testConfig, Utils.InteractionType.Property)
-
-            for (let prop in property) {
-                const interaction: any = Utils.getInteractionByName(this.tutTd, Utils.InteractionType.Property, prop)
-                const isWritable = !interaction.readOnly;
-                const isReadable = !interaction.writeOnly;
-                if (isWritable) {
-                    for (let i = 0; i < numbers_p[prop]; i++) {
-
-                        try {
-                            await this.tut.writeProperty(prop, requests_p.Property[prop][i])
-                            console.log(full_T3_report[prop])
-                            console.log("Yipyip123")
-                            let result = "Input level writeProperty Success"
-                            await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
-
-                            if (isReadable) {
-                                //read property and check if it is the same as the writen value before
-                                let value: any = await this.tut.readProperty(prop)
-
-                                if (JSON.stringify(value) == JSON.stringify(requests_p.Property[prop][i])) {
-                                    result = "Input level read/writeProperty Success : Read value the same as Write value"
-                                    Full_Report.push(Utils.createMiniReport(result, "write", prop, true, requests_p.Property[prop][i]))
-                                } else {
-                                    result = "Input level read/writeProperty Fail : Read value not the same as Write value"
-                                    Full_Report.push(Utils.createMiniReport(result, "write", prop, false, requests_p.Property[prop][i]))
-                                }
-                                await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
-                            } else {
-                                Full_Report.push(Utils.createMiniReport(result, "write", prop, true, requests_p.Property[prop][i]))
-                            }
-                        } catch (error) {
-                            Full_Report.push(Utils.createMiniReport(error, "write", prop, false, requests_p.Property[prop][i]))
-                            console.log(error)
-                        }
-
-                    }
-                };
-            }
-
-            let action = this.tutTd.actions
-            let requests_m = Utils.getTestData(this.testConfig)
-            let numbers_m = Utils.getNumberElements(this.testConfig, Utils.InteractionType.Action)
-
-            for (let act in action) {
-                const interaction: any = Utils.getInteractionByName(this.tutTd, Utils.InteractionType.Action, act)
-                const hasInput = interaction.input;
-                if (hasInput) {
-                    for (let i = 0; i < numbers_m[act]; i++) {
-                        try {
-                            let return_value: any = await this.tut.invokeAction(act, requests_m.Action[act][i])
-                            let result = "Input level invokeAction Success"
-                            Full_Report.push(Utils.createMiniReport(result, "act", act, true, requests_m.Action[act][i], return_value))
-                            await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
-                        } catch (error) {
-                            Full_Report.push(Utils.createMiniReport(error, "act", act, false, requests_m.Action[act][i]))
-                            console.log(error)
-                        }
-                    }
-                }
-            }
-
-
-        } catch {
-            self.log("Testing Input Coverage has finished with an error (see previous messages).")
-            throw Error
-        }*/
+        
         try {
             let property = this.tutTd.properties
 
@@ -1272,7 +1195,6 @@ export class Tester {
                         } else {
                             // IMPORTANT ---> This does not wotk right now bc writeproperty does not return anything ever (node-wot problem ?)
                             result = "Output level writeProperty Fail : Request returns a payload"
-                            //Full_Report.push(Utils.createMiniReport(result,"write",prop,false,value,return_value))
                         }
                         await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
                     } catch (error) {
@@ -1374,7 +1296,7 @@ export class Tester {
         try {
             console.log("T1 : " + Utils.countResults(testReport.T1));
             console.log("T2 : " + Utils.countResults(testReport.T2));
-            console.log("T3 : " + Utils.countResults(testReport.T3));
+            console.log("T3 : " + Utils.countResultsT3(testReport.T3));
             console.log("T4 : " + Utils.countResults(testReport.T4));
         } catch (error) {
             console.log(error)
