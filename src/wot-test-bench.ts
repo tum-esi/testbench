@@ -11,18 +11,8 @@ import { CoapsClientFactory } from "@node-wot/binding-coap"
 import { Tester } from "./Tester"
 import { parseArgs, configPath, tdPaths } from "./config"
 import { testConfig, ListeningType, logFormatted } from "./utilities"
-import { TestReport, VulnerabilityReport, TotalReport } from "./TestReport"
-import * as fs from "fs";
-
-//const fs = require("fs")
-//var util = require('util');
-
-/*var log_file = fs.createWriteStream(__dirname + '/testBench.debug.log', {flags : 'w'});
-
-console.log = function(d) { //
-  log_file.write(util.format(d) + '\n');
-};*/
-
+import { TestReport } from "./TestReport"
+const fs = require("fs")
 var configFile = "default-config.json"
 if (process.argv.length > 2) {
     parseArgs(tdPaths)
@@ -31,12 +21,18 @@ if (process.argv.length > 2) {
 //getting the test config and extraction anything possible
 let testConfig: testConfig = JSON.parse(fs.readFileSync(configFile, "utf8"))
 let tbName: string = testConfig["TBname"]
-let tutName: string = ""
+let tutName: string = "Testbench Thing"
+
+let main_Report = {
+    T1:[],
+    T2:[],
+    T3:{},
+    T4:[],
+}
 
 //creating the Test Bench as a servient.
 //It will test the Thing as a client and interact with the tester as a Server
 let srv = new Servient()
-// srv.addCredentials(testConfig.credentials);
 console.log(srv)
 let httpServer = typeof testConfig.http.port === "number" ? new HttpServer(testConfig.http) : new HttpServer()
 let coapServer = typeof testConfig.coap.port === "number" ? new CoapServer(testConfig.coap.port) : new CoapServer()
@@ -93,6 +89,12 @@ srv.start()
                     readOnly: true,
                     description: "Contains all of the outputs of the testing. Not necessary for fastTest",
                 },
+                testReportNew: {
+                    type: "object",
+                    writeOnly: false,
+                    readOnly: true,
+                    description: "Contains all of the outputs of the testing. Not necessary for fastTest",
+                }
             },
             actions: {
                 fastTest: {
@@ -123,19 +125,47 @@ srv.start()
                     },
                     description: "By invoking this action, the testing starts and produces a test report that can be read. Not necessary for fastTest",
                 },
-                testVulnerabilities: {
-                    input:{
-                        type: "boolean"
+                testOpCov: {
+                    
+                    output: {
+                        type: "boolean",
                     },
-                    description: "Tests some basic security and safety vulnerabilities"
+                    description: "By invoking this action, the testing starts on the Operation Level",
+                },
+                testParamCov: {
+                    
+                    output: {
+                        type: "boolean",
+                    },
+                    description: "By invoking this action, the testing starts on the Paramter Level",
+                },
+                testInputCov: {
+                    
+                    output: {
+                        type: "boolean",
+                    },
+                    description: "By invoking this action and all Input Interactions are tested after each other",
+                },
+                testOutputCov: {
+                    
+                    output: {
+                        type: "boolean",
+                    },
+                    description: "By invoking this action, the testing starts on the Output Level",
+                },
+                testAllLevels: {
+                    input: {
+                        type: "boolean",
+                    },
+                    output: {
+                        type: "boolean",
+                    },
+                    description: "By invoking this action, the testing starts on all Level",
                 }
-            },
+            }
         })
 
         let tester: Tester = null
-        
-        //let fastMode: boolean = false;
-        
         // init property values
         await TestBenchT.writeProperty("testConfig", testConfig)
         await TestBenchT.writeProperty("testBenchStatus", "")
@@ -145,37 +175,26 @@ srv.start()
         TestBenchT.setActionHandler("fastTest", async (thingTD: string) => {
             //get the input
             await TestBenchT.writeProperty("thingUnderTestTD", thingTD)
-            //write it into tutTD prop
             //call initiate
             await TestBenchT.invokeAction("initiate", true)
             //call testThing
             await TestBenchT.invokeAction("testThing", true)
-            //read testReport
-            
-            const conformanceReport = await TestBenchT.readProperty('testReport');
-
-            // call testVulnerabilities
-            
-            //fastMode = true;
-            await TestBenchT.invokeAction('testVulnerabilities', true);
-            const vulnReport = await TestBenchT.readProperty('testReport');
-            var totalReport: TotalReport = new TotalReport(conformanceReport, vulnReport);
-
-            //create new report containing both conformance results and vulnerability results.
-            await TestBenchT.writeProperty('testReport', totalReport);
-            //write to testReport
-            return await TestBenchT.readProperty("testReport");
+            //call testThing
+            return await TestBenchT.readProperty("testReport")
             //return the simplified version
         })
         /* update config file, gets tutTD if not "", consume tutTD, adds
              Tester, set generated data to testData: */
         TestBenchT.setActionHandler("initiate", async (logMode: boolean) => {
             try {
+                
                 await TestBenchT.writeProperty("testReport", "[]")
+            
             } catch {
                 logFormatted(":::::ERROR::::: Init: write testReport property failed")
                 return "Could not reinitialize the test report"
             }
+
             try {
                 var newConf = await TestBenchT.readProperty("testConfig")
             } catch {
@@ -183,9 +202,10 @@ srv.start()
                 return "Initiation failed"
             }
             testConfig = await JSON.parse(JSON.stringify(newConf))
-            
-            srv.addCredentials(testConfig.credentials)
 
+            /* fs.writeFileSync('./default-config.json',
+                        JSON.stringify(testConfig, null, ' ')); */
+            srv.addCredentials(testConfig.credentials)
             try {
                 var tutTD = await TestBenchT.readProperty("thingUnderTestTD")
             } catch {
@@ -206,6 +226,13 @@ srv.start()
                     await TestBenchT.writeProperty("testData", tester.codeGen.requests)
                 } catch {
                     logFormatted(":::::ERROR::::: Init: Set testData property failed")
+                    return "Initiation failed"
+                }
+                try{
+                    main_Report.T3 = tester.inputTestReport
+                    await TestBenchT.writeProperty("testReportNew", main_Report)
+                }catch{
+                    logFormatted(":::::ERROR::::: Init: Set testReportNew property failed")
                     return "Initiation failed"
                 }
                 return "Initiation was successful."
@@ -258,18 +285,110 @@ srv.start()
                 }
             }
         })
-        
-        // Tests the Thing for security and safety.
-        TestBenchT.setActionHandler("testVulnerabilities", async (fastMode: boolean) => {
-            const vulnReport: VulnerabilityReport = await tester.testVulnerabilities(fastMode);
-            //fastMode = false;
-            await TestBenchT.writeProperty('testReport', vulnReport);
+
+        TestBenchT.setActionHandler("testOpCov", async () => {
+            
+            logFormatted("------ START OF Operational Testing ------")
+            try {
+                var testReportT1: any = await tester.testingOpCov()
+                main_Report.T1 = testReportT1
+                
+                await TestBenchT.writeProperty("testReportNew", main_Report)
+            } catch {
+                logFormatted(":::::ERROR::::: TestThing: Error during Operational test phase.")
+                return
+            }
+            
+            secondTestingPhase()
+
+            async function secondTestingPhase() {
+                try {
+                    // Starting the second testing phase.
+                    const testReportHasChanged: boolean = await tester.secondTestingPhase(testConfig.Repetitions)
+                } catch {
+                    logFormatted(":::::ERROR::::: TestThing: Error during second test phase.")
+                }
+            }
+            
+            return
+        })
+
+        TestBenchT.setActionHandler("testParamCov", async () => {
+            
+            logFormatted("------ START OF Parameter Testing ------")
+            try {
+                var testReportT2: any = await tester.testingParamCov()
+                let testReport: any = await TestBenchT.readProperty("testReportNew")
+                testReport.T2 = testReportT2
+                await TestBenchT.writeProperty("testReportNew", testReport)
+            } catch {
+                logFormatted(":::::ERROR::::: TestThing: Error during Parameter test phase.")
+                return
+            }
+
+            return
+        })
+
+        TestBenchT.setActionHandler("testInputCov", async () => {
+            try {
+                var data = await TestBenchT.readProperty("testData")
+            } catch {
+                logFormatted(":::::ERROR::::: TestThing: Get test data property failed")
+                return false
+            }
+
+            await fs.writeFileSync(testConfig.TestDataLocation, JSON.stringify(data, null, " "))
+            logFormatted("------ START OF Input Testing ------")
+            try {
+                main_Report.T3 = await tester.testingInputCov(main_Report.T3)
+                await TestBenchT.writeProperty("testReportNew", main_Report)
+            } catch {
+                logFormatted(":::::ERROR::::: TestThing: Error during Input test phase.")
+                return
+            }
+
+            return
+        })
+
+        TestBenchT.setActionHandler("testOutputCov", async () => {
+            
+            logFormatted("------ START OF Output Testing ------")
+            try {
+                var testReportT4: any = await tester.testingOutputCov()
+                let testReport: any = await TestBenchT.readProperty("testReportNew")
+                testReport.T4 = testReportT4
+                await TestBenchT.writeProperty("testReportNew", testReport)
+            } catch {
+                logFormatted(":::::ERROR::::: TestThing: Error during Output test phase.")
+                return
+            }
+
+            return
+        })
+
+        TestBenchT.setActionHandler("testAllLevels", async (thingTD: string) => {
+            //get the input
+            await TestBenchT.writeProperty("thingUnderTestTD", thingTD)
+            //call initiate
+            await TestBenchT.invokeAction("initiate", true)
+            //call Operation Level Testing
+            await TestBenchT.invokeAction("testOpCov")
+            //call Parameter Level Testing
+            await TestBenchT.invokeAction("testParamCov")
+            //call Input Level Testing
+            await TestBenchT.invokeAction("testInputCov")
+            //call Output Level Testing
+            await TestBenchT.invokeAction("testOutputCov")
+            //call set Test Report
+            //let testReport = await TestBenchT.readProperty("testReportNew")
+            tester.testingResult(main_Report)
+            return main_Report
+            //return the simplified version
         })
 
         await TestBenchT.expose()
         console.info(TestBenchT.getThingDescription().title + " ready")
     })
-    .catch((err) => {
-        // logFormatted(":::::ERROR::::: Servient startup failed", e)
-        console.error('Err:', err);
+    .catch(() => {
+        logFormatted(":::::ERROR::::: Servient startup failed")
     })

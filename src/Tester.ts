@@ -8,8 +8,6 @@ It is possible to define multiple test scenarios with each having different requ
 After the test a test report can be generated and analyzed to get more meaning of the results.
 !!! tut means Thing Under Test
  */
-import * as fs from "fs";
-import * as fetch from "node-fetch";
 import * as wot from "wot-typescript-definitions"
 import * as Utils from "./utilities"
 import {
@@ -21,16 +19,14 @@ import {
     Payload,
     EventTestReportContainer,
     EventData,
-    VulnerabilityReport
 } from "./TestReport"
-
-var jsf = require("json-schema-faker");
 
 export class Tester {
     private tutTd: wot.ThingDescription //the TD that belongs to the Thing under Test
     private testConfig: Utils.testConfig //the file that describes various locations of the files that are needed. Must be configured by the user
     public codeGen: Utils.CodeGenerator //this will generate the requests to be sent to the tut
     public testReport: TestReport //after the testing, this will contain the bare results
+    public inputTestReport: Object
     private tut: wot.ConsumedThing // the thing under test
     private logMode: boolean // True if logMode is enabled, false otherwise.
 
@@ -72,6 +68,13 @@ export class Tester {
             this.log("Finished code generation")
         } catch (Error) {
             this.log("Utils.CodeGenerator Initialization Error" + Error)
+        }
+        //building Input level Test Report
+        try{
+            //write fct that returns an array of objects which gets put into T3 ib the TB
+            this.inputTestReport = Utils.createT3Report(this.codeGen.requests,this.codeGen.input_types)
+        }catch(Error){
+            this.log("Initialization Input level Test Report Generation Error" + Error)
         }
         //The test report gets initialized and the first cycle and scenarios are added
         //This means that single tests are possible to be seen in the test report
@@ -132,7 +135,6 @@ export class Tester {
             messageAddition = ""
         }
         this.log("Test for Event " + eventName + " was " + messageAddition + "passed.")
-        this.testReport.addMessage(testCycle, testScenario, container)
         return true
     }
 
@@ -146,12 +148,13 @@ export class Tester {
      * @param testMode
      * @param listeningType
      */
-    private async testObserveOrEvent(
+
+    public async testObserveOrEvent(
         container: EventTestReportContainer,
         interaction: any,
         testMode: Utils.InteractionType.Event | Utils.InteractionType.Property,
         listeningType: Utils.ListeningType
-    ): Promise<void> {
+    ): Promise<any> {
         var self = this
 
         // Initialize testing parameters.
@@ -173,19 +176,19 @@ export class Tester {
             Successful,
         }
         var subscriptionStatus: SubscriptionStatus = SubscriptionStatus.Error
-        await testSubscribe()
+        let status = await testSubscribe()
         await testUnsubscribe()
 
         // If no data was received, no checks could be made.
         if (container.eventDataReport.received.length < 1) {
             container.eventDataReport.result = new Result(100, "Never received any data, thus no checks could be made.")
         }
-        return
+        return status
 
         /**
          * Tests the subscribe functionality.
          */
-        async function testSubscribe(): Promise<boolean> {
+        async function testSubscribe(): Promise<any> {
             self.log("Trying to subscribe to " + interactionSpecifier + ".")
 
             async function timeout(): Promise<SubscriptionStatus> {
@@ -224,9 +227,9 @@ export class Tester {
                 case SubscriptionStatus.Timeout:
                     self.log(
                         "Timed out when trying to subscribe to " +
-                            interactionSpecifier +
-                            ". Due to the design of node-wot this can mean either the subscription was unsuccessful or " +
-                            "the subscription was successful but no data was received."
+                        interactionSpecifier +
+                        ". Due to the design of node-wot this can mean either the subscription was unsuccessful or " +
+                        "the subscription was successful but no data was received."
                     )
                     container.passed = true
                     container.subscriptionReport.passed = true
@@ -242,7 +245,7 @@ export class Tester {
                     await Promise.race([Utils.sleepInMs(eventConfig.MsListen), earlyListenTimeout])
                     break
             }
-            return
+            return subscriptionStatus
         }
 
         /**
@@ -278,9 +281,9 @@ export class Tester {
                     // received data is not JSON
                     self.log(
                         receivedDataMsg +
-                            "[index: " +
-                            indexOfEventData +
-                            "]: received unexpected (no data property for this even in the TD), non JSON conformal data."
+                        "[index: " +
+                        indexOfEventData +
+                        "]: received unexpected (no data property for this even in the TD), non JSON conformal data."
                     )
                     const result = new Result(98, "Received unexpected (no data property for this event in TD), non JSON conformal return value.")
                     container.eventDataReport.received.push(
@@ -294,11 +297,11 @@ export class Tester {
                 }
                 self.log(
                     receivedDataMsg +
-                        "[index: " +
-                        indexOfEventData +
-                        ']: received unexpected (no data property for this event in TD) data: "' +
-                        JSON.stringify(receivedData, null, " ") +
-                        '"'
+                    "[index: " +
+                    indexOfEventData +
+                    ']: received unexpected (no data property for this event in TD) data: "' +
+                    JSON.stringify(receivedData, null, " ") +
+                    '"'
                 )
                 const result = new Result(99, "Received unexpected (no data property for this event in TD) event data.")
                 container.eventDataReport.received.push(new EventData(receivedTimeStamp, receivedData, result))
@@ -352,16 +355,16 @@ export class Tester {
                     // If Subscription failed Cancellation can not work.
                     self.log(
                         "Problem when trying to unsubscribe from " +
-                            interactionSpecifier +
-                            ": The testbench was never subscribed due to a subscription error (see previous messages and subscriptionReport)."
+                        interactionSpecifier +
+                        ": The testbench was never subscribed due to a subscription error (see previous messages and subscriptionReport)."
                     )
                     container.passed = true
                     container.cancellationReport.passed = true
                     container.cancellationReport.result = new Result(
                         100,
                         "Subscription cancellation test not possible: The testbench was never subscribed to " +
-                            testMode +
-                            " due to a subscription error (see subscriptionReport)."
+                        testMode +
+                        " due to a subscription error (see subscriptionReport)."
                     )
                     break
                 case SubscriptionStatus.Timeout:
@@ -369,8 +372,8 @@ export class Tester {
                     // his own handling.
                     self.log(
                         "Problem when trying to unsubscribe from " +
-                            interactionSpecifier +
-                            ": The testbench was never subscribed or was subscribed but never received any data (see previous messages, subscriptionReport and eventDataReport/observedDataReport)."
+                        interactionSpecifier +
+                        ": The testbench was never subscribed or was subscribed but never received any data (see previous messages, subscriptionReport and eventDataReport/observedDataReport)."
                     )
                     container.passed = true
                     container.cancellationReport.passed = true
@@ -384,13 +387,15 @@ export class Tester {
                         // thus receiving the data packages.
                         self.log(
                             "The following output of node-wot describes unsubscribing from " +
-                                interactionSpecifier +
-                                " but due to the design of node-wot this output is identical for " +
-                                "unsuccessful subscription and successful subscription with no emitted event."
+                            interactionSpecifier +
+                            " but due to the design of node-wot this output is identical for " +
+                            "unsuccessful subscription and successful subscription with no emitted event."
                         )
-                        if (testMode == Utils.InteractionType.Event) await self.tut.unsubscribeEvent(interactionName)
+                        if (testMode == Utils.InteractionType.Event){
+                            await self.tut.unsubscribeEvent(interactionName)
+                        } 
                         else await self.tut.unobserveProperty(interactionName)
-                    } catch {}
+                    } catch { }
                     break
                 case SubscriptionStatus.Successful:
                     // Testing cancellation only makes sense if subscription worked.
@@ -500,8 +505,8 @@ export class Tester {
                     }
                     self.log(
                         actionName +
-                            "received unexpected (action did not have an output property in TD) return value: " +
-                            JSON.stringify(receivedData, null, " ")
+                        "received unexpected (action did not have an output property in TD) return value: " +
+                        JSON.stringify(receivedData, null, " ")
                     )
                     container.report.received = receivedData
                     container.report.result = new Result(99, "Received unexpected (action did not have an output property in TD) return value.")
@@ -783,7 +788,7 @@ export class Tester {
                 interactionList.push(this.testInteraction(repetitionNumber, 0, propertyName, Utils.InteractionType.Property, Utils.ListeningType.Synchronous))
             }
             for (const eventName of eventList) {
-                interactionList.push(this.testInteraction(repetitionNumber, 0, eventName, Utils.InteractionType.Event, Utils.ListeningType.Synchronous))
+                interactionList.push(this.testInteraction(repetitionNumber, 1, eventName, Utils.InteractionType.Event, Utils.ListeningType.Synchronous))
             }
             // Awaiting all of those testFunctions.
             await Promise.all(interactionList)
@@ -855,7 +860,7 @@ export class Tester {
         return
     }
 
-    /**
+    /**+
      * This is the action that is accessible from the Thing Description.
      * Meaning that, after consuming the test bench, this action can be invoked to test the entirety of the Thing with many test scenarios and repetitions
      * There is only a simple, repetitive call to test Scenario with adding arrays into the test report in between
@@ -883,883 +888,418 @@ export class Tester {
         self.log("First Test Phase has finished without an error.")
         return self.testReport
     }
-    public async testVulnerabilities(fastMode: boolean){
-        // Read TD from the property.
-        const td = this.tutTd;
 
-        // Arrays to store pre-determined set of credentials.
-        var pwArray: Array<string> = [];
-        var idArray: Array<string> = [];
+    //--------------------------------------------------Marcus Code-------------------------------------------------------------------------------------------
+    /**
+     * This function starts the testing on the Operation Level. This means it tests all Interaction Affordances and every defined form of each Interaction Affordance. 
+     */
+    public async testingOpCov(): Promise<any> {
+        const self = this
+        let Full_Report: any = []
+        let rep = 1
 
-        var scheme: string; // Underlying security scheme.
-        var schemeName: string; // Covering name for security scheme.
-
-        var report: VulnerabilityReport = new VulnerabilityReport();
-        
-        // Variables to pass credentials or token.
-        var username: string;
-        var password: string;
-        var token: string;
-
-        // Assuming single security scheme.
-        if (Array.isArray[td['security']]){
-            if (td['security'].length !== 1){
-                throw "Error: multiple security schemes cannot be tested for now.";
-            } else{
-                schemeName = td['security'][0];
-                scheme = td['securityDefinitions'][schemeName]["scheme"];
-            }
-        }
-        else{
-            schemeName = td['security'];
-            scheme = td['securityDefinitions'][schemeName]["scheme"];
-        }
-
-        try{ // Reading common passwords & usernames.
-            var passwords: string;
-            var ids: string;
-
-            if (fastMode){
-                // This is the case when 'testVulnerabilities' is called from the 'fastTest' action. Uses short lists in order not to take a long time.
-                passwords = fs.readFileSync('assets/passwords-short.txt', 'utf-8');
-                ids = fs.readFileSync('assets/usernames-short.txt', 'utf-8');
-            }
-            else{
-                passwords = fs.readFileSync('assets/passwords.txt', 'utf-8');
-                ids = fs.readFileSync('assets/usernames.txt', 'utf-8');
-            }
-
-            const pwLines: Array<string> = passwords.split(/\r?\n/);
-            const idLines: Array<string> = ids.split(/\r?\n/);
-
-            pwLines.forEach((line) => pwArray.push(line));
-            idLines.forEach((line) => idArray.push(line));
-        }
-        catch(err){
-            console.error('Error while trying to read usernames and passwords:', err);
-            process.exit(1);
-        }
-        /**
-         * The main brute-forcing function.
-         * @param myURL URL to be tested.
-         * @param options Options for the required HTTP(s) request.
-         * @param location Determines where credentials will be stored.
-         */
-        async function isPredictable(myURL: URL, options: object, location?: string): Promise<boolean>{
-            for (var id of idArray){
-                for (var pw of pwArray){
-                    try{
-                        switch(scheme){
-                            case 'basic':
-                                if (location === 'header'){
-                                    options['headers']['Authorization'] = 'Basic ' + 
-                                            Buffer.from(id + ":" + pw).toString("base64");
-                                }
-                                else // TODO: Add other "in" parameters.
-                                    throw 'Currently auth. info can only be stored at the header.';
-                                break;
-                            case 'oauth2':
-                                options['body'].set('client_id', id);
-                                options['body'].set('client_secret', pw);
-                                break;
+        try {
+            let property = this.tutTd.properties
+            for (let prop in property) {
+                const interaction: any = Utils.getInteractionByName(this.tutTd, Utils.InteractionType.Property, prop)
+                const isWritable = !interaction.readOnly;
+                const isReadable = !interaction.writeOnly;
+                for (let i = 0; i < rep; i++) {
+                    for (let index in property[prop].forms){
+                        let number_index = parseInt(index,10)
+                        if (isWritable) {
+                            let value = Utils.createValidInput(property[prop])
+                            try {
+                                await this.tut.writeProperty(prop, value,{formIndex : number_index})
+                                let result = "OP level writeProperty Success"
+                                Full_Report.push(Utils.createMiniReport(result, "write", prop, true, value))
+                                await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);  
+                            } catch (error) {
+                                Full_Report.push(Utils.createMiniReport(error, "write", prop, false, value))
+                                console.log(error)
+                            }
                         }
-                        var result: any = await fetch(myURL.toString(), options);
-                        if (result.ok){
-                            username = id;
-                            password = pw;
-
-                            if (scheme == 'oauth2')
-                                token = (await result.json())['access_token'];
-                            return true;
-                        }
-                    }
-                    catch(e){
-                        throw e;
+                        if (isReadable) {
+                            try {
+                                let data = await this.tut.readProperty(prop,{formIndex : number_index})
+                                let result = "OP level readProperty Success"
+                                Full_Report.push(Utils.createMiniReport(result, "read", prop, true, undefined, data))
+                                await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
+                            } catch (error) {
+                                Full_Report.push(Utils.createMiniReport(error, "read", prop, false, undefined))
+                                console.log(error)
+                            }
+                        };
                     }
                 }
             }
-            // Will return false if no id-pw pair passes, indicating not-weak credentials.
-            return false;
-        }
-        /**
-         * Tries sending requests with types other than the given one.
-         * @param type input type of InteractionAffordance, if exists.
-         * @param myURL URL of the related form.
-         * @param options Request options.
-         */
-        async function typeFuzz(type: string, myURL: URL, options: object){
-            var accepts: Array<string> = [];
-            
-            try{
-                if(type != 'object'){
-                    options['body'] = JSON.stringify({key: 'value'});
-                    var response = await fetch(myURL.toString(), options);
-                    if (response.ok) accepts.push('object');
-                }
-                if (type != 'array'){
-                    options['body'] = JSON.stringify([1,2,3]);
-                    var response = await fetch(myURL.toString(), options);
-                    if (response.ok) accepts.push('array');
-                }
-                if (type != 'string'){
-                    options['body'] = 'TYPEFUZZ';
-                    var response = await fetch(myURL.toString(), options);
-                    if (response.ok) accepts.push('string');
-                }
-                if (type != 'integer'){
-                    options['body'] = JSON.stringify(42);
-                    var response = await fetch(myURL.toString(), options);
-                    if (response.ok) accepts.push('integer');
-                }
-                if (type != 'number'){
-                    options['body'] = JSON.stringify(2.71828182846);
-                    var response = await fetch(myURL.toString(), options);
-                    if (response.ok) accepts.push('number');
-                }
-                if (type != 'boolean'){
-                    options['body'] = JSON.stringify(true);
-                    var response = await fetch(myURL.toString(), options);
-                    if (response.ok) accepts.push('boolean');
-                }
-            }
-            catch(e){
-                throw 'typeFuzz() resulted in an error:';
-            }
-            return accepts;
-        }
-        /**
-         * Return credentials of tut, if exists.
-         */
-        function getCredentials(): string {
-            try{
-                let creds:object = JSON.parse(fs.readFileSync("default-config.json", "utf8"))['credentials'][td['id']];
 
-                if (creds != undefined){
-                    if (scheme == 'basic')
-                        return Buffer.from(creds['username'] + ':' + creds['password']).toString('base64');
-                    if (scheme == 'oauth2')
-                        return creds['token'];
-                }
-                else
-                    return null;
-            }
-            catch(e){
-                console.log("error: " + e);
-            }
-        }
-        /**
-         * Simple function to create HTTP(s) request options from given parameters.
-         */
-        function createRequestOptions(url: URL, op: string): object{
-            return {
-                hostname: url.hostname,
-                path: url.pathname,
-                port: url.port,
-                headers:{},
-                method: op
-            }
-        }
-        /**
-         * Returns the related form of the InteractionAffordance with given op.
-         */
-        function getForm(op: string, forms: Array<any>){
+            let action = this.tutTd.actions
 
-            for (var i = 0; i < forms.length; i++){
-                if (forms[i]['op'].includes(op))
-                    return forms[i];
-            }
-            return null;
-        }
-        switch(scheme){
-            case "basic":
-                var location: string; // The 'in' parameter of the TD Spec.
-                report.scheme = 'basic';
-
-                if(!td['securityDefinitions'][schemeName]['in']){ // Default value.
-                    location = 'header';
-                }
-                else{
-                    location = td['securityDefinitions'][schemeName]['in'];
-                }
-
-                if (td['properties'] != undefined){ // Properties exist.                    
-                    const properties: any = Object.values(td['properties']);
-
-                    for (var i=0; i < properties.length; i++){
-                        let property: any = properties[i];
-
-                        // Creating propertyReport with the name of the property.
-                        report.createVulnPropertyReport(Object.keys(td['properties'])[i]);
-                        report.propertyReports[i].createSecurityReport();
-
-                        if (!property.writeOnly){ // Property can be read, supposedly?
-                            try{
-                                // First tries to 'readproperty'.
-                                var form = getForm('readproperty', property.forms);
-
-                                // Check if the interaction has a different security scheme.
-                                if (form['security'] != undefined){
-                                    if (Array.isArray(form['security'])){
-                                        if (!form['security'].includes(schemeName))
-                                            throw "Testing multiple security schemes are not currently available.";
-                                    }
-                                    else if (form['security'] != schemeName)
-                                        throw "Testing multiple security schemes are not currently available.";
-                                }
-                                
-                                var propertyURL: URL = new URL(form['href']);
-
-                                // Checking to see if any binding other than http(s) is used.
-                                if(!propertyURL.toString().startsWith("http")){
-                                    report.propertyReports[i].addDescription("Currently only HTTP(s) bindings are supported. Thus, property could not be tested.");
-                                    continue;
-                                }
-                                // Extracting http(s) method, if exists.
-                                var method: string = form['htv:methodName'];
-                                
-                                // Default method for 'readproperty'
-                                if(method == null) method = 'GET';
-        
-                                var propertyOptions: object = createRequestOptions(propertyURL, method);
-        
-                                // Brute-forcing with 'GET' requests, with the help of above lines.
-                                var weakCredentials: boolean = await isPredictable(propertyURL, propertyOptions, location);
-                                const creds: string = getCredentials();
-                                
-                                if (weakCredentials || (creds != null)){ // Have credentials: either from brute-force or they are already given.
-                                    report.propertyReports[i].security.passedDictionaryAttack = !weakCredentials;
-        
-                                    report.propertyReports[i].createSafetyReport();
-                                    
-                                    if (!weakCredentials) { // Bruteforce failed, test 'readproperty' with given credentials.
-                                        propertyOptions['headers']['Authorization'] = 'Basic ' + creds;
-
-                                        // Making sure that the property is readable.
-                                        let isReadable = await fetch(propertyURL.toString(), propertyOptions);
-                                        if (isReadable.ok)
-                                            report.propertyReports[i].isReadable(true);
-
-                                        report.propertyReports[i].addDescription('Not weak username-password');
-                                    }
-                                    else {
-                                        // If brute-force successes it is already readable.
-                                        report.propertyReports[i].isReadable(true);
-                                        report.propertyReports[i].addDescription('Weak username-password');
-                                        report.propertyReports[i].addCredentials(username, password);
-                                    }
-                                    // Trying to 'writeproperty' with different types.
-                                    form = getForm('writeproperty', property.forms);
-        
-                                    // This time 'form' can be null in case 'property' is 'readOnly'.
-                                    if (form != null){
-                                        propertyURL= new URL(form['href']);
-
-                                        if(!propertyURL.toString().startsWith("http")){
-                                            report.propertyReports[i].addDescription("Currently only HTTP(s) bindings are supported. Thus, write tests for the property could not be conducted.");
-                                            continue;
-                                        }
-
-                                        method = form['htv:methodName'];
-        
-                                        if (method == null) method = 'PUT';
-        
-                                        propertyOptions = createRequestOptions(propertyURL, method);
-
-                                        var contentType: string = form['contentType'];
-        
-                                        if (contentType == undefined) contentType = 'application/json';
-                                        propertyOptions['headers']['Content-Type'] = contentType;
-
-                                        if(!weakCredentials)
-                                            propertyOptions['headers']['Authorization'] = 'Basic ' + creds;
-                                        else
-                                            propertyOptions['headers']['Authorization'] = 'Basic ' +
-                                                Buffer.from(username + ':' + password).toString('base64');
-
-                                        // Types that should not be normally allowed.
-                                        var types: string[] = await typeFuzz(property.type, propertyURL, propertyOptions);                                    
-                                        types.forEach(type => report.propertyReports[i].addType(type));
-        
-                                        // Trying to write the real type, if cannot write any exceptional type.
-                                        if (types.length == 0){
-                                            propertyOptions['body'] = JSON.stringify(jsf(property));
-
-                                            let isWritable = await fetch(propertyURL.toString(), propertyOptions);
-                                            if (isWritable.ok)
-                                                report.propertyReports[i].isWritable(true);
-                                        }
-                                        else report.propertyReports[i].isWritable(true);
-                                    }
-                                }     
-                                else report.propertyReports[i].addDescription('TestBench could not find the credentials, neither from brute-forcing nor from given config file. Thus, could not test safety of property.');
-                            }
-                            catch(e){
-                                throw '::::ERROR::::: Brute-forcing property resulted in error:' + e;
-                            }
+            for (let act in action) {
+                const interaction: any = Utils.getInteractionByName(this.tutTd, Utils.InteractionType.Action, act)
+                const hasInput = interaction.input;
+                for (let i = 0; i < rep; i++) {
+                    // not sure if return_value is the actual output of the request and even part of operational coverage ?
+                    if (hasInput) {
+                        let requests_m = Utils.createValidInput(action[act].input)
+                        try {
+                            let return_value: any = await this.tut.invokeAction(act, requests_m)
+                            let result = "OP level invokeAction with payload Success"
+                            Full_Report.push(Utils.createMiniReport(result, "act", act, true, requests_m, return_value))
+                            await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
+                        } catch (error) {
+                            console.log(error)
+                            Full_Report.push(Utils.createMiniReport(error, "act", act, false, requests_m, undefined))
                         }
-                        else{ // Property is 'writeonly'.
-                            try{
-                                // First tries to 'writeproperty', then tries to 'readproperty'.
-                                var form = getForm('writeproperty', property.forms);
-
-                                // Check if the interaction has a different security scheme.
-                                if (form['security'] != undefined){
-                                    if (Array.isArray(form['security'])){
-                                        if (!form['security'].includes(schemeName))
-                                            throw "Testing multiple security schemes are not currently available.";
-                                    }
-                                    else if (form['security'] != schemeName)
-                                        throw "Testing multiple security schemes are not currently available.";
-                                }
-
-                                var propertyURL: URL = new URL(form['href']);
-
-                                // Checking to see if any binding other than http(s) is used.
-                                if(!propertyURL.toString().startsWith("http")){
-                                    report.propertyReports[i].addDescription("Currently only HTTP(s) bindings are supported. Thus, property could not be tested.");
-                                    continue;
-                                }
-                                // Extracting http(s) method, if exists.
-                                var method: string = form['htv:methodName'];
-        
-                                // Default method for 'writeproperty'
-                                if (method == null) method = 'PUT';
-        
-                                // Creating the needed request options object and filling it.
-                                var propertyOptions: object = createRequestOptions(propertyURL, method);
-                                var contentType: string = form['contentType'];
-                                
-                                // Default value of 'contentType'.
-                                if (contentType == undefined) contentType = 'application/json';
-                                
-                                propertyOptions['headers']['Content-Type'] = contentType;
-                                propertyOptions['body'] = JSON.stringify(jsf(property));
-                                        
-                                var weakCredentials: boolean = await isPredictable(propertyURL, propertyOptions, location);
-                                const creds: string = getCredentials();
-
-                                if (weakCredentials || (creds != null)){ // Have credentials.
-                                    report.propertyReports[i].security.passedDictionaryAttack = !weakCredentials;
-                                    report.propertyReports[i].createSafetyReport();
-                                    
-                                    if (!weakCredentials) { // Credentials provided via config file.
-                                        propertyOptions['headers']['Authorization'] = 'Basic ' + creds;
-        
-                                        // Trying to 'writeproperty' with the provided credentials.
-                                        let isWritable = await fetch(propertyURL.toString(), propertyOptions)
-                                        if (isWritable.ok)
-                                            report.propertyReports[i].isWritable(true);
-
-                                        report.propertyReports[i].addDescription('Not weak username-password');
-                                    }
-                                    else { // The case where dictionary attack found out the username and password.
-                                        report.propertyReports[i].addDescription('Weak username-password');
-                                        report.propertyReports[i].isWritable(true);
-                                        report.propertyReports[i].addCredentials(username, password);
-                                    }
-                                    // Types that should not be normally allowed.
-                                    var types: string[] = await typeFuzz(property.type, propertyURL, propertyOptions);
-                                    types.forEach(type => report.propertyReports[i].addType(type));
-
-                                    // Trying to 'readproperty'
-                                    propertyOptions['method'] = 'GET';
-                                    delete propertyOptions['body'];
-        
-                                    var isReadable: any = await fetch(propertyURL.toString(), propertyOptions);
-                                    if (isReadable.ok) report.propertyReports[i].isReadable(true);
-                                }
-                                else report.propertyReports[i].addDescription('TestBench could not find the credentials, neither from brute-forcing nor from given config file. Thus, could not test safety of property.');
-                            }
-                            catch(e){
-                                throw '::::ERROR::::: Brute-forcing property resulted in error:'+e;
-                            }
+                    } else {
+                        try {
+                            let return_value: any = await this.tut.invokeAction(act)
+                            let result = "OP level invokeAction without payload Success"
+                            Full_Report.push(Utils.createMiniReport(result, "act", act, true, undefined, return_value))
+                            await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
+                        } catch (error) {
+                            console.log(error)
+                            Full_Report.push(Utils.createMiniReport(error, "act", act, false, undefined))
                         }
                     }
                 }
-                if (td['actions'] != undefined){
-                    const actions: Array<any> = Object.values(td['actions']);
+            }
+
+
+        } catch (error) {
+            self.log("Testing Operation Coverage has finished with an error (see previous messages).")
+            throw Error
+        }
+
+        try{
+            let event = this.tutTd.events
+
+            if (Object.keys(event).length != 0){
+                for (let eve in event) {
                     
-                    for(var i=0; i < actions.length; i++){
-                        let action: any = actions[i];
+                    const container: EventTestReportContainer = new EventTestReportContainer(1, 1, eve)
+                    let status = await this.testObserveOrEvent(container,this.tutTd.events[eve], Utils.InteractionType.Event, 2)
 
-                        // Create action report with the name of the action.
-                        report.createVulnActionReport(Object.keys(td['actions'])[i]);
-                        report.actionReports[i].createSecurityReport();
-
-                        var form = getForm('invokeaction', action.forms); // Cannot be null.
-
-                        // Check if the interaction has a different security scheme.
-                        if (form['security'] != undefined){
-                            if (Array.isArray(form['security'])){
-                                if (!form['security'].includes(schemeName))
-                                    throw "Testing multiple security schemes are not currently available.";
-                            }
-                            else if (form['security'] != schemeName)
-                                throw "Testing multiple security schemes are not currently available.";
-                        }
-
-                        var myURL: URL = new URL(form['href']);
-
-                        if(!myURL.toString().startsWith("http")){
-                            report.actionReports[i].addDescription("Currently only HTTP(s) bindings are supported. Thus, action could not be tested.");
-                            continue;
-                        }
-
-                        // Extracting http(s) method, if exists.
-                        var method: string = form['htv:methodName'];
-                        // Default method for 'invokeaction'
-                        if (method == undefined) method = 'POST';
-
-                        var actionOptions = createRequestOptions(myURL, method);
-
-                        if (action.input != undefined) // Fill body appropriately.
-                            actionOptions['body'] = JSON.stringify(jsf(action['input']));
-                        
-                        var weakCredentials: boolean = await isPredictable(myURL, actionOptions, location);
-                        var creds: string = getCredentials();
-
-                        if(weakCredentials || (creds != null)){ // Have credentials.
-                            report.actionReports[i].security.passedDictionaryAttack = !weakCredentials;
-                            report.actionReports[i].createSafetyReport();
-
-                            if(!weakCredentials){ // Credentials provided via config file.
-                                actionOptions['headers']['Authorization'] = 'Basic ' + creds;
-                                report.actionReports[i].addDescription('Not weak username-password');
-                            }
-                            else{ // The case where dictionary attack found out the username and password.
-                                report.actionReports[i].addDescription('Weak username-password');
-                                report.actionReports[i].addCredentials(username, password);
-                            }
-                            // Types that should not be normally allowed.
-                            var types: string[];
-                            if(action.input != undefined)
-                                types = await typeFuzz(action.input.type, myURL, actionOptions);
-                            else
-                                types = await typeFuzz(null, myURL, actionOptions);
-                            
-                            types.forEach(type => report.actionReports[i].addType(type));
-                        }
-                        else report.actionReports[i].addDescription('TestBench could not find the credentials, neither from brute-forcing nor from given config file. Thus, could not test safety of action.');
+                    if (status == 0){
+                        let result = "OP level Event reached timeout"
+                        Full_Report.push(Utils.createMiniReport(result, "eve", eve, true, undefined))
+                    }
+                    if (status == 1){
+                        let result = "OP level Event error"
+                        Full_Report.push(Utils.createMiniReport(result, "eve", eve, true, undefined))
+                    }
+                    if (status == 2){
+                        let result = "OP level Event was successful"
+                        Full_Report.push(Utils.createMiniReport(result, "eve", eve, true, undefined))
                     }
                 }
-                break;
-            case "oauth2":
-                const flow: string = td['securityDefinitions'][schemeName].flow; // Authorization flow.
-                const params: URLSearchParams = new URLSearchParams(); // Used to create the required body.
+            }else{
+                self.log("No Events described in TD")
 
-                report.scheme = 'oauth2';
+            }
 
-                switch(flow){
-                    case "client_credentials":
-                        // URL of the token server to be brute-forced.
-                        const tokenURL: URL = new URL(td['securityDefinitions'][schemeName].token);
-
-                        // Creating and filling the required body.
-                        params.append('grant_type', 'client_credentials');
-
-                        var options = createRequestOptions(tokenURL, 'POST');
-                        options['body'] = params;
-
-                        const weakCredentials: boolean = await isPredictable(tokenURL, options);
-                        const givenToken: string = getCredentials();
-
-                        if (td['properties'] != undefined){ // Properties exist.
-                            const properties: Array<any> = Object.values(td['properties']);
-
-                            for (var i=0; i < properties.length; i++){
-                            
-                                let property: any = properties[i];
-                                report.createVulnPropertyReport(Object.keys(td['properties'])[i]);
-                                report.propertyReports[i].createSecurityReport();
-
-                                if (!property.writeOnly){ // Can be read?
-
-                                    if (weakCredentials || (givenToken != null)){ // Have a token.
-                                        report.propertyReports[i].security.passedDictionaryAttack = !weakCredentials;
-
-                                        report.propertyReports[i].createSafetyReport();
-
-                                        var form = getForm('readproperty', property.forms);
-                                        var myURL: URL = new URL(form['href']);
-
-                                        if(!myURL.toString().startsWith("http")){
-                                            report.propertyReports[i].addDescription("Currently only HTTP(s) bindings are supported. Thus, property could not be tested.");
-                                            continue;
-                                        }
-
-                                        var method: string = form['htv:methodName'];
-                                        if (method == undefined) method = 'GET'; // Default method for 'readproperty'.
-
-                                        options = createRequestOptions(myURL, method);
-                                        
-                                        if (!weakCredentials){ // Token provided via config file.
-                                            options['headers']['Authorization'] = 'Bearer ' + givenToken;
-                                            report.propertyReports[i].addDescription('Not weak username-password on token server.');
-                                        }
-                                        else { // The case where dictionary attack found out the username and password.
-                                            options['headers']['Authorization'] = 'Bearer ' + token;
-                                            report.propertyReports[i].addDescription('Weak username-password pair on token server.');
-                                            report.propertyReports[i].addCredentials(username, password);
-                                        }
-
-                                        // Should test for readability.
-                                        var isReadable: any = await fetch(myURL.toString(), options);
-                                        if (isReadable.ok)
-                                            report.propertyReports[i].isReadable(true);
-
-                                        // Trying to 'writeproperty'.
-                                        form = getForm('writeproperty', property.forms);
-
-                                        if (form != null){ // 'form' can be null in case the property is readOnly.
-                                            myURL = new URL(form['href']);
-
-                                            if(!myURL.toString().startsWith("http")){
-                                                report.propertyReports[i].addDescription("Currently only HTTP(s) bindings are supported. Thus, write tests for the property could not be conducted.");
-                                                continue;
-                                            }
-
-                                            method = form['htv:methodName'];
-                                            if (method == undefined) method = 'PUT'; // Default method for 'writeproperty'.
-
-                                            options = createRequestOptions(myURL, method);
-
-                                            var contentType: string = form['contentType'];
-                                            if (contentType == undefined) contentType = 'application/json'; // Default value for 'contentType'
-
-                                            options['headers']['Content-Type'] = contentType;
-
-                                            // Placing token (either directly provided or accessed by performing dictionary attacks) to see
-                                            // if the property can be 'written'.
-
-                                            if (!weakCredentials)
-                                                options['headers']['Authorization'] = 'Bearer ' + givenToken;
-                                            else
-                                                options['headers']['Authorization'] = 'Bearer ' + token;
-
-                                            // Filling the body of the request appropriately.
-                                            options['body'] = JSON.stringify(jsf(property));
-    
-                                            let isWritable = await fetch(myURL.toString(), options);
-                                            if (isWritable.ok)
-                                                report.propertyReports[i].isWritable(true);
-
-                                            // Types that should not be normally allowed.
-                                            var types: Array<string> = await typeFuzz(property.type, myURL, options);
-                                            types.forEach(type => report.propertyReports[i].addType(type));
-                                        }
-                                    }
-                                    else report.propertyReports[i].addDescription('TestBench could not get a suitable token, neither from brute-forcing nor from given config file. Thus, could not test safety of property.');
-                                }
-                                else{ 
-                                    // Property is 'writeonly'. 
-                                    // First tries to 'writeproperty' with the native type of the property, and then tries to 'write' other types.
-                                    // Finally, tries to 'readproperty'.
-                                    
-                                    if (weakCredentials || (givenToken != null)){ // Have a token.
-                                        report.propertyReports[i].security.passedDictionaryAttack = !weakCredentials;
-                                        
-                                        report.propertyReports[i].createSafetyReport();
-
-                                        var form = getForm('writeproperty', property.forms);
-                                        var myURL: URL = new URL(form['href']);
-
-                                        if(!myURL.toString().startsWith("http")){
-                                            report.propertyReports[i].addDescription("Currently only HTTP(s) bindings are supported. Thus, property could not be tested.")
-                                            continue;
-                                        }
-
-                                        var method: string = form['htv:methodName'];
-                                        if(method == null) method = 'PUT'; // Default method for 'writeproperty'.
-
-                                        options = createRequestOptions(myURL, method);
-
-                                        var contentType: string = form['contentType'];
-                                        if (contentType == undefined) contentType = 'application/json'; // Default value for 'contentType'.
-
-                                        options['headers']['Content-Type'] = contentType;
-
-                                        if (!weakCredentials){ // Token provided via config file.
-                                            options['headers']['Authorization'] = 'Bearer ' + givenToken;
-                                            report.propertyReports[i].addDescription('Not weak username-password on token server');
-                                        }
-                                        else { // The case where dictionary attack found out the username and password.
-                                            options['headers']['Authorization'] = 'Bearer ' + token;
-                                            report.propertyReports[i].addDescription('Weak username-password pair on token server.');
-                                            report.propertyReports[i].addCredentials(username, password);
-                                        }
-
-                                        options['body'] = JSON.stringify(jsf(property));
-
-                                        var isWritable: any = await fetch(myURL.toString(), options);
-                                        if (isWritable.ok)
-                                            report.propertyReports[i].isWritable(true);
-
-                                        // Types that should not be normally allowed.
-                                        var types: Array<string> = await typeFuzz(property.type, myURL, options);
-                                        types.forEach(type => report.propertyReports[i].addType(type));
-
-                                        // Tries to 'readproperty', which should not be normally allowed.
-                                        options['method'] = 'GET';
-                                        delete options['body'];
-            
-                                        var isReadable: any = await fetch(myURL.toString(), options);
-                                        if (isReadable.ok) report.propertyReports[i].isReadable(true);
-                                    }
-                                    else report.propertyReports[i].addDescription('TestBench could not get a suitable token, neither from brute-forcing nor from given config file. Thus, could not test safety of property.');
-                                }
-                            }
-                        }
-                        if (td['actions'] != undefined){
-                            const actions: Array<any> = Object.values(td['actions']);
-
-                            for (var i=0; i < actions.length; i++){
-                            
-                                let action: any = actions[i];
-
-                                report.createVulnActionReport(Object.keys(td['actions'])[i]);
-                                report.actionReports[i].createSecurityReport();
-
-                                if (weakCredentials || (givenToken != null)){ // Have a token.
-                                    report.actionReports[i].security.passedDictionaryAttack = !weakCredentials;
-
-                                    report.actionReports[i].createSafetyReport();
-
-                                    var form = getForm('invokeaction', action.forms);
-                                    var myURL: URL = new URL(form['href']);
-
-                                    if(!myURL.toString().startsWith("http")){
-                                        report.actionReports[i].addDescription("Currently only HTTP(s) bindings are supported. Thus, action could not be tested.");
-                                        continue;
-                                    }
-
-                                    var method: string = form['htv:methodName'];
-                                    if (method == undefined) method = 'POST'; // Default method for 'invokeaction'.
-
-                                    options = createRequestOptions(myURL, method);
-
-                                    if (!weakCredentials) { // Token provided via config file.
-                                        options['headers']['Authorization'] = 'Bearer ' + givenToken;
-                                        report.actionReports[i].addDescription('Strong username-password on token server.');
-                                    }
-                                    else { // The case where dictionary attack found out the username and password.
-                                        options['headers']['Authorization'] = 'Bearer ' + token;
-                                        report.actionReports[i].addDescription('Weak username-password pair on token server.');
-                                        report.actionReports[i].addCredentials(username, password);
-                                    }
-                                    // Types that should not be normally allowed.
-                                    var types: string[];
-                                    if (action.input != undefined)
-                                        types = await typeFuzz(action.input.type, myURL, options);
-                                    else
-                                        types = await typeFuzz(null, myURL, options);
-
-                                    types.forEach(type => report.actionReports[i].addType(type));
-                                }
-                                else report.actionReports[i].addDescription('TestBench could not get a suitable token, neither from brute-forcing nor from given config file. Thus, could not test safety of action.');
-                            }
-                        }
-                        break;
-                    default:
-                        throw 'This oauth flow cannot be tested for now.';
-                }
-                break;
-            case "nosec":
-                report.scheme = 'nosec';
-
-                if (td['properties'] != undefined){
-                    const properties: any = Object.values(td['properties']);
-
-                    for (var i=0; i < properties.length; i++){
-                        let property: any = properties[i];
-
-                        // Creating propertyReport with the name of the property.
-                        report.createVulnPropertyReport(Object.keys(td['properties'])[i]);
-
-                        if (!property.writeOnly){ // Property can be read, supposedly?
-                            try{                                
-                                // First tries to 'readproperty'.
-                                var form = getForm('readproperty', property.forms);
-
-                                // Check if the interaction has a different security scheme.
-                                if (form['security'] != undefined){
-                                    if (Array.isArray(form['security'])){
-                                        if (!form['security'].includes(schemeName))
-                                            throw "Testing multiple security schemes are not currently available.";
-                                    }
-                                    else if (form['security'] != schemeName)
-                                        throw "Testing multiple security schemes are not currently available.";
-                                }
-                                
-                                var propertyURL: URL = new URL(form['href']);
-
-                                if(!propertyURL.toString().startsWith("http")){
-                                    report.propertyReports[i].addDescription("Currently only HTTP(s) bindings are supported. Thus, property could not be tested.");
-                                    continue;
-                                }
-
-                                var method: string = form['htv:methodName'];
-                                
-                                if(method == null) method = 'GET'; // Default method for 'readproperty'.
-        
-                                var propertyOptions: object = createRequestOptions(propertyURL, method);
-                                report.propertyReports[i].createSafetyReport();
-
-                                // Making sure that the property is readable.
-                                let isReadable: any = await fetch(propertyURL.toString(), propertyOptions);
-                                if (isReadable.ok)
-                                    report.propertyReports[i].isReadable(true);
-
-                                // Trying to 'writeproperty' with different types.
-                                form = getForm('writeproperty', property.forms);
-
-                                // This time 'form' can be null in case 'property' is 'readOnly'.
-                                if (form != null){
-                                    propertyURL= new URL(form['href']);
-
-                                    if(!propertyURL.toString().startsWith("http")){
-                                        report.propertyReports[i].addDescription("Currently only HTTP(s) bindings are supported. Thus, write tests for the property could not be conducted.");
-                                        continue;
-                                    }
-
-                                    method = form['htv:methodName'];
-    
-                                    if (method == null) method = 'PUT'; // Default method for 'writeproperty'.
-    
-                                    propertyOptions = createRequestOptions(propertyURL, method);
-
-                                    var contentType: string = form['contentType'];
-    
-                                    if (contentType == undefined) contentType = 'application/json'; // Default value for 'contentType'.
-                                    propertyOptions['headers']['Content-Type'] = contentType;
-
-                                    // Types that should not be normally allowed.
-                                    var types: string[] = await typeFuzz(property.type, propertyURL, propertyOptions);                                    
-                                    types.forEach(type => report.propertyReports[i].addType(type));
-    
-                                    // Trying to write the defined type, if cannot write any exceptional type.
-                                    if (types.length == 0){
-                                        propertyOptions['body'] = JSON.stringify(jsf(property));
-
-                                        let isWritable = await fetch(propertyURL.toString(), propertyOptions);
-                                        if (isWritable.ok)
-                                            report.propertyReports[i].isWritable(true);
-                                    }
-                                    else report.propertyReports[i].isWritable(true);
-                                }
-                            }
-                            catch(e){
-                                throw "Safety tests for nosec resulted in error:" + e;
-                            }
-                        }
-                        else{ // Property is 'writeonly'.
-                            try{
-                                // First tries to 'writeproperty', then tries to 'readproperty'.
-                                var form = getForm('writeproperty', property.forms);
-
-                                // Check if the interaction has a different security scheme.
-                                if (form['security'] != undefined){
-                                    if (Array.isArray(form['security'])){
-                                        if (!form['security'].includes(schemeName))
-                                            throw "Testing multiple security schemes are not currently available.";
-                                    }
-                                    else if (form['security'] != schemeName)
-                                        throw "Testing multiple security schemes are not currently available.";
-                                }
-
-                                var propertyURL: URL = new URL(form['href']);
-
-                                if(!propertyURL.toString().startsWith("http")){
-                                    report.propertyReports[i].addDescription("Currently only HTTP(s) bindings are supported. Thus, property could not be tested.");
-                                    continue;
-                                }
-
-                                var method: string = form['htv:methodName'];
-        
-                                if (method == null) method = 'PUT'; // Default method for 'writeproperty'.
-        
-                                var propertyOptions: object = createRequestOptions(propertyURL, method);
-                                var contentType: string = form['contentType'];
-                                
-                                if (contentType == undefined) contentType = 'application/json'; // Default value for 'contentType'.
-                                
-                                propertyOptions['headers']['Content-Type'] = contentType;
-                                propertyOptions['body'] = JSON.stringify(jsf(property));
-        
-                                report.propertyReports[i].createSafetyReport();
-                                
-                                propertyOptions['headers']['Authorization'] = 'Basic ' + creds;
-    
-                                //Trying to see if the property is, really, 'writable'.
-                                let isWritable = await fetch(propertyURL.toString(), propertyOptions)
-                                if (isWritable.ok)
-                                    report.propertyReports[i].isWritable(true);
-
-                                // Types that should not be normally allowed.
-                                var types: string[] = await typeFuzz(property.type, propertyURL, propertyOptions);
-                                types.forEach(type => report.propertyReports[i].addType(type));
-    
-                                // Trying to see if the property can be read, which should not optimally be the case.
-                                propertyOptions['method'] = 'GET';
-                                delete propertyOptions['body'];
-    
-                                var isReadable: any = await fetch(propertyURL.toString(), propertyOptions);
-                                if (isReadable.ok) report.propertyReports[i].isReadable(true);
-                            }
-                            catch(e){
-                                throw "Safety tests for nosec resulted in error:" + e;
-                            }
-                        }
-                    }
-                }
-                if (td['actions'] != undefined){
-                    const actions: Array<any> = Object.values(td['actions']);
-                    
-                    for(var i=0; i < actions.length; i++){
-                        let action: any = actions[i];
-
-                        var form = getForm('invokeaction', action.forms); // Cannot be null.
-
-                        // Check if the interaction has a different security scheme.
-                        if (form['security'] != undefined){
-                            if (Array.isArray(form['security'])){
-                                if (!form['security'].includes(schemeName))
-                                    throw "Testing multiple security schemes are not currently available.";
-                            }
-                            else if (form['security'] != schemeName)
-                                throw "Testing multiple security schemes are not currently available.";
-                        }
-
-                        var myURL: URL = new URL(form['href']);
-
-                        if(!myURL.toString().startsWith("http")){
-                            report.actionReports[i].addDescription("Currently only HTTP(s) bindings are supported. Thus, action could not be tested.")
-                            continue;
-                        }
-
-                        var method: string = form['htv:methodName'];
-                        if (method == undefined) method = 'POST'; // Default value for 'invokeaction'.
-
-                        // Create action report with the name of the action.
-                        report.createVulnActionReport(Object.keys(td['actions'])[i]);
-
-                        var actionOptions = createRequestOptions(myURL, method);
-
-                        if (action.input != undefined) // Fill body appropriately.
-                            actionOptions['body'] = JSON.stringify(jsf(action['input']));                            
-
-                        report.actionReports[i].createSafetyReport();
-
-                        // Types that should not be normally allowed.
-                        var types: string[];
-                        if(action.input != undefined)
-                            types = await typeFuzz(action.input.type, myURL, actionOptions);
-                        else
-                            types = await typeFuzz(null, myURL, actionOptions);
-                        
-                        types.forEach(type => report.actionReports[i].addType(type));
-                    }
-                }
+        } catch (error){
+            self.log("Testing Events has finished with an error")
+            throw Error
         }
-        return report;
+        //testing observable properties
+        try{
+            let property = this.tutTd.properties
+            for (let prop in property) {
+                const interaction: any = Utils.getInteractionByName(this.tutTd, Utils.InteractionType.Property, prop)
+                var observable = interaction.observable
+                if(observable){
+                    console.log(prop)
+                }
+            }
+        }catch(error){
+            self.log("Testing observable properties has finished with an error")
+            throw Error
+        }
+
+        self.log("Operation Test Phase has finished without an error.")
+        return Full_Report
+    }
+
+    /**
+     * This function starts the testing on the Parameter Level. This means it tests all Interaction Affordances with input paramerters and creates requests
+     * including all necessary parameters.
+     */
+    public async testingParamCov(): Promise<any> {
+        const self = this
+        let Full_Report: any = []
+
+        try {
+            let property = this.tutTd.properties
+            for (let prop in property) {
+                const interaction: any = Utils.getInteractionByName(this.tutTd, Utils.InteractionType.Property, prop)
+                const isWritable = !interaction.readOnly;
+                if (isWritable) {
+                    let value = Utils.createValidInput(property[prop])
+                    try {
+                        await this.tut.writeProperty(prop, value)
+                        let result = "Parameter level writeProperty Success"
+                        Full_Report.push(Utils.createMiniReport(result, "write", prop, true, value))
+                        await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
+                    } catch (error) {
+                        Full_Report.push(Utils.createMiniReport(error, "write", prop, false, value))
+                        console.log(error)
+                    }
+                }
+
+            }
+
+            let action = this.tutTd.actions
+
+            for (let act in action) {
+                const interaction: any = Utils.getInteractionByName(this.tutTd, Utils.InteractionType.Action, act)
+                const hasInput = interaction.input;
+
+                if (hasInput) {
+                    let requests_m = Utils.createValidInput(action[act].input)
+                    try {
+                        let return_value: any = await this.tut.invokeAction(act, requests_m)
+                        let result = "Parameter level invokeAction Success"
+                        Full_Report.push(Utils.createMiniReport(result, "act", act, true, requests_m, return_value))
+                        await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
+                    } catch (error) {
+                        Full_Report.push(Utils.createMiniReport(error, "act", act, false, requests_m))
+                        console.log(error)
+                    }
+                }
+
+            }
+        } catch (error) {
+            self.log("Testing Parameter Coverage has finished with an error (see previous messages).")
+            throw Error
+        }
+        self.log("Parameter Test Phase has finished without an error.")
+        return Full_Report
+    }
+
+    /**
+     * This function starts the testing on the Input Level. It sends the created test data to all Interaction Affordances with an input and records
+     * the resopnse of the SuT.
+     */
+
+    public async testingInputCov(testReport): Promise<any> {
+        const self = this
+        let Full_Report: any = []
+        let full_T3_report = testReport
+        
+        try {
+            let property = this.tutTd.properties
+
+            for (let prop in property) {
+                const interaction: any = Utils.getInteractionByName(this.tutTd, Utils.InteractionType.Property, prop)
+                const isWritable = !interaction.readOnly;
+                const isReadable = !interaction.writeOnly;
+                if (isWritable) {
+
+                    for(const [key,value] of Object.entries(full_T3_report[prop])){
+
+                        for (const [key1, value1] of Object.entries(value)){
+                            // send data to SUT and evaluate response
+                            try {
+                                await this.tut.writeProperty(prop, value1.payload)
+                                let result = "Input level writeProperty Success"
+                                full_T3_report[prop][key][key1].time = Utils.getCurrentTime();
+                                await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
+                                if (isReadable){
+                                    //read property and check if it is the same as the writen value before
+                                    let readValue: any = await this.tut.readProperty(prop)
+                                    if (JSON.stringify(readValue) == JSON.stringify(value1.payload)) {
+                                        result = "Input level read/writeProperty Success : Read value the same as Write value"
+                                        full_T3_report[prop][key][key1].passed = true
+                                        full_T3_report[prop][key][key1].result = result
+                                    }else{
+                                        result = "Input level read/writeProperty Fail : Read value not the same as Write value"
+                                        full_T3_report[prop][key][key1].passed = false
+                                        full_T3_report[prop][key][key1].result = result
+                                    }
+                                    await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
+                                }else{
+                                    full_T3_report[prop][key][key1].passed = true
+                                    full_T3_report[prop][key][key1].result = result
+                                }
+                            }catch (error) {
+                                full_T3_report[prop][key][key1].passed = false
+                                full_T3_report[prop][key][key1].result = error
+                            console.log(error)
+                        }
+                        }
+
+                    }
+                    
+                };
+            }
+            
+            let action = this.tutTd.actions
+
+            for (let act in action) {
+                const interaction: any = Utils.getInteractionByName(this.tutTd, Utils.InteractionType.Action, act)
+                const hasInput = interaction.input;
+                if (hasInput) {
+                    for(const [key,value] of Object.entries(full_T3_report[act])){
+                        for (const [key1, value1] of Object.entries(value)){
+                            try{
+                                let return_value: any = await this.tut.invokeAction(act, value1.payload)
+                                let result = "Input level invokeAction Success"
+                                full_T3_report[act][key][key1].passed = true
+                                full_T3_report[act][key][key1].result = result
+                                full_T3_report[act][key][key1].response = return_value
+                                await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
+                            }catch(error){
+                                full_T3_report[act][key][key1].passed = false
+                                full_T3_report[act][key][key1].result = error
+                                console.log(error)
+                            }
+                        }
+                    }
+                }
+            }
+
+
+        } catch {
+            self.log("Testing Input Coverage has finished with an error (see previous messages).")
+            throw Error
+        }
+        self.log("Input Test Phase has finished without an error.")
+        return full_T3_report
+    }
+
+    /**
+     * This function starts the testing on the Output Level. It inspects all Interaction Affordances and checks if the given output or lack there of
+     * corresponds to the underlying Thing Description. It also validates received output against the TD.
+     */
+
+    public async testingOutputCov(): Promise<any> {
+        const self = this
+        let Full_Report: any = []
+
+        try {
+            //test all Properties and Actions
+            let property = this.tutTd.properties
+            for (let prop in property) {
+                const interaction: any = Utils.getInteractionByName(this.tutTd, Utils.InteractionType.Property, prop)
+                const isWritable = !interaction.readOnly;
+                const isReadable = !interaction.writeOnly;
+                if (isWritable) {
+                    let value = Utils.createValidInput(property[prop])
+                    try {
+                        let return_value: any = await this.tut.writeProperty(prop, value)
+                        let result = "Output level writeProperty Success : No Output detected"
+                        if (return_value == undefined) {
+                            Full_Report.push(Utils.createMiniReport(result, "write", prop, true, value))
+                        } else {
+                            // IMPORTANT ---> This does not wotk right now bc writeproperty does not return anything ever (node-wot problem ?)
+                            result = "Output level writeProperty Fail : Request returns a payload"
+                        }
+                        await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
+                    } catch (error) {
+                        Full_Report.push(Utils.createMiniReport(error, "write", prop, false, value))
+                        console.log(error)
+                    }
+                }
+                if (isReadable) {
+                    try {
+                        let return_value: any = await this.tut.readProperty(prop)
+                        let validation = Utils.validateResponse(prop, return_value, self.testConfig.SchemaLocation, Utils.SchemaType.Property)
+                        let result = "Output level readProperty Fail : Output received and invalid"
+                        if (validation) {
+                            Full_Report.push(Utils.createMiniReport(result, "read", prop, false, undefined, return_value))
+                        } else {
+                            result = "Output level readProperty Success : Output received and valid"
+                            Full_Report.push(Utils.createMiniReport(result, "read", prop, true, undefined, return_value))
+                        }
+                        await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
+                    } catch (error) {
+                        Full_Report.push(Utils.createMiniReport(error, "read", prop, false, undefined))
+                        console.log(error)
+                    }
+                };
+            }
+
+            let action = this.tutTd.actions
+
+            for (let act in action) {
+                const interaction: any = Utils.getInteractionByName(this.tutTd, Utils.InteractionType.Action, act)
+                const hasInput = interaction.input;
+
+                if (hasInput) {
+                    let requests_m = Utils.createValidInput(action[act].input)
+                    try {
+                        let return_value: any = await this.tut.invokeAction(act, requests_m)
+                        if (!interaction.hasOwnProperty("output")) {
+                            let result = "Output level invokeAction with payload Success : No Output defined and no Output received"
+                            if (return_value == undefined) {
+                                Full_Report.push(Utils.createMiniReport(result, "act", act, true, requests_m))
+                            } else {
+                                result = "Output level invokeAction with payload Fail : No Output defined but Output received"
+                                Full_Report.push(Utils.createMiniReport(result, "act", act, false, requests_m, return_value))
+                            }
+                        }else{
+                            // requests with output defined -> check if output is valid
+                            let validation = Utils.validateResponse(act, return_value, self.testConfig.SchemaLocation, Utils.SchemaType.Action)
+                            let result = "Output level invokeAction with payload Fail : Output received and invalid"
+                            if (validation){
+                                Full_Report.push(Utils.createMiniReport(result,"act",act,false,requests_m,return_value))
+                            }else{
+                                result = "Output level invokeAction with payload Success : Output received and valid"
+                                Full_Report.push(Utils.createMiniReport(result,"act",act,true,requests_m,return_value))
+                            }
+                        }
+                        await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
+                    } catch (error) {
+                        console.log(error)
+                        Full_Report.push(Utils.createMiniReport(error, "act", act, false, requests_m, undefined))
+                    }
+                }else {
+                    try {
+                        let return_value: any = await this.tut.invokeAction(act)
+                        if (!interaction.hasOwnProperty("output")) {
+                            let result = "Output level invokeAction without payload Success : No Output defined and no Output received"
+                            if (return_value == undefined) {
+                                Full_Report.push(Utils.createMiniReport(result, "act", act, true, undefined))
+                            } else {
+                                result = "Output level invokeAction without payload Fail : No Output defined but Output received"
+                                Full_Report.push(Utils.createMiniReport(result, "act", act, false, undefined, return_value))
+                            }
+                        }else{
+                            let validation = Utils.validateResponse(act, return_value, self.testConfig.SchemaLocation, Utils.SchemaType.Action)
+                            let result = "Output level invokeAction without payload Fail : Output received and invalid"
+                            if (validation){
+                                Full_Report.push(Utils.createMiniReport(result,"act",act,true,undefined,return_value))
+                            }else{
+                                result = "Output level invokeAction without payload Success : Output received and valid"
+                                Full_Report.push(Utils.createMiniReport(result,"act",act,true,undefined,return_value))
+                            }
+                        }
+                        await Utils.sleepInMs(this.testConfig.TimeBetweenRequests);
+                    } catch (error) {
+                        console.log(error)
+                        Full_Report.push(Utils.createMiniReport(error, "act", act, false, undefined))
+                    }
+                }
+            }
+
+        } catch (error) {
+            self.log("Testing Output Coverage has finished with an error (see previous messages).")
+            throw Error
+        }
+        self.log("Output Test Phase has finished without an error.")
+        return Full_Report
+    }
+
+    public async testingResult(testReport: any) {
+        try {
+            console.log("T1 : " + Utils.countResults(testReport.T1));
+            console.log("T2 : " + Utils.countResults(testReport.T2));
+            console.log("T3 : " + Utils.countResultsT3(testReport.T3));
+            console.log("T4 : " + Utils.countResults(testReport.T4));
+        } catch (error) {
+            console.log(error)
+        }
     }
 }
