@@ -89,7 +89,7 @@ srv.start()
                     readOnly: true,
                     description: "Contains all of the outputs of the testing. Not necessary for fastTest",
                 },
-                testReportNew: {
+                HeuristicTestReport: {
                     type: "object",
                     writeOnly: false,
                     readOnly: true,
@@ -229,10 +229,16 @@ srv.start()
                     return "Initiation failed"
                 }
                 try{
+                    main_Report = {
+                        T1:[],
+                        T2:[],
+                        T3:{},
+                        T4:[],
+                    }
                     main_Report.T3 = tester.inputTestReport
-                    await TestBenchT.writeProperty("testReportNew", main_Report)
+                    await TestBenchT.writeProperty("HeuristicTestReport", main_Report)
                 }catch{
-                    logFormatted(":::::ERROR::::: Init: Set testReportNew property failed")
+                    logFormatted(":::::ERROR::::: Init: Set HeuristicTestReport property failed")
                     return "Initiation failed"
                 }
                 return "Initiation was successful."
@@ -293,7 +299,7 @@ srv.start()
                 var testReportT1: any = await tester.testingOpCov()
                 main_Report.T1 = testReportT1
                 
-                await TestBenchT.writeProperty("testReportNew", main_Report)
+                await TestBenchT.writeProperty("HeuristicTestReport", main_Report)
             } catch {
                 logFormatted(":::::ERROR::::: TestThing: Error during Operational test phase.")
                 return
@@ -318,9 +324,9 @@ srv.start()
             logFormatted("------ START OF Parameter Testing ------")
             try {
                 var testReportT2: any = await tester.testingParamCov()
-                let testReport: any = await TestBenchT.readProperty("testReportNew")
+                let testReport: any = await TestBenchT.readProperty("HeuristicTestReport")
                 testReport.T2 = testReportT2
-                await TestBenchT.writeProperty("testReportNew", testReport)
+                await TestBenchT.writeProperty("HeuristicTestReport", testReport)
             } catch {
                 logFormatted(":::::ERROR::::: TestThing: Error during Parameter test phase.")
                 return
@@ -341,7 +347,7 @@ srv.start()
             logFormatted("------ START OF Input Testing ------")
             try {
                 main_Report.T3 = await tester.testingInputCov(main_Report.T3)
-                await TestBenchT.writeProperty("testReportNew", main_Report)
+                await TestBenchT.writeProperty("HeuristicTestReport", main_Report)
             } catch {
                 logFormatted(":::::ERROR::::: TestThing: Error during Input test phase.")
                 return
@@ -355,9 +361,9 @@ srv.start()
             logFormatted("------ START OF Output Testing ------")
             try {
                 var testReportT4: any = await tester.testingOutputCov()
-                let testReport: any = await TestBenchT.readProperty("testReportNew")
+                let testReport: any = await TestBenchT.readProperty("HeuristicTestReport")
                 testReport.T4 = testReportT4
-                await TestBenchT.writeProperty("testReportNew", testReport)
+                await TestBenchT.writeProperty("HeuristicTestReport", testReport)
             } catch {
                 logFormatted(":::::ERROR::::: TestThing: Error during Output test phase.")
                 return
@@ -380,7 +386,7 @@ srv.start()
             //call Output Level Testing
             await TestBenchT.invokeAction("testOutputCov")
             //call set Test Report
-            //let testReport = await TestBenchT.readProperty("testReportNew")
+            //let testReport = await TestBenchT.readProperty("HeuristicTestReport")
             tester.testingResult(main_Report)
             return main_Report
             //return the simplified version
