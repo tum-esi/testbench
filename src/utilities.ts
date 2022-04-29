@@ -104,7 +104,9 @@ export class CodeGenerator {
         this.td = tdesc
         //Toggle between the two Generator types to change the generation of testdata
         //this.generateFakeData(testConf, tdesc)
+
         this.input_types = this.generateFakeHeuristicData(testConf, tdesc)
+
         this.requests = this.getRequests(testConf.TestDataLocation) 
     }
     private createRequest(requestName: string, loc: string, pat: string): JSON {
@@ -153,6 +155,7 @@ export class CodeGenerator {
     }
 
     public generateFakeHeuristicData(testConf: any, tdesc: wot.ThingDescription) {
+
         // create interaction list: no optimized solution: -----------
         var requests = {
             [SchemaType.Property]: {},
