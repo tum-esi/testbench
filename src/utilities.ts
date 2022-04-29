@@ -104,11 +104,9 @@ export class CodeGenerator {
         this.td = tdesc
         //Toggle between the two Generator types to change the generation of testdata
         //this.generateFakeData(testConf, tdesc)
-<<<<<<< HEAD
+
         this.input_types = this.generateFakeHeuristicData(testConf, tdesc)
-=======
-        this.input_types = this.generateFakeDataMarcus(testConf, tdesc)
->>>>>>> 82599bbd30f34f8bddca294013a6d090d4d49355
+
         this.requests = this.getRequests(testConf.TestDataLocation) 
     }
     private createRequest(requestName: string, loc: string, pat: string): JSON {
@@ -156,11 +154,8 @@ export class CodeGenerator {
         fs.writeFileSync(testConf.TestDataLocation, JSON.stringify(requests, null, " "))
     }
 
-<<<<<<< HEAD
     public generateFakeHeuristicData(testConf: any, tdesc: wot.ThingDescription) {
-=======
-    public generateFakeDataMarcus(testConf: any, tdesc: wot.ThingDescription) {
->>>>>>> 82599bbd30f34f8bddca294013a6d090d4d49355
+
         // create interaction list: no optimized solution: -----------
         var requests = {
             [SchemaType.Property]: {},

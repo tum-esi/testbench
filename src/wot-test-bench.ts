@@ -89,12 +89,9 @@ srv.start()
                     readOnly: true,
                     description: "Contains all of the outputs of the testing. Not necessary for fastTest",
                 },
-<<<<<<< HEAD
+
                 HeuristicTestReport: {
-=======
-                testReportNew: {
->>>>>>> 82599bbd30f34f8bddca294013a6d090d4d49355
-                    type: "object",
+                  type: "object",
                     writeOnly: false,
                     readOnly: true,
                     description: "Contains all of the outputs of the testing. Not necessary for fastTest",
@@ -233,7 +230,6 @@ srv.start()
                     return "Initiation failed"
                 }
                 try{
-<<<<<<< HEAD
                     main_Report = {
                         T1:[],
                         T2:[],
@@ -244,12 +240,13 @@ srv.start()
                     await TestBenchT.writeProperty("HeuristicTestReport", main_Report)
                 }catch{
                     logFormatted(":::::ERROR::::: Init: Set HeuristicTestReport property failed")
-=======
+
                     main_Report.T3 = tester.inputTestReport
-                    await TestBenchT.writeProperty("testReportNew", main_Report)
+                    await TestBenchT.writeProperty("HeuristicTestReport", main_Report)
                 }catch{
-                    logFormatted(":::::ERROR::::: Init: Set testReportNew property failed")
->>>>>>> 82599bbd30f34f8bddca294013a6d090d4d49355
+
+                    logFormatted(":::::ERROR::::: Init: Set HeuristicTestReport property failed")
+
                     return "Initiation failed"
                 }
                 return "Initiation was successful."
@@ -310,11 +307,9 @@ srv.start()
                 var testReportT1: any = await tester.testingOpCov()
                 main_Report.T1 = testReportT1
                 
-<<<<<<< HEAD
+
                 await TestBenchT.writeProperty("HeuristicTestReport", main_Report)
-=======
-                await TestBenchT.writeProperty("testReportNew", main_Report)
->>>>>>> 82599bbd30f34f8bddca294013a6d090d4d49355
+
             } catch {
                 logFormatted(":::::ERROR::::: TestThing: Error during Operational test phase.")
                 return
@@ -339,15 +334,10 @@ srv.start()
             logFormatted("------ START OF Parameter Testing ------")
             try {
                 var testReportT2: any = await tester.testingParamCov()
-<<<<<<< HEAD
                 let testReport: any = await TestBenchT.readProperty("HeuristicTestReport")
                 testReport.T2 = testReportT2
                 await TestBenchT.writeProperty("HeuristicTestReport", testReport)
-=======
-                let testReport: any = await TestBenchT.readProperty("testReportNew")
-                testReport.T2 = testReportT2
-                await TestBenchT.writeProperty("testReportNew", testReport)
->>>>>>> 82599bbd30f34f8bddca294013a6d090d4d49355
+
             } catch {
                 logFormatted(":::::ERROR::::: TestThing: Error during Parameter test phase.")
                 return
@@ -368,11 +358,9 @@ srv.start()
             logFormatted("------ START OF Input Testing ------")
             try {
                 main_Report.T3 = await tester.testingInputCov(main_Report.T3)
-<<<<<<< HEAD
+
                 await TestBenchT.writeProperty("HeuristicTestReport", main_Report)
-=======
-                await TestBenchT.writeProperty("testReportNew", main_Report)
->>>>>>> 82599bbd30f34f8bddca294013a6d090d4d49355
+
             } catch {
                 logFormatted(":::::ERROR::::: TestThing: Error during Input test phase.")
                 return
@@ -386,15 +374,11 @@ srv.start()
             logFormatted("------ START OF Output Testing ------")
             try {
                 var testReportT4: any = await tester.testingOutputCov()
-<<<<<<< HEAD
+
                 let testReport: any = await TestBenchT.readProperty("HeuristicTestReport")
                 testReport.T4 = testReportT4
                 await TestBenchT.writeProperty("HeuristicTestReport", testReport)
-=======
-                let testReport: any = await TestBenchT.readProperty("testReportNew")
-                testReport.T4 = testReportT4
-                await TestBenchT.writeProperty("testReportNew", testReport)
->>>>>>> 82599bbd30f34f8bddca294013a6d090d4d49355
+
             } catch {
                 logFormatted(":::::ERROR::::: TestThing: Error during Output test phase.")
                 return
@@ -417,11 +401,9 @@ srv.start()
             //call Output Level Testing
             await TestBenchT.invokeAction("testOutputCov")
             //call set Test Report
-<<<<<<< HEAD
+
             //let testReport = await TestBenchT.readProperty("HeuristicTestReport")
-=======
-            //let testReport = await TestBenchT.readProperty("testReportNew")
->>>>>>> 82599bbd30f34f8bddca294013a6d090d4d49355
+
             tester.testingResult(main_Report)
             return main_Report
             //return the simplified version

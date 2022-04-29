@@ -889,10 +889,7 @@ export class Tester {
         return self.testReport
     }
 
-<<<<<<< HEAD
-=======
-    //--------------------------------------------------Marcus Code-------------------------------------------------------------------------------------------
->>>>>>> 82599bbd30f34f8bddca294013a6d090d4d49355
+
     /**
      * This function starts the testing on the Operation Level. This means it tests all Interaction Affordances and every defined form of each Interaction Affordance. 
      */
