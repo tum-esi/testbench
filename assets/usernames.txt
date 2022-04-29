@@ -1,0 +1,11 @@
+node-wot
+root
+admin
+test
+guest
+info
+adm
+user
+administrator
+pi
+sysadmin
