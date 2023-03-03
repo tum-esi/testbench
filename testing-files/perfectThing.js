@@ -56,7 +56,7 @@ srv.start().then((WoT) => {
                 readOnly: false,
                 writeOnly: false,
                 observable: false,
-            }
+            },
         },
         actions: {
             setCounter: {

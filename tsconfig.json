@@ -7,6 +7,8 @@
         "outDir": "dist",
         "moduleResolution": "node",
         "baseUrl": "src",
-        "sourceMap": true
+        "sourceMap": true,
+        "resolveJsonModule": true,
+        "esModuleInterop": true
     }
 }

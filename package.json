@@ -24,7 +24,10 @@
         "xmlhttprequest": "^1.8.0"
     },
     "devDependencies": {
+        "@typescript-eslint/eslint-plugin": "^5.54.0",
+        "@typescript-eslint/parser": "^5.54.0",
         "chai": "^4.2.0",
+        "eslint": "^8.35.0",
         "mocha": "^6.2.0",
         "prettier": "2.0.5",
         "typescript": "3.9.7"
@@ -34,6 +37,8 @@
         "start": "node dist/wot-test-bench.js",
         "clean": "node clean.js",
         "test": "mocha --require esm --exit",
-        "windows_stop": "taskkill /im node.exe /f"
+        "windows_stop": "taskkill /im node.exe /f",
+        "lint": "eslint . --ext .ts",
+        "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\""
     }
 }

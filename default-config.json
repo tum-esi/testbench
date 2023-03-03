@@ -1,7 +1,7 @@
 {
     "TBname": "wot-test-bench",
     "http": {
-        "port": 8980,
+        "port": 8981,
         "allowSelfSigned": true
     },
     "coap": {
@@ -12,7 +12,7 @@
     "TestDataLocation": "Resources/fake-data.json",
     "TimeBetweenRequests": 500,
     "ActionTimeout": 4000,
-    "Scenarios": 4,
+    "Scenarios": 2,
     "Repetitions": 1,
     "EventAndObservePOptions": {
         "Asynchronous": {
@@ -27,6 +27,5 @@
             "MsSubscribeTimeout": 1000
         }
     },
-    "credentials": {
-    }
+    "credentials": {}
 }

@@ -12,30 +12,30 @@ import { Tester } from "./Tester"
 import { parseArgs, configPath, tdPaths } from "./config"
 import { testConfig, ListeningType, logFormatted } from "./utilities"
 import { TestReport } from "./TestReport"
-const fs = require("fs")
-var configFile = "default-config.json"
+import * as fs from "fs"
+let configFile = "default-config.json"
 if (process.argv.length > 2) {
     parseArgs(tdPaths)
     configFile = configPath
 }
 //getting the test config and extraction anything possible
 let testConfig: testConfig = JSON.parse(fs.readFileSync(configFile, "utf8"))
-let tbName: string = testConfig["TBname"]
-let tutName: string = "Testbench Thing"
+const tbName: string = testConfig["TBname"]
+const tutName = "Testbench Thing"
 
 let main_Report = {
-    T1:[],
-    T2:[],
-    T3:{},
-    T4:[],
+    T1: [],
+    T2: [],
+    T3: {},
+    T4: [],
 }
 
 //creating the Test Bench as a servient.
 //It will test the Thing as a client and interact with the tester as a Server
-let srv = new Servient()
+const srv = new Servient()
 console.log(srv)
-let httpServer = typeof testConfig.http.port === "number" ? new HttpServer(testConfig.http) : new HttpServer()
-let coapServer = typeof testConfig.coap.port === "number" ? new CoapServer(testConfig.coap.port) : new CoapServer()
+const httpServer = typeof testConfig.http.port === "number" ? new HttpServer(testConfig.http) : new HttpServer()
+const coapServer = typeof testConfig.coap.port === "number" ? new CoapServer(testConfig.coap.port) : new CoapServer()
 srv.addServer(httpServer)
 srv.addServer(coapServer)
 srv.addClientFactory(new FileClientFactory())
@@ -91,11 +91,11 @@ srv.start()
                 },
 
                 HeuristicTestReport: {
-                  type: "object",
+                    type: "object",
                     writeOnly: false,
                     readOnly: true,
                     description: "Contains all of the outputs of the testing. Not necessary for fastTest",
-                }
+                },
             },
             actions: {
                 fastTest: {
@@ -127,28 +127,24 @@ srv.start()
                     description: "By invoking this action, the testing starts and produces a test report that can be read. Not necessary for fastTest",
                 },
                 testOpCov: {
-                    
                     output: {
                         type: "boolean",
                     },
                     description: "By invoking this action, the testing starts on the Operation Level",
                 },
                 testParamCov: {
-                    
                     output: {
                         type: "boolean",
                     },
                     description: "By invoking this action, the testing starts on the Paramter Level",
                 },
                 testInputCov: {
-                    
                     output: {
                         type: "boolean",
                     },
                     description: "By invoking this action and all Input Interactions are tested after each other",
                 },
                 testOutputCov: {
-                    
                     output: {
                         type: "boolean",
                     },
@@ -162,8 +158,8 @@ srv.start()
                         type: "boolean",
                     },
                     description: "By invoking this action, the testing starts on all Level",
-                }
-            }
+                },
+            },
         })
 
         let tester: Tester = null
@@ -188,16 +184,15 @@ srv.start()
              Tester, set generated data to testData: */
         TestBenchT.setActionHandler("initiate", async (logMode: boolean) => {
             try {
-                
                 await TestBenchT.writeProperty("testReport", "[]")
-            
             } catch {
                 logFormatted(":::::ERROR::::: Init: write testReport property failed")
                 return "Could not reinitialize the test report"
             }
 
+            let newConf: any
             try {
-                var newConf = await TestBenchT.readProperty("testConfig")
+                newConf = await TestBenchT.readProperty("testConfig")
             } catch {
                 logFormatted(":::::ERROR::::: Init: Get config property failed")
                 return "Initiation failed"
@@ -207,8 +202,9 @@ srv.start()
             /* fs.writeFileSync('./default-config.json',
                         JSON.stringify(testConfig, null, ' ')); */
             srv.addCredentials(testConfig.credentials)
+            let tutTD: any
             try {
-                var tutTD = await TestBenchT.readProperty("thingUnderTestTD")
+                tutTD = await TestBenchT.readProperty("thingUnderTestTD")
             } catch {
                 logFormatted(":::::ERROR::::: Init: Get tutTD property failed")
                 return "Initiation failed"
@@ -229,21 +225,25 @@ srv.start()
                     logFormatted(":::::ERROR::::: Init: Set testData property failed")
                     return "Initiation failed"
                 }
-                try{
+                try {
                     main_Report = {
-                        T1:[],
-                        T2:[],
-                        T3:{},
-                        T4:[],
+                        T1: [],
+                        T2: [],
+                        T3: {},
+                        T4: [],
                     }
                     main_Report.T3 = tester.inputTestReport
                     await TestBenchT.writeProperty("HeuristicTestReport", main_Report)
-                }catch{
+                } catch {
+                    // TODO: Fix this catch block
+                    /*  
+                catch{
                     logFormatted(":::::ERROR::::: Init: Set HeuristicTestReport property failed")
 
                     main_Report.T3 = tester.inputTestReport
                     await TestBenchT.writeProperty("HeuristicTestReport", main_Report)
-                }catch{
+                } 
+                */
 
                     logFormatted(":::::ERROR::::: Init: Set HeuristicTestReport property failed")
 
@@ -264,8 +264,9 @@ srv.start()
 
         // Tests the tut. If input true, logMode is on.
         TestBenchT.setActionHandler("testThing", async (logMode: boolean) => {
+            let data: any
             try {
-                var data = await TestBenchT.readProperty("testData")
+                data = await TestBenchT.readProperty("testData")
             } catch {
                 logFormatted(":::::ERROR::::: TestThing: Get test data property failed")
                 return false
@@ -273,8 +274,9 @@ srv.start()
 
             await fs.writeFileSync(testConfig.TestDataLocation, JSON.stringify(data, null, " "))
             logFormatted("------ START OF TESTTHING METHOD ------")
+            let testReport: TestReport
             try {
-                var testReport: TestReport = await tester.firstTestingPhase(testConfig.Repetitions, testConfig.Scenarios, logMode)
+                testReport = await tester.firstTestingPhase(testConfig.Repetitions, testConfig.Scenarios, logMode)
                 testReport.printResults(ListeningType.Asynchronous)
                 await TestBenchT.writeProperty("testReport", testReport.getResults())
             } catch {
@@ -301,43 +303,38 @@ srv.start()
         })
 
         TestBenchT.setActionHandler("testOpCov", async () => {
-            
             logFormatted("------ START OF Operational Testing ------")
             try {
-                var testReportT1: any = await tester.testingOpCov()
+                const testReportT1: any = await tester.testingOpCov()
                 main_Report.T1 = testReportT1
-                
 
                 await TestBenchT.writeProperty("HeuristicTestReport", main_Report)
-
             } catch {
                 logFormatted(":::::ERROR::::: TestThing: Error during Operational test phase.")
                 return
             }
-            
+
             secondTestingPhase()
 
             async function secondTestingPhase() {
                 try {
                     // Starting the second testing phase.
-                    const testReportHasChanged: boolean = await tester.secondTestingPhase(testConfig.Repetitions)
+                    await tester.secondTestingPhase(testConfig.Repetitions)
                 } catch {
                     logFormatted(":::::ERROR::::: TestThing: Error during second test phase.")
                 }
             }
-            
+
             return
         })
 
         TestBenchT.setActionHandler("testParamCov", async () => {
-            
             logFormatted("------ START OF Parameter Testing ------")
             try {
-                var testReportT2: any = await tester.testingParamCov()
-                let testReport: any = await TestBenchT.readProperty("HeuristicTestReport")
+                const testReportT2: any = await tester.testingParamCov()
+                const testReport: any = await TestBenchT.readProperty("HeuristicTestReport")
                 testReport.T2 = testReportT2
                 await TestBenchT.writeProperty("HeuristicTestReport", testReport)
-
             } catch {
                 logFormatted(":::::ERROR::::: TestThing: Error during Parameter test phase.")
                 return
@@ -347,8 +344,9 @@ srv.start()
         })
 
         TestBenchT.setActionHandler("testInputCov", async () => {
+            let data: any
             try {
-                var data = await TestBenchT.readProperty("testData")
+                data = await TestBenchT.readProperty("testData")
             } catch {
                 logFormatted(":::::ERROR::::: TestThing: Get test data property failed")
                 return false
@@ -360,7 +358,6 @@ srv.start()
                 main_Report.T3 = await tester.testingInputCov(main_Report.T3)
 
                 await TestBenchT.writeProperty("HeuristicTestReport", main_Report)
-
             } catch {
                 logFormatted(":::::ERROR::::: TestThing: Error during Input test phase.")
                 return
@@ -370,15 +367,12 @@ srv.start()
         })
 
         TestBenchT.setActionHandler("testOutputCov", async () => {
-            
             logFormatted("------ START OF Output Testing ------")
             try {
-                var testReportT4: any = await tester.testingOutputCov()
-
-                let testReport: any = await TestBenchT.readProperty("HeuristicTestReport")
+                const testReportT4: any = await tester.testingOutputCov()
+                const testReport: any = await TestBenchT.readProperty("HeuristicTestReport")
                 testReport.T4 = testReportT4
                 await TestBenchT.writeProperty("HeuristicTestReport", testReport)
-
             } catch {
                 logFormatted(":::::ERROR::::: TestThing: Error during Output test phase.")
                 return

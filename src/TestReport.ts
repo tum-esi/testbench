@@ -1,5 +1,5 @@
-import fs = require("fs")
-var mkdirp = require("mkdirp")
+import * as fs from "fs"
+import { mkdirp } from "mkdirp"
 import { ListeningType } from "./utilities"
 
 /**
@@ -45,7 +45,7 @@ export class MiniTestReport {
     }
 
     getPrintableOnlyOut() {
-        let outTestReport = {}
+        const outTestReport = {}
         outTestReport["passed"] = this.passed
         if (this.sent != null) outTestReport["sendTimestamp"] = this.sent.timestamp
         if (this.received != null) outTestReport["received"] = this.received
@@ -115,11 +115,11 @@ export class PropertyTestReportContainer extends InteractionTestReportContainer 
         delete this.testCycle
         delete this.testScenario
 
-        let toReturn = { name: this.name, passed: this.passed }
+        const toReturn = { name: this.name, passed: this.passed }
         if (this.readPropertyReport != null) toReturn["readPropertyReport"] = this.readPropertyReport.getPrintableOnlyOut()
         if (this.writePropertyReport != null) toReturn["writePropertyReport"] = this.writePropertyReport
         if (this.observePropertyReport != null) {
-            let observePropertyReport = {
+            const observePropertyReport = {
                 passed: this.observePropertyReport.passed,
                 subscriptionReport: this.observePropertyReport.subscriptionReport.getPrintableOnlyOut(),
                 observedDataReport: this.observePropertyReport.eventDataReport.getPrintableMessage(),
@@ -219,8 +219,7 @@ export class TestReport {
      * Returns the results of the current test run.
      */
     public getResults(): Array<any> {
-        let returnResults = this.results
-        return returnResults
+        return this.results
     }
 
     /**
@@ -270,16 +269,16 @@ export class TestReport {
     public printResults(testingPhase: ListeningType): void {
         LogInGreen("Results of the test:\n")
         LogInGreen("↓ Test Cycles\t  ")
-        for (var testCycle = 0; testCycle <= this.maxTestScenario; testCycle++) {
+        for (let testCycle = 0; testCycle <= this.maxTestScenario; testCycle++) {
             LogInGreen("TS" + testCycle + "\t")
         }
         LogInGreen("← Test Scenarios\n")
 
         // Printing the results.
-        for (var testCycle = 0; testCycle <= this.testCycleCount; testCycle++) {
+        for (let testCycle = 0; testCycle <= this.testCycleCount; testCycle++) {
             if (testingPhase == ListeningType.Synchronous && testCycle == this.testCycleCount) LogInGreen("Listening Phase\t  ")
             else LogInGreen("TC" + testCycle + "\t\t  ")
-            for (var testScenario = 0; testScenario <= this.maxTestScenario; testScenario++) {
+            for (let testScenario = 0; testScenario <= this.maxTestScenario; testScenario++) {
                 // In the listening Phase only first testScenario exists, thus no further testScenarios can be logged.
                 if (testingPhase == ListeningType.Synchronous && testScenario == 1 && testCycle == this.testCycleCount) {
                     break
@@ -288,15 +287,15 @@ export class TestReport {
                 //summing up the fails for this one scenario
                 //this try catch exists because not every scenario is obligated to have the same number of messages
                 //this is of course not necessary for the current state of the test bench
-                let currentScenario: any = this.results[testCycle][testScenario]
-                let curSceLength: number = currentScenario.length
+                const currentScenario: any = this.results[testCycle][testScenario]
+                const curSceLength: number = currentScenario.length
 
-                let fails: number = 0
+                let fails = 0
                 try {
-                    for (var k = 0; k < curSceLength; k++) {
-                        let curMessage: InteractionTestReportContainer = currentScenario[k]
+                    for (let k = 0; k < curSceLength; k++) {
+                        const curMessage: InteractionTestReportContainer = currentScenario[k]
                         //if the results of the single test is false, the number to be displayed in the table is incremented
-                        let curResult: boolean = curMessage.passed
+                        const curResult: boolean = curMessage.passed
                         if (!curResult) {
                             fails++
                         }
@@ -328,13 +327,13 @@ export class TestReport {
     public storeReport(location: string, tutName: string) {
         try {
             mkdirp(location)
-            var files = fs.readdirSync(location) // returns string list
+            const files = fs.readdirSync(location) // returns string list
             if (files.length > 0) {
                 let maxReportCount = 0
 
                 // find max number of stored tut-reports:
-                for (var i in files) {
-                    let splitFile = files[i].split("-")
+                for (const i in files) {
+                    const splitFile = files[i].split("-")
                     if (splitFile[1] == tutName) {
                         if (Number(splitFile[0]) > maxReportCount) {
                             maxReportCount = Number(splitFile[0])

@@ -1,7 +1,8 @@
 //testConfig for config file structure
-const inquirer = require("inquirer")
-export const parseArgs = (tDescPaths: Array<string>) => {
-    let argv = process.argv.slice(2)
+import packageJson from "../package.json"
+
+export const parseArgs = () => {
+    const argv = process.argv.slice(2)
     let configPresentFlag = false
     argv.forEach((arg: string) => {
         if (configPresentFlag) {
@@ -10,7 +11,7 @@ export const parseArgs = (tDescPaths: Array<string>) => {
         } else if (arg.match(/^(-c|--configfile)$/i)) {
             configPresentFlag = true
         } else if (arg.match(/^(-v|--version)$/i)) {
-            console.info(require("../package.json").version)
+            console.info(packageJson.version)
         } else {
             console.info("-c can be used to specify config file")
         }
@@ -37,8 +38,8 @@ let decideToUseDefaultConfigFile = defaultQuery().then( (response: string) => {
 		else{} //confiqurationQuery
 });
 		 */
-export var configPath: string
-export var tdPaths: Array<string> = []
+export let configPath: string
+export const tdPaths: Array<string> = []
 //TODO: Prompt user for config
 //TODO: Help
 //TODO: Log level to dump
