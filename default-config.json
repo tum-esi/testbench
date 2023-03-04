@@ -1,7 +1,7 @@
 {
     "TBname": "wot-test-bench",
     "http": {
-        "port": 8981,
+        "port": 8980,
         "allowSelfSigned": true
     },
     "coap": {
