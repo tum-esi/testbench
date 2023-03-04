@@ -1,7 +1,6 @@
-import fs = require("fs")
-var mkdirp = require("mkdirp")
+import * as fs from "fs"
+import { mkdirp } from "mkdirp"
 import { ListeningType } from "./utilities"
-import { stringify } from "querystring"
 
 /**
  * A single subTest result containing a resultId and an optional resultMessage.
@@ -46,7 +45,7 @@ export class MiniTestReport {
     }
 
     getPrintableOnlyOut() {
-        let outTestReport = {}
+        const outTestReport = {}
         outTestReport["passed"] = this.passed
         if (this.sent != null) outTestReport["sendTimestamp"] = this.sent.timestamp
         if (this.received != null) outTestReport["received"] = this.received
@@ -116,11 +115,11 @@ export class PropertyTestReportContainer extends InteractionTestReportContainer 
         delete this.testCycle
         delete this.testScenario
 
-        let toReturn = { name: this.name, passed: this.passed }
+        const toReturn = { name: this.name, passed: this.passed }
         if (this.readPropertyReport != null) toReturn["readPropertyReport"] = this.readPropertyReport.getPrintableOnlyOut()
         if (this.writePropertyReport != null) toReturn["writePropertyReport"] = this.writePropertyReport
         if (this.observePropertyReport != null) {
-            let observePropertyReport = {
+            const observePropertyReport = {
                 passed: this.observePropertyReport.passed,
                 subscriptionReport: this.observePropertyReport.subscriptionReport.getPrintableOnlyOut(),
                 observedDataReport: this.observePropertyReport.eventDataReport.getPrintableMessage(),
@@ -220,8 +219,7 @@ export class TestReport {
      * Returns the results of the current test run.
      */
     public getResults(): Array<any> {
-        let returnResults = this.results
-        return returnResults
+        return this.results
     }
 
     /**
@@ -271,16 +269,16 @@ export class TestReport {
     public printResults(testingPhase: ListeningType): void {
         LogInGreen("Results of the test:\n")
         LogInGreen("↓ Test Cycles\t  ")
-        for (var testCycle = 0; testCycle <= this.maxTestScenario; testCycle++) {
+        for (let testCycle = 0; testCycle <= this.maxTestScenario; testCycle++) {
             LogInGreen("TS" + testCycle + "\t")
         }
         LogInGreen("← Test Scenarios\n")
 
         // Printing the results.
-        for (var testCycle = 0; testCycle <= this.testCycleCount; testCycle++) {
+        for (let testCycle = 0; testCycle <= this.testCycleCount; testCycle++) {
             if (testingPhase == ListeningType.Synchronous && testCycle == this.testCycleCount) LogInGreen("Listening Phase\t  ")
             else LogInGreen("TC" + testCycle + "\t\t  ")
-            for (var testScenario = 0; testScenario <= this.maxTestScenario; testScenario++) {
+            for (let testScenario = 0; testScenario <= this.maxTestScenario; testScenario++) {
                 // In the listening Phase only first testScenario exists, thus no further testScenarios can be logged.
                 if (testingPhase == ListeningType.Synchronous && testScenario == 1 && testCycle == this.testCycleCount) {
                     break
@@ -289,15 +287,15 @@ export class TestReport {
                 //summing up the fails for this one scenario
                 //this try catch exists because not every scenario is obligated to have the same number of messages
                 //this is of course not necessary for the current state of the test bench
-                let currentScenario: any = this.results[testCycle][testScenario]
-                let curSceLength: number = currentScenario.length
+                const currentScenario: any = this.results[testCycle][testScenario]
+                const curSceLength: number = currentScenario.length
 
-                let fails: number = 0
+                let fails = 0
                 try {
-                    for (var k = 0; k < curSceLength; k++) {
-                        let curMessage: InteractionTestReportContainer = currentScenario[k]
+                    for (let k = 0; k < curSceLength; k++) {
+                        const curMessage: InteractionTestReportContainer = currentScenario[k]
                         //if the results of the single test is false, the number to be displayed in the table is incremented
-                        let curResult: boolean = curMessage.passed
+                        const curResult: boolean = curMessage.passed
                         if (!curResult) {
                             fails++
                         }
@@ -329,13 +327,13 @@ export class TestReport {
     public storeReport(location: string, tutName: string) {
         try {
             mkdirp(location)
-            var files = fs.readdirSync(location) // returns string list
+            const files = fs.readdirSync(location) // returns string list
             if (files.length > 0) {
                 let maxReportCount = 0
 
                 // find max number of stored tut-reports:
-                for (var i in files) {
-                    let splitFile = files[i].split("-")
+                for (const i in files) {
+                    const splitFile = files[i].split("-")
                     if (splitFile[1] == tutName) {
                         if (Number(splitFile[0]) > maxReportCount) {
                             maxReportCount = Number(splitFile[0])
@@ -354,114 +352,119 @@ export class TestReport {
         }
     }
 }
-interface SecurityReport{
-    passedDictionaryAttack: boolean;
-    id?: string;
-    pw?: string;
+
+interface SecurityReport {
+    passedDictionaryAttack: boolean
+    id?: string
+    pw?: string
     //description?: string;
 }
-export class VulnPropertyReport{
-    propertyName: string;
-    security?: SecurityReport;
-    safety?: object;
-    description?: string;
 
-    constructor(name: string){
-        this.propertyName = name;
+export class VulnPropertyReport {
+    propertyName: string
+    security?: SecurityReport
+    safety?: object
+    description?: string
+
+    constructor(name: string) {
+        this.propertyName = name
     }
-    public createSecurityReport(){
+    public createSecurityReport() {
         this.security = {
             passedDictionaryAttack: true,
-        };
+        }
     }
-    public createSafetyReport(){
+    public createSafetyReport() {
         this.safety = {
             isReadable: false,
             isWritable: false,
-            exceptionTypes: Array<string>()
-        };
+            exceptionTypes: Array<string>(),
+        }
     }
     /**
      * Adds accepted types for the property.
      */
-    public addType(type: string){
-        this['safety']['exceptionTypes'].push(type);
+    public addType(type: string) {
+        this["safety"]["exceptionTypes"].push(type)
     }
-    public isReadable(ans: boolean){
-        this['safety']['isReadable'] = ans;
+    public isReadable(ans: boolean) {
+        this["safety"]["isReadable"] = ans
     }
-    public isWritable(ans: boolean){
-        this['safety']['isWritable'] = ans;
+    public isWritable(ans: boolean) {
+        this["safety"]["isWritable"] = ans
     }
-    public addDescription(msg: string){
+    public addDescription(msg: string) {
         //this.security.description = msg;
-        this.description = msg;
+        this.description = msg
     }
-    public addCredentials(id: string, pw: string){
-        this.security.id = id;
-        this.security.pw = pw;
+    public addCredentials(id: string, pw: string) {
+        this.security.id = id
+        this.security.pw = pw
     }
 }
-export class VulnActionReport {
-    actionName: string;
-    security?: SecurityReport;
-    safety?: object;
-    description?: string;
 
-    constructor(name: string){
-        this.actionName = name;
+export class VulnActionReport {
+    actionName: string
+    security?: SecurityReport
+    safety?: object
+    description?: string
+
+    constructor(name: string) {
+        this.actionName = name
     }
-    public createSecurityReport(){
-        this.security ={
-            passedDictionaryAttack: true
-        };
+    public createSecurityReport() {
+        this.security = {
+            passedDictionaryAttack: true,
+        }
     }
-    public createSafetyReport(){
+    public createSafetyReport() {
         this.safety = {
-            exceptionTypes: Array<string>()
-        };
+            exceptionTypes: Array<string>(),
+        }
     }
     /**
      * Adds accepted types for the action.
      */
-    public addType(type: string){
-        this.safety['exceptionTypes'].push(type);
+    public addType(type: string) {
+        this.safety["exceptionTypes"].push(type)
     }
-    public addDescription(msg: string){
+    public addDescription(msg: string) {
         //this.security.description = msg;
-        this.description = msg;
+        this.description = msg
     }
-    public addCredentials(id: string, pw: string){
-        this.security.id = id;
-        this.security.pw = pw;
+    public addCredentials(id: string, pw: string) {
+        this.security.id = id
+        this.security.pw = pw
     }
 }
+
 export class VulnerabilityReport {
-    description: string;
-    scheme: string;
-    propertyReports?: Array<VulnPropertyReport>;
-    actionReports?: Array<VulnActionReport>;
+    description: string
+    scheme: string
+    propertyReports?: Array<VulnPropertyReport>
+    actionReports?: Array<VulnActionReport>
 
-    constructor(){
-        this.description = "Vulnerability test results";
-        this.scheme = "";
-        this.propertyReports = null;
-        this.actionReports = Array<VulnActionReport>();
-        this.propertyReports = Array<VulnPropertyReport>();
+    constructor() {
+        this.description = "Vulnerability test results"
+        this.scheme = ""
+        this.propertyReports = null
+        this.actionReports = Array<VulnActionReport>()
+        this.propertyReports = Array<VulnPropertyReport>()
     }
-    public createVulnPropertyReport(name: string){
-        this.propertyReports.push(new VulnPropertyReport(name));
+    public createVulnPropertyReport(name: string) {
+        this.propertyReports.push(new VulnPropertyReport(name))
     }
-    public createVulnActionReport(name: string){
-        this.actionReports.push(new VulnActionReport(name));
+    public createVulnActionReport(name: string) {
+        this.actionReports.push(new VulnActionReport(name))
     }
 }
-export class TotalReport{
-    conformance: TestReport;
-    vulnerabilities: VulnerabilityReport;
 
-    constructor(conf: TestReport, vuln: VulnerabilityReport){
-        this.conformance = conf;
-        this.vulnerabilities = vuln;
+export class TotalReport {
+    conformance: TestReport
+    vulnerabilities: VulnerabilityReport
+
+    constructor(conf: TestReport, vuln: VulnerabilityReport) {
+        this.conformance = conf
+        this.vulnerabilities = vuln
     }
 }

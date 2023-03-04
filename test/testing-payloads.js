@@ -26,7 +26,7 @@ export const testConfig = {
             MsSubscribeTimeout: 1000,
         },
     },
-    credentials: {}
+    credentials: {},
 }
 
 export const faultyThingTD = {
@@ -40,15 +40,15 @@ export const faultyThingTD = {
             writeOnly: false,
             forms: [
                 {
-                    href:"http://localhost:8083/TestServient/properties/display",
-                    contentType:"application/json",
-                    op:["readproperty","writeproperty"]
+                    href: "http://localhost:8083/TestServient/properties/display",
+                    contentType: "application/json",
+                    op: ["readproperty", "writeproperty"],
                 },
                 {
                     href: "coap://localhost:8084/TestServient/properties/display",
                     contentType: "application/json",
                     op: ["readproperty", "writeproperty", "observeproperty", "unobserveproperty"],
-                }
+                },
             ],
         },
         counter: {
@@ -96,10 +96,10 @@ export const faultyThingTD = {
             writeOnly: false,
             forms: [
                 {
-                    href:"http://localhost:8083/TestServient/properties/faultyPercent",
-                    contentType:"application/json",
-                    op:["readproperty"],
-                    "htv:methodName":"GET"
+                    href: "http://localhost:8083/TestServient/properties/faultyPercent",
+                    contentType: "application/json",
+                    op: ["readproperty"],
+                    "htv:methodName": "GET",
                 },
                 {
                     href: "coap://localhost:8084/TestServient/properties/faultyPercent",
@@ -369,18 +369,13 @@ export const perfectThingTD = {
                 {
                     href: "http://localhost:8081/TestServient/properties/display",
                     contentType: "application/json",
-                    op: [
-                        "readproperty",
-                        "writeproperty"
-                    ]
+                    op: ["readproperty", "writeproperty"],
                 },
                 {
                     href: "http://localhost:8081/TestServient/properties/display/observable",
                     contentType: "application/json",
-                    op: [
-                        "observeproperty"
-                    ],
-                    subprotocol: "longpoll"
+                    op: ["observeproperty"],
+                    subprotocol: "longpoll",
                 },
                 {
                     href: "coap://localhost:8082/TestServient/properties/display",
@@ -398,10 +393,7 @@ export const perfectThingTD = {
                 {
                     href: "http://localhost:8081/TestServient/properties/counter",
                     contentType: "application/json",
-                    op: [
-                        "readproperty",
-                        "writeproperty"
-                    ]
+                    op: ["readproperty", "writeproperty"],
                 },
                 {
                     href: "coap://localhost:8082/TestServient/properties/counter",
@@ -419,10 +411,8 @@ export const perfectThingTD = {
                 {
                     href: "http://localhost:8081/TestServient/properties/temperature",
                     contentType: "application/json",
-                    op: [
-                        "readproperty"
-                    ],
-                    "htv:methodName": "GET"
+                    op: ["readproperty"],
+                    "htv:methodName": "GET",
                 },
                 {
                     href: "coap://localhost:8082/TestServient/properties/temperature",

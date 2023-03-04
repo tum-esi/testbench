@@ -1,7 +1,6 @@
 //testConfig for config file structure
-const inquirer = require("inquirer")
-export const parseArgs = (tDescPaths: Array<string>) => {
-    let argv = process.argv.slice(2)
+export const parseArgs = () => {
+    const argv = process.argv.slice(2)
     let configPresentFlag = false
     argv.forEach((arg: string) => {
         if (configPresentFlag) {
@@ -37,8 +36,8 @@ let decideToUseDefaultConfigFile = defaultQuery().then( (response: string) => {
 		else{} //confiqurationQuery
 });
 		 */
-export var configPath: string
-export var tdPaths: Array<string> = []
+export let configPath: string
+export const tdPaths: Array<string> = []
 //TODO: Prompt user for config
 //TODO: Help
 //TODO: Log level to dump

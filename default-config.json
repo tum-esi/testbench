@@ -5,11 +5,12 @@
         "allowSelfSigned": true
     },
     "coap": {
-        "port": 8981
+        "port": 5683
     },
     "SchemaLocation": "Resources/InteractionSchemas/",
     "TestReportsLocation": "Reports/",
     "TestDataLocation": "Resources/fake-data.json",
+    "TimeBetweenRequests": 500,
     "ActionTimeout": 4000,
     "Scenarios": 2,
     "Repetitions": 1,
@@ -26,6 +27,5 @@
             "MsSubscribeTimeout": 1000
         }
     },
-    "credentials": {
-    }
+    "credentials": {}
 }

@@ -7,11 +7,11 @@
     },
     "license": "MIT",
     "dependencies": {
-        "@node-wot/binding-coap": "0.7.1",
-        "@node-wot/binding-file": "0.7.1",
-        "@node-wot/binding-http": "0.7.1",
-        "@node-wot/binding-mqtt": "0.7.1",
-        "@node-wot/core": "0.7.1",
+        "@node-wot/binding-coap": "0.7.5",
+        "@node-wot/binding-file": "0.7.5",
+        "@node-wot/binding-http": "0.7.5",
+        "@node-wot/binding-mqtt": "0.7.5",
+        "@node-wot/core": "0.7.5",
         "@types/node": "*",
         "ajv": "^6.10.2",
         "chai-http": "^4.3.0",
@@ -20,21 +20,25 @@
         "inquirer": "^7.3.3",
         "json-schema-faker": "^0.5.0-rc15",
         "mkdirp": "^1.0.4",
-        "node-fetch": "^2.6.1",
-        "wot-typescript-definitions": "^0.7.4-SNAPSHOT.1",
+        "wot-typescript-definitions": "0.7.4-SNAPSHOT.1",
         "xmlhttprequest": "^1.8.0"
     },
     "devDependencies": {
+        "@typescript-eslint/eslint-plugin": "^5.54.0",
+        "@typescript-eslint/parser": "^5.54.0",
         "chai": "^4.2.0",
+        "eslint": "^8.35.0",
         "mocha": "^6.2.0",
         "prettier": "2.0.5",
-        "typescript": "3.9.7"
+        "typescript": "4.9.5"
     },
     "scripts": {
         "build": "tsc",
         "start": "node dist/wot-test-bench.js",
         "clean": "node clean.js",
         "test": "mocha --require esm --exit",
-        "windows_stop": "taskkill /im node.exe /f"
+        "windows_stop": "taskkill /im node.exe /f",
+        "lint": "eslint . --ext .ts",
+        "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\""
     }
 }
