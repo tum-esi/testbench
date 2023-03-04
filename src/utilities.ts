@@ -4,8 +4,8 @@ import * as fs from "fs"
 import { mkdirp } from "mkdirp"
 import { JSONSchemaFaker as jsf } from "json-schema-faker"
 import * as util from "util"
-import * as ajValidator from "ajv"
 import { JsonValue } from "type-fest"
+import ajValidator = require("ajv")
 
 const logFile = fs.createWriteStream("debug.log", { flags: "w" })
 const logStdout = process.stdout

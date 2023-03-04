@@ -30,11 +30,11 @@
         "eslint": "^8.35.0",
         "mocha": "^6.2.0",
         "prettier": "2.0.5",
-        "typescript": "3.9.7"
+        "typescript": "4.9.5"
     },
     "scripts": {
         "build": "tsc",
-        "start": "node dist/wot-test-bench.js",
+        "start": "node dist/src/wot-test-bench.js",
         "clean": "node clean.js",
         "test": "mocha --require esm --exit",
         "windows_stop": "taskkill /im node.exe /f",

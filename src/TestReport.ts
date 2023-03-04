@@ -352,3 +352,119 @@ export class TestReport {
         }
     }
 }
+
+interface SecurityReport{
+    passedDictionaryAttack: boolean;
+    id?: string;
+    pw?: string;
+    //description?: string;
+}
+
+export class VulnPropertyReport{
+    propertyName: string;
+    security?: SecurityReport;
+    safety?: object;
+    description?: string;
+
+    constructor(name: string){
+        this.propertyName = name;
+    }
+    public createSecurityReport(){
+        this.security = {
+            passedDictionaryAttack: true,
+        };
+    }
+    public createSafetyReport(){
+        this.safety = {
+            isReadable: false,
+            isWritable: false,
+            exceptionTypes: Array<string>()
+        };
+    }
+    /**
+     * Adds accepted types for the property.
+     */
+    public addType(type: string){
+        this['safety']['exceptionTypes'].push(type);
+    }
+    public isReadable(ans: boolean){
+        this['safety']['isReadable'] = ans;
+    }
+    public isWritable(ans: boolean){
+        this['safety']['isWritable'] = ans;
+    }
+    public addDescription(msg: string){
+        //this.security.description = msg;
+        this.description = msg;
+    }
+    public addCredentials(id: string, pw: string){
+        this.security.id = id;
+        this.security.pw = pw;
+    }
+}
+
+export class VulnActionReport {
+    actionName: string;
+    security?: SecurityReport;
+    safety?: object;
+    description?: string;
+
+    constructor(name: string){
+        this.actionName = name;
+    }
+    public createSecurityReport(){
+        this.security ={
+            passedDictionaryAttack: true
+        };
+    }
+    public createSafetyReport(){
+        this.safety = {
+            exceptionTypes: Array<string>()
+        };
+    }
+    /**
+     * Adds accepted types for the action.
+     */
+    public addType(type: string){
+        this.safety['exceptionTypes'].push(type);
+    }
+    public addDescription(msg: string){
+        //this.security.description = msg;
+        this.description = msg;
+    }
+    public addCredentials(id: string, pw: string){
+        this.security.id = id;
+        this.security.pw = pw;
+    }
+}
+
+export class VulnerabilityReport {
+    description: string;
+    scheme: string;
+    propertyReports?: Array<VulnPropertyReport>;
+    actionReports?: Array<VulnActionReport>;
+
+    constructor(){
+        this.description = "Vulnerability test results";
+        this.scheme = "";
+        this.propertyReports = null;
+        this.actionReports = Array<VulnActionReport>();
+        this.propertyReports = Array<VulnPropertyReport>();
+    }
+    public createVulnPropertyReport(name: string){
+        this.propertyReports.push(new VulnPropertyReport(name));
+    }
+    public createVulnActionReport(name: string){
+        this.actionReports.push(new VulnActionReport(name));
+    }
+}
+
+export class TotalReport{
+    conformance: TestReport;
+    vulnerabilities: VulnerabilityReport;
+
+    constructor(conf: TestReport, vuln: VulnerabilityReport){
+        this.conformance = conf;
+        this.vulnerabilities = vuln;
+    }
+}

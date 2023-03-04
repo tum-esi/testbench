@@ -11,11 +11,11 @@ import { CoapsClientFactory } from "@node-wot/binding-coap"
 import { Tester } from "./Tester"
 import { parseArgs, configPath, tdPaths } from "./config"
 import { testConfig, ListeningType, logFormatted } from "./utilities"
-import { TestReport } from "./TestReport"
+import { TestReport, VulnerabilityReport, TotalReport } from "./TestReport"
 import * as fs from "fs"
 let configFile = "default-config.json"
 if (process.argv.length > 2) {
-    parseArgs(tdPaths)
+    parseArgs()
     configFile = configPath
 }
 //getting the test config and extraction anything possible
@@ -126,6 +126,12 @@ srv.start()
                     },
                     description: "By invoking this action, the testing starts and produces a test report that can be read. Not necessary for fastTest",
                 },
+                testVulnerabilities: {
+                    input:{
+                        type: "boolean"
+                    },
+                    description: "Tests some basic security and safety vulnerabilities",
+                },
                 testOpCov: {
                     output: {
                         type: "boolean",
@@ -176,6 +182,17 @@ srv.start()
             await TestBenchT.invokeAction("initiate", true)
             //call testThing
             await TestBenchT.invokeAction("testThing", true)
+            const conformanceReport = await TestBenchT.readProperty('testReport');
+
+            // call testVulnerabilities
+
+            //fastMode = true;
+            await TestBenchT.invokeAction('testVulnerabilities', true);
+            const vulnReport = await TestBenchT.readProperty('testReport');
+            const totalReport: TotalReport = new TotalReport(conformanceReport, vulnReport);
+
+            //create new report containing both conformance results and vulnerability results.
+            await TestBenchT.writeProperty('testReport', totalReport);
             //call testThing
             return await TestBenchT.readProperty("testReport")
             //return the simplified version
@@ -300,6 +317,13 @@ srv.start()
                     logFormatted(":::::ERROR::::: TestThing: Error during second test phase.")
                 }
             }
+        })
+
+        // Tests the Thing for security and safety.
+        TestBenchT.setActionHandler("testVulnerabilities", async (fastMode: boolean) => {
+            const vulnReport: VulnerabilityReport = await tester.testVulnerabilities(fastMode);
+            //fastMode = false;
+            await TestBenchT.writeProperty('testReport', vulnReport);
         })
 
         TestBenchT.setActionHandler("testOpCov", async () => {
