@@ -34,7 +34,7 @@
     },
     "scripts": {
         "build": "tsc",
-        "start": "node dist/src/wot-test-bench.js",
+        "start": "node dist/wot-test-bench.js",
         "clean": "node clean.js",
         "test": "mocha --require esm --exit",
         "windows_stop": "taskkill /im node.exe /f",

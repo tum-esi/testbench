@@ -1,6 +1,4 @@
 //testConfig for config file structure
-import packageJson from "../package.json"
-
 export const parseArgs = () => {
     const argv = process.argv.slice(2)
     let configPresentFlag = false
@@ -11,7 +9,7 @@ export const parseArgs = () => {
         } else if (arg.match(/^(-c|--configfile)$/i)) {
             configPresentFlag = true
         } else if (arg.match(/^(-v|--version)$/i)) {
-            console.info(packageJson.version)
+            console.info(require("../package.json").version)
         } else {
             console.info("-c can be used to specify config file")
         }
