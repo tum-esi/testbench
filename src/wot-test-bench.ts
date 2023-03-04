@@ -127,8 +127,8 @@ srv.start()
                     description: "By invoking this action, the testing starts and produces a test report that can be read. Not necessary for fastTest",
                 },
                 testVulnerabilities: {
-                    input:{
-                        type: "boolean"
+                    input: {
+                        type: "boolean",
                     },
                     description: "Tests some basic security and safety vulnerabilities",
                 },
@@ -182,17 +182,17 @@ srv.start()
             await TestBenchT.invokeAction("initiate", true)
             //call testThing
             await TestBenchT.invokeAction("testThing", true)
-            const conformanceReport = await TestBenchT.readProperty('testReport');
+            const conformanceReport = await TestBenchT.readProperty("testReport")
 
             // call testVulnerabilities
 
             //fastMode = true;
-            await TestBenchT.invokeAction('testVulnerabilities', true);
-            const vulnReport = await TestBenchT.readProperty('testReport');
-            const totalReport: TotalReport = new TotalReport(conformanceReport, vulnReport);
+            await TestBenchT.invokeAction("testVulnerabilities", true)
+            const vulnReport = await TestBenchT.readProperty("testReport")
+            const totalReport: TotalReport = new TotalReport(conformanceReport, vulnReport)
 
             //create new report containing both conformance results and vulnerability results.
-            await TestBenchT.writeProperty('testReport', totalReport);
+            await TestBenchT.writeProperty("testReport", totalReport)
             //call testThing
             return await TestBenchT.readProperty("testReport")
             //return the simplified version
@@ -321,9 +321,9 @@ srv.start()
 
         // Tests the Thing for security and safety.
         TestBenchT.setActionHandler("testVulnerabilities", async (fastMode: boolean) => {
-            const vulnReport: VulnerabilityReport = await tester.testVulnerabilities(fastMode);
+            const vulnReport: VulnerabilityReport = await tester.testVulnerabilities(fastMode)
             //fastMode = false;
-            await TestBenchT.writeProperty('testReport', vulnReport);
+            await TestBenchT.writeProperty("testReport", vulnReport)
         })
 
         TestBenchT.setActionHandler("testOpCov", async () => {
