@@ -262,7 +262,6 @@ export class Testbench {
                 this.testConfig.Scenarios, 
                 logMode)
             this.testReport.printResults(ListeningType.Asynchronous)
-            this.testReport = this.testReport.getResults()
         } catch {
             logFormatted(":::::ERROR::::: TestThing: Error during first test phase.")
             return
@@ -278,7 +277,6 @@ export class Testbench {
                 const testReportHasChanged: boolean = await self.tester.secondTestingPhase(self.testConfig.Repetitions)
                 self.testReport.storeReport(self.testConfig.TestReportsLocation, "Testbench Thing")
                 if (testReportHasChanged) {
-                    self.testReport = self.testReport.getResults()
                     self.testReport.printResults(ListeningType.Synchronous)
                 }
             } catch {

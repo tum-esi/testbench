@@ -259,6 +259,7 @@ export class Tester {
          * @param receivedData The received data package.
          */
         async function handleReceivedData(receivedData: any): Promise<void> {
+            receivedData = await receivedData.value()
             const receivedTimeStamp = new Date()
             ++indexOfEventData
             // Stop recording if maximum number of recorded data packages is reached.
@@ -477,11 +478,13 @@ export class Tester {
             try {
                 self.log("Trying to invoke action " + actionName + " with data:" + JSON.stringify(toSend, null, " "))
                 let invokedAction: any
+                let output: wot.InteractionOutput
                 let receivedData: any
                 // Try to invoke the action.
                 try {
                     invokedAction = self.tryToInvokeAction(actionName, toSend)
-                    receivedData = await invokedAction[1]
+                    output = await invokedAction[1]
+                    receivedData = await output.value()
                 } catch (error) {
                     // Error when trying to invoke the action.
                     self.log("Problem when trying to invoke action " + actionName + ":\n  " + error)
@@ -627,7 +630,7 @@ export class Tester {
             try {
                 res = await self.tut.readProperty(propertyName)
                 responseTimeStamp = new Date()
-                data = res
+                data = await res.value()
             } catch (error) {
                 // Error in the node-wot level.
                 self.log("Error when fetching Property " + propertyName + " for the first time: \n  " + error)
@@ -636,7 +639,7 @@ export class Tester {
                 container.readPropertyReport.result = new Result(30, "Could not fetch property")
                 throw new Error("Problem in the node-wot level.")
             }
-            container.readPropertyReport.received = new Payload(responseTimeStamp, res)
+            container.readPropertyReport.received = new Payload(responseTimeStamp, data)
             self.log("Data after first read property: " + JSON.stringify(data, null, " "))
             // Checking if data package validates against its schema.
             const errorsProp: Array<any> = Utils.validateResponse(propertyName, data, self.testConfig.SchemaLocation, Utils.SchemaType.Property)
@@ -704,7 +707,7 @@ export class Tester {
             }
 
             const responseTimeStamp = new Date()
-            const data2: JSON = res2
+            const data2: JSON = await res2.value()
             self.log("Data after second read property for " + propertyName + ": " + JSON.stringify(data2, null, " "))
             // Checking if the read value validates against the property schema (this shouldn't be necessary since the first time was
             // correct but it is here nonetheless).
@@ -811,6 +814,7 @@ export class Tester {
         } catch (error) {
             console.log(error)
             this.log("------------------------- Error in second Test Phase -----------------------------------")
+            // FIXME: Why does this return true?
             return true
         }
         this.log("------------------------- Second Test Phase finished without an error. -----------------------------------")
