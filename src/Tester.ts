@@ -168,6 +168,7 @@ export class Tester {
         else eventConfig = this.testConfig.EventAndObservePOptions.Synchronous
         let indexOfEventData = -1
         const earlyListenTimeout = new Utils.DeferredPromise()
+        const subscriptions: {[id: string]: wot.Subscription} = {}
 
         // Initialize message strings.
         const interactionName = container.name
@@ -204,11 +205,11 @@ export class Tester {
             async function subscribe(): Promise<SubscriptionStatus> {
                 try {
                     if (testMode == Utils.InteractionType.Event) {
-                        await self.tut.subscribeEvent(interactionName, (eventData) => {
+                        subscriptions[interactionName] = await self.tut.subscribeEvent(interactionName, (eventData) => {
                             handleReceivedData(eventData)
                         })
                     } else {
-                        await self.tut.observeProperty(interactionName, (eventData) => {
+                        subscriptions[interactionName] = await self.tut.observeProperty(interactionName, (eventData) => {
                             handleReceivedData(eventData)
                         })
                     }
@@ -396,9 +397,8 @@ export class Tester {
                                 " but due to the design of node-wot this output is identical for " +
                                 "unsuccessful subscription and successful subscription with no emitted event."
                         )
-                        if (testMode == Utils.InteractionType.Event) {
-                            await self.tut.unsubscribeEvent(interactionName)
-                        } else await self.tut.unobserveProperty(interactionName)
+
+                        await subscriptions[interactionName].stop()
                     } catch {
                         // TODO: fill this block or get rid of it
                     }
@@ -409,8 +409,7 @@ export class Tester {
                         const sendTimeStamp = new Date()
                         try {
                             // Trying to Unsubscribe/Stop observing from the event/property.
-                            if (testMode == Utils.InteractionType.Event) await self.tut.unsubscribeEvent(interactionName)
-                            else await self.tut.unobserveProperty(interactionName)
+                            await subscriptions[interactionName].stop()
                         } catch (error) {
                             // If unsubscribing/unobserving threw an error.
                             self.log("Error while canceling subscription from " + interactionSpecifier + ":\n  " + error)
