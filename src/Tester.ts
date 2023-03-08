@@ -396,9 +396,9 @@ export class Tester {
                                 " but due to the design of node-wot this output is identical for " +
                                 "unsuccessful subscription and successful subscription with no emitted event."
                         )
-                        // if (testMode == Utils.InteractionType.Event) {
-                        //     await self.tut.unsubscribeEvent(interactionName)
-                        // } else await self.tut.unobserveProperty(interactionName)
+                        if (testMode == Utils.InteractionType.Event) {
+                            await self.tut.unsubscribeEvent(interactionName)
+                        } else await self.tut.unobserveProperty(interactionName)
                     } catch {
                         // TODO: fill this block or get rid of it
                     }
@@ -409,8 +409,8 @@ export class Tester {
                         const sendTimeStamp = new Date()
                         try {
                             // Trying to Unsubscribe/Stop observing from the event/property.
-                            // if (testMode == Utils.InteractionType.Event) await self.tut.unsubscribeEvent(interactionName)
-                            // else await self.tut.unobserveProperty(interactionName)
+                            if (testMode == Utils.InteractionType.Event) await self.tut.unsubscribeEvent(interactionName)
+                            else await self.tut.unobserveProperty(interactionName)
                         } catch (error) {
                             // If unsubscribing/unobserving threw an error.
                             self.log("Error while canceling subscription from " + interactionSpecifier + ":\n  " + error)
