@@ -396,9 +396,9 @@ export class Tester {
                                 " but due to the design of node-wot this output is identical for " +
                                 "unsuccessful subscription and successful subscription with no emitted event."
                         )
-                        if (testMode == Utils.InteractionType.Event) {
-                            await self.tut.unsubscribeEvent(interactionName)
-                        } else await self.tut.unobserveProperty(interactionName)
+                        // if (testMode == Utils.InteractionType.Event) {
+                        //     await self.tut.unsubscribeEvent(interactionName)
+                        // } else await self.tut.unobserveProperty(interactionName)
                     } catch {
                         // TODO: fill this block or get rid of it
                     }
@@ -409,8 +409,8 @@ export class Tester {
                         const sendTimeStamp = new Date()
                         try {
                             // Trying to Unsubscribe/Stop observing from the event/property.
-                            if (testMode == Utils.InteractionType.Event) await self.tut.unsubscribeEvent(interactionName)
-                            else await self.tut.unobserveProperty(interactionName)
+                            // if (testMode == Utils.InteractionType.Event) await self.tut.unsubscribeEvent(interactionName)
+                            // else await self.tut.unobserveProperty(interactionName)
                         } catch (error) {
                             // If unsubscribing/unobserving threw an error.
                             self.log("Error while canceling subscription from " + interactionSpecifier + ":\n  " + error)
@@ -922,7 +922,7 @@ export class Tester {
         let token: string
 
         // Assuming single security scheme.
-        if (Array.isArray[td["security"]]) {
+        if (Array.isArray(td["security"])) {
             if (td["security"].length !== 1) {
                 throw "Error: multiple security schemes cannot be tested for now."
             } else {
@@ -1081,7 +1081,7 @@ export class Tester {
                     // Default value.
                     location = "header"
                 } else {
-                    location = td["securityDefinitions"][schemeName]["in"]
+                    location = td["securityDefinitions"][schemeName]["in"] as string
                 }
 
                 if (td["properties"] != undefined) {
@@ -1347,7 +1347,7 @@ export class Tester {
                 break
             }
             case "oauth2": {
-                const flow: string = td["securityDefinitions"][schemeName].flow // Authorization flow.
+                const flow: string = td["securityDefinitions"][schemeName].flow as string // Authorization flow.
                 const params: URLSearchParams = new URLSearchParams() // Used to create the required body.
 
                 report.scheme = "oauth2"
@@ -1355,7 +1355,7 @@ export class Tester {
                 switch (flow) {
                     case "client_credentials": {
                         // URL of the token server to be brute-forced.
-                        const tokenURL: URL = new URL(td["securityDefinitions"][schemeName].token)
+                        const tokenURL: URL = new URL(td["securityDefinitions"][schemeName].token as string)
 
                         // Creating and filling the required body.
                         params.append("grant_type", "client_credentials")
