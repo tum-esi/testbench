@@ -46,5 +46,5 @@ jobs:
         npm start &
         node testing-files/perfectThing.js &
         node testing-files/faultyThing.js &
-        sleep 2
+        sleep 2 &
         npm test
