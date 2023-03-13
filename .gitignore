@@ -3,7 +3,7 @@ Reports
 Resources
 dist/*
 !/dist/README.md
-**/package-lock.json
+# **/package-lock.json
 
 # IDE configurations
 /.vscode/
