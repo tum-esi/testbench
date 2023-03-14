@@ -168,6 +168,7 @@ export class Tester {
         else eventConfig = this.testConfig.EventAndObservePOptions.Synchronous
         let indexOfEventData = -1
         const earlyListenTimeout = new Utils.DeferredPromise()
+        const subscriptions: {[id: string]: wot.Subscription} = {}
 
         // Initialize message strings.
         const interactionName = container.name
@@ -204,11 +205,11 @@ export class Tester {
             async function subscribe(): Promise<SubscriptionStatus> {
                 try {
                     if (testMode == Utils.InteractionType.Event) {
-                        await self.tut.subscribeEvent(interactionName, (eventData) => {
+                        subscriptions[interactionName] = await self.tut.subscribeEvent(interactionName, (eventData) => {
                             handleReceivedData(eventData)
                         })
                     } else {
-                        await self.tut.observeProperty(interactionName, (eventData) => {
+                        subscriptions[interactionName] = await self.tut.observeProperty(interactionName, (eventData) => {
                             handleReceivedData(eventData)
                         })
                     }
@@ -258,6 +259,7 @@ export class Tester {
          * @param receivedData The received data package.
          */
         async function handleReceivedData(receivedData: any): Promise<void> {
+            receivedData = await receivedData.value()
             const receivedTimeStamp = new Date()
             ++indexOfEventData
             // Stop recording if maximum number of recorded data packages is reached.
@@ -396,9 +398,8 @@ export class Tester {
                                 " but due to the design of node-wot this output is identical for " +
                                 "unsuccessful subscription and successful subscription with no emitted event."
                         )
-                        if (testMode == Utils.InteractionType.Event) {
-                            await self.tut.unsubscribeEvent(interactionName)
-                        } else await self.tut.unobserveProperty(interactionName)
+
+                        await subscriptions[interactionName].stop()
                     } catch {
                         // TODO: fill this block or get rid of it
                     }
@@ -409,8 +410,7 @@ export class Tester {
                         const sendTimeStamp = new Date()
                         try {
                             // Trying to Unsubscribe/Stop observing from the event/property.
-                            if (testMode == Utils.InteractionType.Event) await self.tut.unsubscribeEvent(interactionName)
-                            else await self.tut.unobserveProperty(interactionName)
+                            await subscriptions[interactionName].stop()
                         } catch (error) {
                             // If unsubscribing/unobserving threw an error.
                             self.log("Error while canceling subscription from " + interactionSpecifier + ":\n  " + error)
@@ -478,11 +478,13 @@ export class Tester {
             try {
                 self.log("Trying to invoke action " + actionName + " with data:" + JSON.stringify(toSend, null, " "))
                 let invokedAction: any
+                let output: wot.InteractionOutput
                 let receivedData: any
                 // Try to invoke the action.
                 try {
                     invokedAction = self.tryToInvokeAction(actionName, toSend)
-                    receivedData = await invokedAction[1]
+                    output = await invokedAction[1]
+                    receivedData = await output.value()
                 } catch (error) {
                     // Error when trying to invoke the action.
                     self.log("Problem when trying to invoke action " + actionName + ":\n  " + error)
@@ -628,7 +630,7 @@ export class Tester {
             try {
                 res = await self.tut.readProperty(propertyName)
                 responseTimeStamp = new Date()
-                data = res
+                data = await res.value()
             } catch (error) {
                 // Error in the node-wot level.
                 self.log("Error when fetching Property " + propertyName + " for the first time: \n  " + error)
@@ -637,7 +639,7 @@ export class Tester {
                 container.readPropertyReport.result = new Result(30, "Could not fetch property")
                 throw new Error("Problem in the node-wot level.")
             }
-            container.readPropertyReport.received = new Payload(responseTimeStamp, res)
+            container.readPropertyReport.received = new Payload(responseTimeStamp, data)
             self.log("Data after first read property: " + JSON.stringify(data, null, " "))
             // Checking if data package validates against its schema.
             const errorsProp: Array<any> = Utils.validateResponse(propertyName, data, self.testConfig.SchemaLocation, Utils.SchemaType.Property)
@@ -705,7 +707,7 @@ export class Tester {
             }
 
             const responseTimeStamp = new Date()
-            const data2: JSON = res2
+            const data2: JSON = await res2.value()
             self.log("Data after second read property for " + propertyName + ": " + JSON.stringify(data2, null, " "))
             // Checking if the read value validates against the property schema (this shouldn't be necessary since the first time was
             // correct but it is here nonetheless).
@@ -812,6 +814,7 @@ export class Tester {
         } catch (error) {
             console.log(error)
             this.log("------------------------- Error in second Test Phase -----------------------------------")
+            // FIXME: Why does this return true?
             return true
         }
         this.log("------------------------- Second Test Phase finished without an error. -----------------------------------")
@@ -922,7 +925,7 @@ export class Tester {
         let token: string
 
         // Assuming single security scheme.
-        if (Array.isArray[td["security"]]) {
+        if (Array.isArray(td["security"])) {
             if (td["security"].length !== 1) {
                 throw "Error: multiple security schemes cannot be tested for now."
             } else {
@@ -1081,7 +1084,7 @@ export class Tester {
                     // Default value.
                     location = "header"
                 } else {
-                    location = td["securityDefinitions"][schemeName]["in"]
+                    location = td["securityDefinitions"][schemeName]["in"] as string
                 }
 
                 if (td["properties"] != undefined) {
@@ -1347,7 +1350,7 @@ export class Tester {
                 break
             }
             case "oauth2": {
-                const flow: string = td["securityDefinitions"][schemeName].flow // Authorization flow.
+                const flow: string = td["securityDefinitions"][schemeName].flow as string // Authorization flow.
                 const params: URLSearchParams = new URLSearchParams() // Used to create the required body.
 
                 report.scheme = "oauth2"
@@ -1355,7 +1358,7 @@ export class Tester {
                 switch (flow) {
                     case "client_credentials": {
                         // URL of the token server to be brute-forced.
-                        const tokenURL: URL = new URL(td["securityDefinitions"][schemeName].token)
+                        const tokenURL: URL = new URL(td["securityDefinitions"][schemeName].token as string)
 
                         // Creating and filling the required body.
                         params.append("grant_type", "client_credentials")

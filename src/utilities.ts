@@ -352,7 +352,7 @@ export function generateSchemas(td: wot.ThingDescription, schemaLocation: string
  * @param td The Thing description.
  * @param name The name of the interaction.
  */
-export function getInteractionByName(td: wot.ThingDescription, interactionType: InteractionType, name: string): [any] {
+export function getInteractionByName(td: wot.ThingDescription, interactionType: InteractionType, name: string): any {
     let interactionList = []
     if (interactionType == InteractionType.Property) interactionList = Object.keys(td.properties)
     else if (interactionType == InteractionType.Action) interactionList = Object.keys(td.actions)
