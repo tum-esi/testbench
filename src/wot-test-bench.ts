@@ -20,11 +20,9 @@ if (process.argv.length > 2) {
 const testConfig: testConfig = JSON.parse(fs.readFileSync(configFile, "utf8"))
 const tbName: string = testConfig["TBname"]
 
-
 //creating the Test Bench as a servient.
 //It will test the Thing as a client and interact with the tester as a Server
 const srv = new Servient()
-console.log(srv)
 const httpServer = typeof testConfig.http.port === "number" ? new HttpServer(testConfig.http) : new HttpServer()
 const coapServer = typeof testConfig.coap.port === "number" ? new CoapServer(testConfig.coap.port) : new CoapServer()
 srv.addServer(httpServer)
@@ -39,7 +37,7 @@ srv.addClientFactory(new MqttClientFactory())
 srv.start()
     .then(async (WoT) => {
         logFormatted("TestBench servient started")
-        
+
         const testbench = new Testbench(WoT, srv, tbName)
         await testbench.startDevice(testConfig)
     })

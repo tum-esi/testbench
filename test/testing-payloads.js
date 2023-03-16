@@ -30,7 +30,7 @@ export const testConfig = {
 }
 
 export const faultyThingTD = {
-    title: "TestServient",
+    title: "faulty-thing-servient",
     description: "Test servient that can be used as a servient to be tested with the WoT Test Bench",
     properties: {
         display: {
@@ -40,12 +40,12 @@ export const faultyThingTD = {
             writeOnly: false,
             forms: [
                 {
-                    href: "http://localhost:8083/TestServient/properties/display",
+                    href: "http://localhost:8083/faulty-thing-servient/properties/display",
                     contentType: "application/json",
                     op: ["readproperty", "writeproperty"],
                 },
                 {
-                    href: "coap://localhost:8084/TestServient/properties/display",
+                    href: "coap://localhost:8084/faulty-thing-servient/properties/display",
                     contentType: "application/json",
                     op: ["readproperty", "writeproperty", "observeproperty", "unobserveproperty"],
                 },
@@ -58,12 +58,12 @@ export const faultyThingTD = {
             writeOnly: false,
             forms: [
                 {
-                    href: "http://localhost:8083/TestServient/properties/counter",
+                    href: "http://localhost:8083/faulty-thing-servient/properties/counter",
                     contentType: "application/json",
                     op: ["readproperty", "writeproperty"],
                 },
                 {
-                    href: "coap://localhost:8084/TestServient/properties/counter",
+                    href: "coap://localhost:8084/faulty-thing-servient/properties/counter",
                     contentType: "application/json",
                     op: ["readproperty", "writeproperty"],
                 },
@@ -76,12 +76,12 @@ export const faultyThingTD = {
             writeOnly: false,
             forms: [
                 {
-                    href: "http://localhost:8083/TestServient/properties/temperature",
+                    href: "http://localhost:8083/faulty-thing-servient/properties/temperature",
                     contentType: "application/json",
                     op: ["readproperty"],
                 },
                 {
-                    href: "coap://localhost:8084/TestServient/properties/temperature",
+                    href: "coap://localhost:8084/faulty-thing-servient/properties/temperature",
                     contentType: "application/json",
                     op: ["readproperty"],
                 },
@@ -96,13 +96,13 @@ export const faultyThingTD = {
             writeOnly: false,
             forms: [
                 {
-                    href: "http://localhost:8083/TestServient/properties/faultyPercent",
+                    href: "http://localhost:8083/faulty-thing-servient/properties/faultyPercent",
                     contentType: "application/json",
                     op: ["readproperty"],
                     "htv:methodName": "GET",
                 },
                 {
-                    href: "coap://localhost:8084/TestServient/properties/faultyPercent",
+                    href: "coap://localhost:8084/faulty-thing-servient/properties/faultyPercent",
                     contentType: "application/json",
                     op: ["readproperty", "observeproperty", "unobserveproperty"],
                 },
@@ -116,12 +116,12 @@ export const faultyThingTD = {
             writeOnly: false,
             forms: [
                 {
-                    href: "http://localhost:8083/TestServient/properties/wrongWritable",
+                    href: "http://localhost:8083/faulty-thing-servient/properties/wrongWritable",
                     contentType: "application/json",
                     op: ["readproperty", "writeproperty"],
                 },
                 {
-                    href: "coap://localhost:8084/TestServient/properties/wrongWritable",
+                    href: "coap://localhost:8084/faulty-thing-servient/properties/wrongWritable",
                     contentType: "application/json",
                     op: ["readproperty", "writeproperty"],
                 },
@@ -135,13 +135,13 @@ export const faultyThingTD = {
             writeOnly: false,
             forms: [
                 {
-                    href: "http://localhost:8083/TestServient/properties/wrongDataTypeNumber",
+                    href: "http://localhost:8083/faulty-thing-servient/properties/wrongDataTypeNumber",
                     contentType: "application/json",
                     op: ["readproperty"],
                     "htv:methodName": "GET",
                 },
                 {
-                    href: "coap://localhost:8084/TestServient/properties/wrongDataTypeNumber",
+                    href: "coap://localhost:8084/faulty-thing-servient/properties/wrongDataTypeNumber",
                     contentType: "application/json",
                     op: ["readproperty"],
                 },
@@ -166,12 +166,12 @@ export const faultyThingTD = {
             observable: false,
             forms: [
                 {
-                    href: "http://localhost:8083/TestServient/properties/wrongDataTypeObject",
+                    href: "http://localhost:8083/faulty-thing-servient/properties/wrongDataTypeObject",
                     contentType: "application/json",
                     op: ["readproperty", "writeproperty"],
                 },
                 {
-                    href: "coap://localhost:8084/TestServient/properties/wrongDataTypeObject",
+                    href: "coap://localhost:8084/faulty-thing-servient/properties/wrongDataTypeObject",
                     contentType: "application/json",
                     op: ["readproperty", "writeproperty"],
                 },
@@ -187,12 +187,12 @@ export const faultyThingTD = {
             observable: false,
             forms: [
                 {
-                    href: "http://localhost:8083/TestServient/properties/testArray",
+                    href: "http://localhost:8083/faulty-thing-servient/properties/testArray",
                     contentType: "application/json",
                     op: ["readproperty", "writeproperty"],
                 },
                 {
-                    href: "coap://localhost:8084/TestServient/properties/testArray",
+                    href: "coap://localhost:8084/faulty-thing-servient/properties/testArray",
                     contentType: "application/json",
                     op: ["readproperty", "writeproperty"],
                 },
@@ -206,13 +206,13 @@ export const faultyThingTD = {
             },
             forms: [
                 {
-                    href: "http://localhost:8083/TestServient/actions/setCounter",
+                    href: "http://localhost:8083/faulty-thing-servient/actions/setCounter",
                     contentType: "application/json",
                     op: ["invokeaction"],
                     "htv:methodName": "POST",
                 },
                 {
-                    href: "coap://localhost:8084/TestServient/actions/setCounter",
+                    href: "coap://localhost:8084/faulty-thing-servient/actions/setCounter",
                     contentType: "application/json",
                     op: "invokeaction",
                 },
@@ -226,13 +226,13 @@ export const faultyThingTD = {
             },
             forms: [
                 {
-                    href: "http://localhost:8083/TestServient/actions/getTemperature",
+                    href: "http://localhost:8083/faulty-thing-servient/actions/getTemperature",
                     contentType: "application/json",
                     op: ["invokeaction"],
                     "htv:methodName": "POST",
                 },
                 {
-                    href: "coap://localhost:8084/TestServient/actions/getTemperature",
+                    href: "coap://localhost:8084/faulty-thing-servient/actions/getTemperature",
                     contentType: "application/json",
                     op: "invokeaction",
                 },
@@ -249,13 +249,13 @@ export const faultyThingTD = {
             },
             forms: [
                 {
-                    href: "http://localhost:8083/TestServient/actions/setDisplay",
+                    href: "http://localhost:8083/faulty-thing-servient/actions/setDisplay",
                     contentType: "application/json",
                     op: ["invokeaction"],
                     "htv:methodName": "POST",
                 },
                 {
-                    href: "coap://localhost:8084/TestServient/actions/setDisplay",
+                    href: "coap://localhost:8084/faulty-thing-servient/actions/setDisplay",
                     contentType: "application/json",
                     op: "invokeaction",
                 },
@@ -279,13 +279,13 @@ export const faultyThingTD = {
             },
             forms: [
                 {
-                    href: "http://localhost:8083/TestServient/actions/setTestObject",
+                    href: "http://localhost:8083/faulty-thing-servient/actions/setTestObject",
                     contentType: "application/json",
                     op: ["invokeaction"],
                     "htv:methodName": "POST",
                 },
                 {
-                    href: "coap://localhost:8084/TestServient/actions/setTestObject",
+                    href: "coap://localhost:8084/faulty-thing-servient/actions/setTestObject",
                     contentType: "application/json",
                     op: "invokeaction",
                 },
@@ -309,13 +309,13 @@ export const faultyThingTD = {
             },
             forms: [
                 {
-                    href: "http://localhost:8083/TestServient/actions/longTakingAction",
+                    href: "http://localhost:8083/faulty-thing-servient/actions/longTakingAction",
                     contentType: "application/json",
                     op: ["invokeaction"],
                     "htv:methodName": "POST",
                 },
                 {
-                    href: "coap://localhost:8084/TestServient/actions/longTakingAction",
+                    href: "coap://localhost:8084/faulty-thing-servient/actions/longTakingAction",
                     contentType: "application/json",
                     op: "invokeaction",
                 },
@@ -331,7 +331,7 @@ export const faultyThingTD = {
             },
             forms: [
                 {
-                    href: "coap://localhost:8084/TestServient/events/failEvent",
+                    href: "coap://localhost:8084/faulty-thing-servient/events/failEvent",
                     contentType: "application/json",
                     op: ["subscribeevent", "unsubscribeevent", "subscribeevent", "unsubscribeevent"],
                 },
@@ -344,7 +344,7 @@ export const faultyThingTD = {
     security: ["nosec_sc"],
     forms: [
         {
-            href: "http://localhost:8083/TestServient/all/properties",
+            href: "http://localhost:8083/faulty-thing-servient/all/properties",
             contentType: "application/json",
             op: ["readallproperties", "readmultipleproperties", "writeallproperties", "writemultipleproperties"],
         },
@@ -357,7 +357,7 @@ export const faultyThingTD = {
 }
 
 export const perfectThingTD = {
-    title: "TestServient",
+    title: "perfect-thing-servient",
     description: "Test servient that can be used as a servient to be tested with the WoT Test Bench",
     properties: {
         display: {
@@ -367,18 +367,18 @@ export const perfectThingTD = {
             writeOnly: false,
             forms: [
                 {
-                    href: "http://localhost:8081/TestServient/properties/display",
+                    href: "http://localhost:8081/perfect-thing-servient/properties/display",
                     contentType: "application/json",
                     op: ["readproperty", "writeproperty"],
                 },
                 {
-                    href: "http://localhost:8081/TestServient/properties/display/observable",
+                    href: "http://localhost:8081/perfect-thing-servient/properties/display/observable",
                     contentType: "application/json",
                     op: ["observeproperty"],
                     subprotocol: "longpoll",
                 },
                 {
-                    href: "coap://localhost:8082/TestServient/properties/display",
+                    href: "coap://localhost:8082/perfect-thing-servient/properties/display",
                     contentType: "application/json",
                     op: ["readproperty", "writeproperty", "observeproperty", "unobserveproperty"],
                 },
@@ -391,12 +391,12 @@ export const perfectThingTD = {
             writeOnly: false,
             forms: [
                 {
-                    href: "http://localhost:8081/TestServient/properties/counter",
+                    href: "http://localhost:8081/perfect-thing-servient/properties/counter",
                     contentType: "application/json",
                     op: ["readproperty", "writeproperty"],
                 },
                 {
-                    href: "coap://localhost:8082/TestServient/properties/counter",
+                    href: "coap://localhost:8082/perfect-thing-servient/properties/counter",
                     contentType: "application/json",
                     op: ["readproperty", "writeproperty", "observeproperty", "unobserveproperty"],
                 },
@@ -409,13 +409,19 @@ export const perfectThingTD = {
             writeOnly: false,
             forms: [
                 {
-                    href: "http://localhost:8081/TestServient/properties/temperature",
+                    href: "http://localhost:8081/perfect-thing-servient/properties/temperature",
                     contentType: "application/json",
                     op: ["readproperty"],
                     "htv:methodName": "GET",
                 },
                 {
-                    href: "coap://localhost:8082/TestServient/properties/temperature",
+                    href: "http://localhost:8081/perfect-thing-servient/properties/temperature/observable",
+                    contentType: "application/json",
+                    op: ["observeproperty"],
+                    subprotocol: "longpoll",
+                },
+                {
+                    href: "coap://localhost:8082/perfect-thing-servient/properties/temperature",
                     contentType: "application/json",
                     op: ["readproperty", ["observeproperty", "unobserveproperty"]],
                 },
@@ -438,12 +444,12 @@ export const perfectThingTD = {
             observable: false,
             forms: [
                 {
-                    href: "http://localhost:8081/TestServient/properties/testObject",
+                    href: "http://localhost:8081/perfect-thing-servient/properties/testObject",
                     contentType: "application/json",
                     op: ["readproperty", "writeproperty"],
                 },
                 {
-                    href: "coap://localhost:8082/TestServient/properties/testObject",
+                    href: "coap://localhost:8082/perfect-thing-servient/properties/testObject",
                     contentType: "application/json",
                     op: ["readproperty", "writeproperty"],
                 },
@@ -459,12 +465,12 @@ export const perfectThingTD = {
             observable: false,
             forms: [
                 {
-                    href: "http://localhost:8081/TestServient/properties/testArray",
+                    href: "http://localhost:8081/perfect-thing-servient/properties/testArray",
                     contentType: "application/json",
                     op: ["readproperty", "writeproperty"],
                 },
                 {
-                    href: "coap://localhost:8082/TestServient/properties/testArray",
+                    href: "coap://localhost:8082/perfect-thing-servient/properties/testArray",
                     contentType: "application/json",
                     op: ["readproperty", "writeproperty"],
                 },
@@ -478,13 +484,13 @@ export const perfectThingTD = {
             },
             forms: [
                 {
-                    href: "http://localhost:8081/TestServient/actions/setCounter",
+                    href: "http://localhost:8081/perfect-thing-servient/actions/setCounter",
                     contentType: "application/json",
                     op: ["invokeaction"],
                     "htv:methodName": "POST",
                 },
                 {
-                    href: "coap://localhost:8082/TestServient/actions/setCounter",
+                    href: "coap://localhost:8082/perfect-thing-servient/actions/setCounter",
                     contentType: "application/json",
                     op: "invokeaction",
                 },
@@ -498,13 +504,13 @@ export const perfectThingTD = {
             },
             forms: [
                 {
-                    href: "http://localhost:8081/TestServient/actions/getTemperature",
+                    href: "http://localhost:8081/perfect-thing-servient/actions/getTemperature",
                     contentType: "application/json",
                     op: ["invokeaction"],
                     "htv:methodName": "POST",
                 },
                 {
-                    href: "coap://localhost:8082/TestServient/actions/getTemperature",
+                    href: "coap://localhost:8082/perfect-thing-servient/actions/getTemperature",
                     contentType: "application/json",
                     op: "invokeaction",
                 },
@@ -521,13 +527,13 @@ export const perfectThingTD = {
             },
             forms: [
                 {
-                    href: "http://localhost:8081/TestServient/actions/setDisplay",
+                    href: "http://localhost:8081/perfect-thing-servient/actions/setDisplay",
                     contentType: "application/json",
                     op: ["invokeaction"],
                     "htv:methodName": "POST",
                 },
                 {
-                    href: "coap://localhost:8082/TestServient/actions/setDisplay",
+                    href: "coap://localhost:8082/perfect-thing-servient/actions/setDisplay",
                     contentType: "application/json",
                     op: "invokeaction",
                 },
@@ -551,13 +557,13 @@ export const perfectThingTD = {
             },
             forms: [
                 {
-                    href: "http://localhost:8081/TestServient/actions/setTestObject",
+                    href: "http://localhost:8081/perfect-thing-servient/actions/setTestObject",
                     contentType: "application/json",
                     op: ["invokeaction"],
                     "htv:methodName": "POST",
                 },
                 {
-                    href: "coap://localhost:8082/TestServient/actions/setTestObject",
+                    href: "coap://localhost:8082/perfect-thing-servient/actions/setTestObject",
                     contentType: "application/json",
                     op: "invokeaction",
                 },
@@ -580,13 +586,13 @@ export const perfectThingTD = {
             },
             forms: [
                 {
-                    href: "http://localhost:8081/TestServient/actions/setTestArray",
+                    href: "http://localhost:8081/perfect-thing-servient/actions/setTestArray",
                     contentType: "application/json",
                     op: ["invokeaction"],
                     "htv:methodName": "POST",
                 },
                 {
-                    href: "coap://localhost:8082/TestServient/actions/setTestArray",
+                    href: "coap://localhost:8082/perfect-thing-servient/actions/setTestArray",
                     contentType: "application/json",
                     op: "invokeaction",
                 },
@@ -602,12 +608,12 @@ export const perfectThingTD = {
             },
             forms: [
                 {
-                    href: "coap://localhost:8082/TestServient/events/onChange",
+                    href: "coap://localhost:8082/perfect-thing-servient/events/onChange",
                     contentType: "application/json",
                     op: ["subscribeevent", "unsubscribeevent"],
                 },
                 {
-                    href: "http://localhost:8081/TestServient/events/onChange",
+                    href: "http://localhost:8081/perfect-thing-servient/events/onChange",
                     contentType: "application/json",
                     subprotocol: "longpoll",
                     op: ["subscribeevent", "unsubscribeevent"],
@@ -620,12 +626,12 @@ export const perfectThingTD = {
             },
             forms: [
                 {
-                    href: "coap://localhost:8082/TestServient/events/onChangeTimeout",
+                    href: "coap://localhost:8082/perfect-thing-servient/events/onChangeTimeout",
                     contentType: "application/json",
                     op: ["subscribeevent", "unsubscribeevent"],
                 },
                 {
-                    href: "http://localhost:8081/TestServient/events/onChangeTimeout",
+                    href: "http://localhost:8081/perfect-thing-servient/events/onChangeTimeout",
                     contentType: "application/json",
                     subprotocol: "longpoll",
                     op: ["subscribeevent", "unsubscribeevent"],
@@ -639,7 +645,7 @@ export const perfectThingTD = {
     id: "urn:uuid:3999c3d8-1b55-4c05-bc63-c91f0981cf36",
     forms: [
         {
-            href: "http://localhost:8081/TestServient/all/properties",
+            href: "http://localhost:8081/perfect-thing-servient/all/properties",
             contentType: "application/json",
             op: ["readallproperties", "readmultipleproperties", "writeallproperties", "writemultipleproperties"],
         },

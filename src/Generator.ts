@@ -1,21 +1,11 @@
 // Creates a JSON file with randomly generted inputs.
-import { SchemaType } from "utilities"
-import * as wot from "wot-typescript-definitions"
-var fs = require("fs")
-var jsf = require("json-schema-faker")
-/*
-var requests = {
-    "Property": {},
-    "Action": {},
-    "EventSubscription": {},
-    "EventCancellation": {}
-};
-*/
+import { JSONSchemaFaker as jsf } from "json-schema-faker"
+
 //--------------Helper Functions-------------------------
 function countProperties(object) {
-    var count = 0
+    let count = 0
 
-    for (var prop in object) {
+    for (const prop in object) {
         if (object.hasOwnProperty(prop)) ++count
     }
 
@@ -23,11 +13,11 @@ function countProperties(object) {
 }
 
 function arrayToObject(array) {
-    var arrayLength = array.length
-    let myObject = {}
-    for (var i = 0; i < arrayLength; i++) {
-        let key: string[] = Object.keys(array[i])
-        let value = Object.values(array[i])
+    const arrayLength = array.length
+    const myObject = {}
+    for (let i = 0; i < arrayLength; i++) {
+        const key: string[] = Object.keys(array[i])
+        const value = Object.values(array[i])
         myObject[key[0]] = value[0]
     }
     return myObject
@@ -38,31 +28,32 @@ function arrayToObject(array) {
 function assessType(scheme) {
     let type = undefined
 
-    if (scheme.hasOwnProperty("properties")) {
+    if (Object.prototype.hasOwnProperty.call(scheme, "properties")) {
         type = "object"
     }
-    if (scheme.hasOwnProperty("items")) {
+    if (Object.prototype.hasOwnProperty.call(scheme, "items")) {
         type = "array"
     }
 
-    if (scheme.hasOwnProperty("minimum") || scheme.hasOwnProperty("maximum")) {
+    if (Object.prototype.hasOwnProperty.call(scheme, "minimum") || Object.prototype.hasOwnProperty.call(scheme, "maximum")) {
+        // FIXME: What is the logic here???
         //possibly check if min/max is an even number. if not then type = number
-        if (scheme.hasOwnProperty("minimum")) {
-            if (scheme.minimum % 1 == 0) {
+        if (Object.prototype.hasOwnProperty.call(scheme, "minimum")) {
+            if (scheme.minimum % 1 === 0) {
                 type = "integer"
             } else {
                 type = "number"
             }
         }
-        if (scheme.hasOwnProperty("maximum")) {
-            if (scheme.maximum % 1 == 0) {
+        if (Object.prototype.hasOwnProperty.call(scheme, "maximum")) {
+            if (scheme.maximum % 1 === 0) {
                 type = "integer"
             } else {
                 type = "number"
             }
         }
     }
-    if (scheme.hasOwnProperty("minLength") || scheme.hasOwnProperty("maxLength")) {
+    if (Object.prototype.hasOwnProperty.call(scheme, "minLength") || Object.prototype.hasOwnProperty.call(scheme, "maxLength")) {
         type = "string"
     }
 
@@ -72,7 +63,7 @@ function assessType(scheme) {
 //--------------------Integer------------------------------
 
 function checkIntSpecialCases(input_schema) {
-    let helper_array = []
+    const helper_array = []
     if (input_schema.minimum != undefined) {
         if (input_schema.exclusiveMinimum == false || input_schema.exclusiveMinimum == undefined) {
             helper_array.push(input_schema.minimum)
@@ -116,18 +107,18 @@ function checkIntSpecialCases(input_schema) {
  * @param input_schema
  */
 function checkNumbSpecialCases(input_schema) {
-    let helper_array = []
+    const helper_array = []
     if (input_schema.minimum != undefined) {
         if (input_schema.exclusiveMinimum == false || input_schema.exclusiveMinimum == undefined) {
             if (input_schema.multipleOf == undefined) {
                 helper_array.push(input_schema.minimum)
             } else {
-                let modulo = input_schema.minimum % input_schema.multipleOf
+                const modulo = input_schema.minimum % input_schema.multipleOf
                 if (modulo == 0) {
                     helper_array.push(input_schema.minimum)
                 } else {
                     let minimum = undefined
-                    let div = input_schema.minimum / input_schema.multipleOf
+                    const div = input_schema.minimum / input_schema.multipleOf
 
                     minimum = Math.ceil(div) * input_schema.multipleOf
                     helper_array.push(minimum)
@@ -147,12 +138,12 @@ function checkNumbSpecialCases(input_schema) {
             if (input_schema.multipleOf == undefined) {
                 helper_array.push(input_schema.maximum)
             } else {
-                let modulo = input_schema.maximum % input_schema.multipleOf
+                const modulo = input_schema.maximum % input_schema.multipleOf
                 if (modulo == 0) {
                     helper_array.push(input_schema.maximum)
                 } else {
                     let maximum = undefined
-                    let div = input_schema.maximum / input_schema.multipleOf
+                    const div = input_schema.maximum / input_schema.multipleOf
 
                     maximum = Math.floor(div) * input_schema.multipleOf
                     helper_array.push(maximum)
@@ -188,7 +179,7 @@ function checkNumbSpecialCases(input_schema) {
 
 //String values of special interest
 function stringSpecialCases(input_schema) {
-    var specProp = undefined
+    let specProp = undefined
     if (input_schema.minLength == undefined) {
         specProp = JSON.parse(JSON.stringify(input_schema))
         specProp.minLength = 0
@@ -199,17 +190,17 @@ function stringSpecialCases(input_schema) {
 
 //Adds minimum/maximum length string to data
 function checkStrEdgeCases(input_schema) {
-    let help_array = [undefined, undefined]
+    const help_array = [undefined, undefined]
     if (input_schema.minLength != undefined) {
         //create a string with min length
-        var minProp = JSON.parse(JSON.stringify(input_schema))
+        const minProp = JSON.parse(JSON.stringify(input_schema))
         minProp.maxLength = input_schema.minLength
         //create one string with min length
         help_array[0] = jsf.generate(minProp)
     }
     if (input_schema.maxLength != undefined) {
         //create a string with min length
-        var maxProp = JSON.parse(JSON.stringify(input_schema))
+        const maxProp = JSON.parse(JSON.stringify(input_schema))
         maxProp.minLength = input_schema.maxLength
         //create one string with min length
         help_array[1] = jsf.generate(maxProp)
@@ -230,12 +221,12 @@ function checkEmptyObject(input_schema) {
 
 //Check if number of required properties equals defined properties in the object
 function checkObjectProp(input_schema) {
-    var obj_helper = JSON.parse(JSON.stringify(input_schema))
+    const obj_helper = JSON.parse(JSON.stringify(input_schema))
 
     if (input_schema.properties != undefined && input_schema.required != undefined) {
         if (countProperties(input_schema.properties) > countProperties(input_schema.required)) {
             //construct objects with only required properties
-            for (let prop in input_schema.properties) {
+            for (const prop in input_schema.properties) {
                 if (!input_schema.required.includes(prop)) {
                     delete obj_helper.properties[prop]
                 }
@@ -249,12 +240,12 @@ function checkObjectProp(input_schema) {
 
 //Checks for properties with minima in nested Objects
 function nestedMinObjects(key, value) {
-    let emptyO = {}
+    const emptyO = {}
     let minimum = jsf.generate(value)
-    var obj_helper = JSON.parse(JSON.stringify(value))
+    const obj_helper = JSON.parse(JSON.stringify(value))
 
     if (value.type == "object") {
-        let help_array1 = []
+        const help_array1 = []
         for (const [key2, value2] of Object.entries(value.properties)) {
             help_array1.push(nestedMinObjects(key2, value2))
         }
@@ -288,12 +279,12 @@ function nestedMinObjects(key, value) {
 }
 
 function nestedMaxObjects(key, value) {
-    let emptyO = {}
+    const emptyO = {}
     let maximum = jsf.generate(value)
-    var obj_helper = JSON.parse(JSON.stringify(value))
+    const obj_helper = JSON.parse(JSON.stringify(value))
 
     if (value.type == "object") {
-        let help_array2 = []
+        const help_array2 = []
         for (const [key2, value2] of Object.entries(value.properties)) {
             help_array2.push(nestedMaxObjects(key2, value2))
         }
@@ -329,13 +320,13 @@ function nestedMaxObjects(key, value) {
 //--------------------Array--------------------------------
 
 function checkNestedMinArray(tdProp, currentProp) {
-    let help_array3 = []
+    const help_array3 = []
     if (currentProp != undefined) {
         tdProp = tdProp[currentProp]
     }
 
-    let minimum = jsf.generate(tdProp)
-    var obj_helper = JSON.parse(JSON.stringify(tdProp))
+    const minimum = jsf.generate(tdProp) as Array<any>
+    const obj_helper = JSON.parse(JSON.stringify(tdProp))
 
     //check if all items are the same type
     if (typeof tdProp.items == "object") {
@@ -344,7 +335,7 @@ function checkNestedMinArray(tdProp, currentProp) {
         } else {
             if (tdProp.items.type == "integer") {
                 if (tdProp.items.minimum != undefined) {
-                    for (var i = 0; i < minimum.length; i++) {
+                    for (let i = 0; i < minimum.length; i++) {
                         minimum[i] = tdProp.items.minimum
                     }
                 }
@@ -359,8 +350,8 @@ function checkNestedMinArray(tdProp, currentProp) {
             }
             if (tdProp.items.type == "object") {
                 let count = 0
-                let temp_array0 = []
-                let temp_array1: any = []
+                const temp_array0 = []
+                const temp_array1: any = []
                 for (const [key, value] of Object.entries(tdProp.items.properties)) {
                     temp_array0[count] = nestedMinObjects(key, value)
                     count = count + 1
@@ -369,7 +360,7 @@ function checkNestedMinArray(tdProp, currentProp) {
                     temp_array1.push(element)
                 })
 
-                let temp_array3 = arrayToObject(temp_array1)
+                const temp_array3 = arrayToObject(temp_array1)
 
                 minimum[0] = temp_array3
                 help_array3.push(minimum)
@@ -382,13 +373,13 @@ function checkNestedMinArray(tdProp, currentProp) {
 }
 
 function checkNestedMaxArray(tdProp, currentProp) {
-    let help_array4 = []
+    const help_array4 = []
     if (currentProp != undefined) {
         tdProp = tdProp[currentProp]
     }
 
-    let maximum = jsf.generate(tdProp)
-    var obj_helper = JSON.parse(JSON.stringify(tdProp))
+    const maximum = jsf.generate(tdProp) as Array<any>
+    const obj_helper = JSON.parse(JSON.stringify(tdProp))
 
     //check if all items are the same type
     if (typeof tdProp.items == "object") {
@@ -397,7 +388,7 @@ function checkNestedMaxArray(tdProp, currentProp) {
         } else {
             if (tdProp.items.type == "integer") {
                 if (tdProp.items.maximum != undefined) {
-                    for (var i = 0; i < maximum.length; i++) {
+                    for (let i = 0; i < maximum.length; i++) {
                         maximum[i] = tdProp.items.maximum
                     }
                 }
@@ -412,7 +403,7 @@ function checkNestedMaxArray(tdProp, currentProp) {
             }
             if (tdProp.items.type == "object") {
                 let count = 0
-                let temp_array0 = []
+                const temp_array0 = []
                 let temp_array1: any = []
                 for (const [key, value] of Object.entries(tdProp.items.properties)) {
                     temp_array0[count] = nestedMaxObjects(key, value)
@@ -436,26 +427,31 @@ function checkNestedMaxArray(tdProp, currentProp) {
 
 //--------------------Generator----------------------------
 export function fuzzGenerator(td, tdProp, currentProp) {
-    let helper_array = []
-    let input_array: Array<any> = []
+    const helper_array = []
+    const input_array: Array<any> = []
+    let schema = null
+    let interaction = null
 
     if (td.actions == tdProp) {
-        var schema = tdProp[currentProp].input
-        var interaction = "Action"
+        schema = tdProp[currentProp].input
+        interaction = "Action"
     }
     if (td.properties == tdProp) {
-        var schema = tdProp[currentProp]
-        var interaction = "Property"
+        schema = tdProp[currentProp]
+        interaction = "Property"
+    }
+
+    if (!schema) {
+        return [null, null]
     }
 
     if (schema.type == undefined) {
         // Try to find the type by looking at the tdProp (contentType,items,properties etc)
-        let type: any = assessType(schema)
-        schema.type = type
+        schema.type = assessType(schema)
     }
 
     if (schema.type == "integer") {
-        let edge_cases = checkIntSpecialCases(schema)
+        const edge_cases = checkIntSpecialCases(schema)
         edge_cases.forEach((element) => {
             helper_array.push(element)
             input_array.push("special")
@@ -468,7 +464,7 @@ export function fuzzGenerator(td, tdProp, currentProp) {
     }
 
     if (schema.type == "number") {
-        let edge_cases = checkNumbSpecialCases(schema)
+        const edge_cases = checkNumbSpecialCases(schema)
         edge_cases.forEach((element) => {
             helper_array.push(element)
             input_array.push("special")
@@ -482,13 +478,13 @@ export function fuzzGenerator(td, tdProp, currentProp) {
 
     if (schema.type == "string") {
         //check special cases
-        let specProp = stringSpecialCases(schema)
+        const specProp = stringSpecialCases(schema)
         if (specProp != undefined) {
             helper_array.push(jsf.generate(specProp))
             input_array.push("empty")
         }
         //check length
-        let array_minmax = checkStrEdgeCases(schema)
+        const array_minmax = checkStrEdgeCases(schema)
         //create valid random data
         if (array_minmax[0] != undefined) {
             helper_array.push(array_minmax[0])
@@ -503,22 +499,23 @@ export function fuzzGenerator(td, tdProp, currentProp) {
             input_array.push("random")
         }
     }
+
     if (schema.type == "object") {
         //build fct that produces empty object if no requirment of minimum elements
-        let empty = checkEmptyObject(interaction)
+        const empty = checkEmptyObject(interaction)
         if (empty) {
             helper_array.push({})
             input_array.push("empty")
         }
         //fct which checks if # properties == # requrired and builds object with only required
-        let ObjProp = checkObjectProp(schema)
+        const ObjProp = checkObjectProp(schema)
         if (ObjProp != undefined) {
             helper_array.push(jsf.generate(ObjProp))
             input_array.push("special")
         }
 
         //Check for minimum in nested Objects
-        let help_array_min = []
+        const help_array_min = []
         for (const [key, value] of Object.entries(schema.properties)) {
             help_array_min.push(nestedMinObjects(key, value))
         }
@@ -528,7 +525,7 @@ export function fuzzGenerator(td, tdProp, currentProp) {
         }
 
         //Check for maximum in nested Objects
-        let help_array_max = []
+        const help_array_max = []
         for (const [key, value] of Object.entries(schema.properties)) {
             help_array_max.push(nestedMaxObjects(key, value))
         }
@@ -546,11 +543,11 @@ export function fuzzGenerator(td, tdProp, currentProp) {
     }
 
     if (schema.type == "array") {
-        let dummy_array0 = []
-        let dummy_array1 = checkNestedMinArray(schema, undefined)
+        const dummy_array0 = []
+        const dummy_array1 = checkNestedMinArray(schema, undefined)
         if (schema.minItems != undefined) {
-            let number = schema.minItems
-            for (var i = 0; i < number; i++) {
+            const number = schema.minItems
+            for (let i = 0; i < number; i++) {
                 dummy_array0.push(dummy_array1[0][0])
             }
             helper_array.push(dummy_array0)
@@ -560,11 +557,11 @@ export function fuzzGenerator(td, tdProp, currentProp) {
             input_array.push("special")
         }
 
-        let dummy_array2 = []
-        let dummy_array3 = checkNestedMaxArray(schema, undefined)
+        const dummy_array2 = []
+        const dummy_array3 = checkNestedMaxArray(schema, undefined)
         if (schema.minItems != undefined) {
-            let number = schema.minItems
-            for (var i = 0; i < number; i++) {
+            const number = schema.minItems
+            for (let i = 0; i < number; i++) {
                 dummy_array2.push(dummy_array3[0][0])
             }
             helper_array.push(dummy_array2)
