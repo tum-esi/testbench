@@ -1,12 +1,6 @@
 import { Servient } from "@node-wot/core"
 import { HttpServer } from "@node-wot/binding-http"
-import { HttpClientFactory } from "@node-wot/binding-http"
-import { HttpsClientFactory } from "@node-wot/binding-http"
-import { FileClientFactory } from "@node-wot/binding-file"
-import { MqttClientFactory } from "@node-wot/binding-mqtt"
 import { CoapServer } from "@node-wot/binding-coap"
-import { CoapClientFactory } from "@node-wot/binding-coap"
-import { CoapsClientFactory } from "@node-wot/binding-coap"
 import { parseArgs, configPath } from "./config"
 import { testConfig, logFormatted } from "./utilities"
 import * as fs from "fs"
@@ -27,12 +21,6 @@ const httpServer = typeof testConfig.http.port === "number" ? new HttpServer(tes
 const coapServer = typeof testConfig.coap.port === "number" ? new CoapServer(testConfig.coap.port) : new CoapServer()
 srv.addServer(httpServer)
 srv.addServer(coapServer)
-srv.addClientFactory(new FileClientFactory())
-srv.addClientFactory(new HttpClientFactory(testConfig.http))
-srv.addClientFactory(new HttpsClientFactory(testConfig.http))
-srv.addClientFactory(new CoapClientFactory())
-srv.addClientFactory(new CoapsClientFactory())
-srv.addClientFactory(new MqttClientFactory())
 
 srv.start()
     .then(async (WoT) => {
