@@ -6,6 +6,7 @@ import { JSONSchemaFaker as jsf } from "json-schema-faker"
 import * as util from "util"
 import { JsonValue } from "type-fest"
 import ajValidator = require("ajv")
+import { ThingDescription, PropertyElement, ActionElement, EventElement, Form } from "wot-thing-description-types"
 
 const logFile = fs.createWriteStream("debug.log", { flags: "w" })
 const logStdout = process.stdout
@@ -625,4 +626,87 @@ export function countResultsT3(miniReportT3: object) {
     }
 
     return [passed, length]
+}
+
+// ------------------------ PROTOCOL DETECTION -----------------------------------
+
+/**
+ * Detect protocl schemes of a TD
+ * @param {string} td TD string to detect protocols of
+ * return List of available protocol schemes
+ */
+export function detectProtocolSchemes(td: string): string[] {
+    let tdJson: ThingDescription
+
+    try {
+        tdJson = JSON.parse(td)
+    } catch (err) {
+        return []
+    }
+
+    const baseUriProtocol = getHrefProtocol(tdJson.base)
+    const thingProtocols = detectProtocolInForms(tdJson.forms)
+    const actionsProtocols = detectProtocolInAffordance(tdJson.actions)
+    const eventsProtocols = detectProtocolInAffordance(tdJson.events)
+    const propertiesProtcols = detectProtocolInAffordance(tdJson.properties)
+    const protocolSchemes = [...new Set([baseUriProtocol, ...thingProtocols, ...actionsProtocols, ...eventsProtocols, ...propertiesProtcols])].filter(
+        (p) => p !== undefined
+    )
+
+    return protocolSchemes
+}
+
+type Affordance = { [k: string]: PropertyElement | ActionElement | EventElement }
+
+/**
+ * Detect protocols in a TD affordance
+ * @param {Affordance} affordance That belongs to a TD
+ * @returns List of protocol schemes
+ */
+function detectProtocolInAffordance(affordance: Affordance) {
+    if (!affordance) {
+        return []
+    }
+
+    let protocolSchemes = []
+
+    for (const key in affordance) {
+        if (key) {
+            protocolSchemes = protocolSchemes.concat(detectProtocolInForms(affordance[key].forms))
+        }
+    }
+
+    return protocolSchemes
+}
+
+/**
+ * Detect protocols in a TD forms or a TD affordance forms
+ * @param {Form} forms Forms field of a TD or a TD affordance
+ * @returns List of protocol schemes
+ */
+function detectProtocolInForms(forms: Form[]) {
+    if (!forms) {
+        return []
+    }
+
+    const protocolSchemes = []
+
+    forms.forEach((form) => {
+        protocolSchemes.push(getHrefProtocol(form.href))
+    })
+
+    return protocolSchemes
+}
+
+/**
+ * Get protocol used in href
+ * @param {string} href URI string
+ * @returns Protocol name
+ */
+function getHrefProtocol(href: string) {
+    if (!href) {
+        return
+    }
+
+    return href.split(":")[0]
 }

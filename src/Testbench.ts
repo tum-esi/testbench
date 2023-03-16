@@ -1,9 +1,13 @@
-import Servient from "@node-wot/core"
+import Servient, { ProtocolClientFactory } from "@node-wot/core"
 import { ThingDescription } from "wot-typescript-definitions"
 import { Tester } from "./Tester"
 import { TestReport, TotalReport, VulnerabilityReport } from "./TestReport"
-import { ListeningType, logFormatted, testConfig } from "./utilities"
+import { detectProtocolSchemes, ListeningType, logFormatted, testConfig } from "./utilities"
 import * as fs from "fs"
+import { HttpClientFactory, HttpsClientFactory } from "@node-wot/binding-http"
+import { CoapClientFactory, CoapsClientFactory } from "@node-wot/binding-coap"
+import { MqttClientFactory } from "@node-wot/binding-mqtt"
+import { FileClientFactory } from "@node-wot/binding-file"
 
 export class Testbench {
     public thing: WoT.ExposedThing
@@ -200,6 +204,49 @@ export class Testbench {
         return this.heuristicTestReport
     }
 
+    private addClientFactories(td: object) {
+        const protocols = detectProtocolSchemes(JSON.stringify(td))
+        const existingProtocols = this.servient.getClientSchemes()
+        let clientFactory: ProtocolClientFactory
+
+        for (const p of protocols) {
+            if (existingProtocols.includes(p)) {
+                continue
+            }
+
+            let factoryExists = true
+
+            switch (p) {
+                case "http":
+                    clientFactory = new HttpClientFactory()
+                    break
+                case "https":
+                    clientFactory = new HttpsClientFactory()
+                    break
+                case "coap":
+                    clientFactory = new CoapClientFactory()
+                    break
+                case "coaps":
+                    clientFactory = new CoapsClientFactory()
+                    break
+                case "mqtt":
+                    clientFactory = new MqttClientFactory()
+                    break
+                case "file":
+                    clientFactory = new FileClientFactory()
+                    break
+                default:
+                    factoryExists = false
+                    break
+            }
+
+            if (factoryExists) {
+                clientFactory.init()
+                this.servient.addClientFactory(clientFactory)
+            }
+        }
+    }
+
     private async fastTest(td: object) {
         this.thingUnderTestTD = td
 
@@ -230,6 +277,7 @@ export class Testbench {
             return "Initiation failed, Thing under Test is an empty string."
         }
 
+        this.addClientFactories(this.thingUnderTestTD)
         const consumedTuT = await this.deviceWoT.consume(this.thingUnderTestTD as ThingDescription)
         this.tester = new Tester(this.testConfig as testConfig, consumedTuT)
         const returnCheck = this.tester.initiate(logMode)
