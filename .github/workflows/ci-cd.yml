@@ -4,47 +4,45 @@
 name: CI & CD Pipeline
 
 on:
-  push:
-    paths-ignore:
-    - '**.md'
-    - '**.png'
-    - '**.svg'
-  pull_request:
-    paths-ignore:
-    - '**.md'
-    - '**.png'
-    - '**.svg'
+    push:
+        paths-ignore:
+            - "**.md"
+            - "**.png"
+            - "**.svg"
+    pull_request:
+        paths-ignore:
+            - "**.md"
+            - "**.png"
+            - "**.svg"
 
 jobs:
-  build-and-test:
+    build-and-test:
+        runs-on: ubuntu-latest
 
-    runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                node-version: [16.x, 18.x]
+                # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
-    strategy:
-      matrix:
-        node-version: [16.x, 18.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+        steps:
+            - name: Checkout the branch
+              uses: actions/checkout@v3
 
-    steps:
-    - name: Checkout the branch
-      uses: actions/checkout@v3
+            - name: Use Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@v3
+              with:
+                  node-version: ${{ matrix.node-version }}
+                  cache: "npm"
 
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
+            - name: Install npm packages
+              run: npm ci
 
-    - name: Install npm packages 
-      run: npm ci
-    
-    - name: Build
-      run: npm run build --if-present
+            - name: Build
+              run: npm run build --if-present
 
-    - name: Test
-      run: 
-        npm start &
-        node testing-files/perfectThing.js &
-        node testing-files/faultyThing.js &
-        sleep 2 &
-        npm test
+            - name: Test
+              run: npm start &
+                  ts-node testing-files/perfectThing.ts &
+                  ts-node testing-files/faultyThing.ts &
+                  sleep 2 &
+                  npm test

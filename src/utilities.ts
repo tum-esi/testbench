@@ -180,6 +180,13 @@ export class CodeGenerator {
                 // START here with sensible data generation
                 const [array_prop, data_type] = Generator.fuzzGenerator(tdesc, tdesc.properties, property)
 
+                // for (let scenario = 0; scenario < testConf.Scenarios; scenario++) {
+                //     const value = array_prop[scenario]
+                //     const type = data_type[scenario]
+                //     requests[SchemaType.Property][property].push(value)
+                //     types[SchemaType.Property][property].push(type)
+                // }
+
                 array_prop.forEach((element) => {
                     requests[SchemaType.Property][property].push(element)
                 })
@@ -196,9 +203,17 @@ export class CodeGenerator {
             if (tdesc.actions[action].input) {
                 const [array_act, data_type] = Generator.fuzzGenerator(tdesc, tdesc.actions, action)
 
+                // for (let scenario = 0; scenario < testConf.Scenarios; scenario++) {
+                //     const value = array_act[scenario]
+                //     const type = data_type[scenario]
+                //     requests[SchemaType.Action][action].push(value)
+                //     types[SchemaType.Action][action].push(type)
+                // }
+
                 array_act.forEach((element) => {
                     requests[SchemaType.Action][action].push(element)
                 })
+
                 data_type.forEach((element) => {
                     types[SchemaType.Action][action].push(element)
                 })
@@ -217,6 +232,7 @@ export class CodeGenerator {
         fs.writeFileSync(testConf.TestDataLocation, JSON.stringify(requests, null, " "))
         return types
     }
+
     // helper function finds created data:
     public findRequestValue(requestsLoc, testScenario, schemaType: SchemaType, interactionName: string) {
         const requests = JSON.parse(fs.readFileSync(requestsLoc, "utf8"))
@@ -315,7 +331,8 @@ export function generateSchemas(td: wot.ThingDescription, schemaLocation: string
             if (Object.prototype.hasOwnProperty.call(td.events[key], "subscription")) {
                 writeSchema(key, JSON.stringify(td.events[key].subscription).slice(0, -1).substring(1), schemaLocationReq, SchemaType.EventSubscription)
                 reqSchemaCount++
-                // Potential resSchema for subscription should be generated here. Perhaps something like this:
+
+                // TODO: Potential resSchema for subscription should be generated here. Perhaps something like this:
                 // if (td.events[key].subscription.hasOwnProperty("properties")) {
                 //     if (td.events[key].subscription.properties.hasOwnProperty("subscriptionID")) {
                 //         writeSchema(
@@ -333,7 +350,8 @@ export function generateSchemas(td: wot.ThingDescription, schemaLocation: string
             if (Object.prototype.hasOwnProperty.call(td.events[key], "cancellation")) {
                 writeSchema(key, JSON.stringify(td.events[key].cancellation).slice(0, -1).substring(1), schemaLocationReq, SchemaType.EventCancellation)
                 reqSchemaCount++
-                // Potential resSchema for cancellation should be generated here
+
+                // TODO: Potential resSchema for cancellation should be generated here
             }
         }
     }

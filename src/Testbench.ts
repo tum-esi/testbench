@@ -1,8 +1,8 @@
-import Servient from "@node-wot/core";
-import { ThingDescription } from "wot-typescript-definitions";
-import { Tester } from "./Tester";
-import { TestReport, TotalReport, VulnerabilityReport } from "./TestReport";
-import { ListeningType, logFormatted, testConfig } from "./utilities";
+import Servient from "@node-wot/core"
+import { ThingDescription } from "wot-typescript-definitions"
+import { Tester } from "./Tester"
+import { TestReport, TotalReport, VulnerabilityReport } from "./TestReport"
+import { ListeningType, logFormatted, testConfig } from "./utilities"
 import * as fs from "fs"
 
 export class Testbench {
@@ -12,15 +12,17 @@ export class Testbench {
 
     private thingModel: WoT.ExposedThingInit = {
         title: "Testbench",
-        description: "WoT Test Bench tests a Thing by getting its TD and executing all of its interactions with data generated in runtime. " +
+        description:
+            "WoT Test Bench tests a Thing by getting its TD and executing all of its interactions with data generated in runtime. " +
             "For simple use, invoke the fastTest action with the TD of your Thing as input data",
-        '@context': ["https://www.w3.org/2019/wot/td/v1", { cov: "http://www.example.org/coap-binding#" }],
+        "@context": ["https://www.w3.org/2019/wot/td/v1", { cov: "http://www.example.org/coap-binding#" }],
         properties: {
             testConfig: {
                 type: "string",
                 writeOnly: false,
                 readOnly: false,
-                description: "(Optional) Writing to this property configures the Test Bench. TDs with security schemes require this property to " +
+                description:
+                    "(Optional) Writing to this property configures the Test Bench. TDs with security schemes require this property to " +
                     "contain the security credentials",
             },
             testBenchStatus: {
@@ -39,7 +41,8 @@ export class Testbench {
                 type: "string",
                 writeOnly: false,
                 readOnly: false,
-                description: "(Optional) This property contains all the data that will be sent by the Test Bench to the Thing under Test. " +
+                description:
+                    "(Optional) This property contains all the data that will be sent by the Test Bench to the Thing under Test. " +
                     "You can also write in custom data",
             },
             testReport: {
@@ -123,7 +126,7 @@ export class Testbench {
                 description: "By invoking this action, the testing starts on all Level",
             },
         },
-    };
+    }
 
     private servient: Servient
     private tester: Tester
@@ -135,50 +138,50 @@ export class Testbench {
     private testReport: any
     private heuristicTestReport: any
 
-    constructor(deviceWoT, servient, tdTitle) {
+    constructor(deviceWoT: typeof WoT, servient: Servient, tdTitle: string) {
         this.heuristicTestReport = {
             T1: [],
             T2: [],
             T3: {},
-            T4: []
-        };
-        this.deviceWoT = deviceWoT;
-        this.servient = servient;
+            T4: [],
+        }
+        this.deviceWoT = deviceWoT
+        this.servient = servient
         if (tdTitle) {
-            this.thingModel['title'] = tdTitle;
+            this.thingModel["title"] = tdTitle
         }
     }
 
     public async startDevice(testConfig: testConfig) {
-        this.thing = await this.deviceWoT.produce(this.thingModel);
-        this.td = this.thing.getThingDescription();
-        
-        this.initializeProperties(testConfig);
-        this.initializeActions();
-        
-        console.log(`Exposing Thing: ${this.thingModel.title}`);
-        await this.thing.expose();
+        this.thing = await this.deviceWoT.produce(this.thingModel)
+        this.td = this.thing.getThingDescription()
+
+        this.initializeProperties(testConfig)
+        this.initializeActions()
+
+        console.log(`Exposing Thing: ${this.thingModel.title}`)
+        await this.thing.expose()
         console.info(this.td.title + " ready")
     }
-    
+
     private async testConfigReadHandler() {
         return this.testConfig
     }
-    
+
     private async testConfigWriteHandler(inputData: WoT.InteractionOutput) {
-        this.testConfig = await inputData.value() as testConfig
+        this.testConfig = (await inputData.value()) as testConfig
     }
-    
+
     private async testBenchStatusReadHandler() {
         return this.testBenchStatus
     }
-    
+
     private async thingUnderTestTDReadHandler() {
         return this.thingUnderTestTD
     }
 
     private async thingUnderTestTDWriteHandler(inputData: WoT.InteractionOutput) {
-        this.thingUnderTestTD = await inputData.value() as object
+        this.thingUnderTestTD = (await inputData.value()) as object
     }
 
     private async testDataReadHandler() {
@@ -186,9 +189,9 @@ export class Testbench {
     }
 
     private async testDataWriteHandler(inputData: WoT.InteractionOutput) {
-        this.testData = await inputData.value() as object
+        this.testData = (await inputData.value()) as object
     }
-    
+
     private async testReportReadHandler() {
         return this.testReport
     }
@@ -216,87 +219,80 @@ export class Testbench {
         if (inputData) {
             thingTD = await inputData.value()
         }
-        
+
         return await this.fastTest(thingTD)
     }
 
     private async initiate(logMode: boolean) {
         this.servient.addCredentials((this.testConfig as testConfig).credentials)
-        
+
         if (JSON.stringify(this.thingUnderTestTD) === "") {
             return "Initiation failed, Thing under Test is an empty string."
         }
-        
+
         const consumedTuT = await this.deviceWoT.consume(this.thingUnderTestTD as ThingDescription)
         this.tester = new Tester(this.testConfig as testConfig, consumedTuT)
         const returnCheck = this.tester.initiate(logMode)
         this.testData = this.tester.codeGen.requests
-        
+
         if (returnCheck === 0) {
             this.heuristicTestReport = {
                 T1: [],
                 T2: [],
                 T3: this.tester.inputTestReport,
-                T4: []
-            };
+                T4: [],
+            }
             return "Initiation was successful."
-        }
-        else {
+        } else {
             return "Initiation was successful, but no interactions were found."
         }
     }
-    
+
     private async initiateHandler(inputData: WoT.InteractionOutput) {
-        const logMode = await inputData.value() as boolean
-        
+        const logMode = (await inputData.value()) as boolean
+
         return await this.initiate(logMode)
     }
-    
+
     private async testThing(logMode: boolean) {
-        const self = this
         fs.writeFileSync(this.testConfig.TestDataLocation, JSON.stringify(this.testData, null, " "))
         logFormatted("------ START OF TESTTHING METHOD ------")
         try {
-            this.testReport = await this.tester.firstTestingPhase(
-                this.testConfig.Repetitions, 
-                this.testConfig.Scenarios, 
-                logMode)
+            this.testReport = await this.tester.firstTestingPhase(this.testConfig.Repetitions, this.testConfig.Scenarios, logMode)
             this.testReport.printResults(ListeningType.Asynchronous)
         } catch {
             logFormatted(":::::ERROR::::: TestThing: Error during first test phase.")
             return
         }
 
-        if (this.testConfig.EventAndObservePOptions.Synchronous.isEnabled) secondTestingPhase()
-        return 
+        if (this.testConfig.EventAndObservePOptions.Synchronous.isEnabled) await this.runSecondTestingPhase()
+        return
+    }
 
-        // TODO: Could this be moved? (change as a class method)
-        async function secondTestingPhase() {
-            try {
-                // Starting the second testing phase.
-                const testReportHasChanged: boolean = await self.tester.secondTestingPhase(self.testConfig.Repetitions)
-                self.testReport.storeReport(self.testConfig.TestReportsLocation, "Testbench Thing")
-                if (testReportHasChanged) {
-                    self.testReport.printResults(ListeningType.Synchronous)
-                }
-            } catch {
-                logFormatted(":::::ERROR::::: TestThing: Error during second test phase.")
+    private async runSecondTestingPhase() {
+        try {
+            const testReportHasChanged: boolean = await this.tester.secondTestingPhase(this.testConfig.Repetitions)
+            this.testReport.storeReport(this.testConfig.TestReportsLocation, "Testbench Thing")
+            if (testReportHasChanged) {
+                this.testReport.printResults(ListeningType.Synchronous)
             }
+        } catch {
+            logFormatted(":::::ERROR::::: TestThing: Error during second test phase.")
         }
     }
 
     private async testThingHandler(inputData: WoT.InteractionOutput): Promise<any> {
-        const logMode = await inputData.value() as boolean
+        const logMode = (await inputData.value()) as boolean
 
         return await this.testThing(logMode)
     }
-    
+
     private async testVulnerabilities(fastMode: boolean) {
         this.testReport = await this.tester.testVulnerabilities(fastMode)
     }
 
     private async testVulnerabilitiesHandler(inputData: WoT.InteractionOutput): Promise<any> {
-        const fastMode = await inputData.value() as boolean
+        const fastMode = (await inputData.value()) as boolean
 
         return await this.testVulnerabilities(fastMode)
     }
@@ -309,7 +305,7 @@ export class Testbench {
             logFormatted(":::::ERROR::::: TestThing: Error during Operational test phase.")
             return
         }
-        
+
         try {
             await this.tester.secondTestingPhase(this.testConfig.Repetitions)
         } catch {
@@ -325,9 +321,9 @@ export class Testbench {
 
     private async testParamCov() {
         logFormatted("------ START OF Parameter Testing ------")
-        
+
         try {
-            this.heuristicTestReport["T2"] = await this.tester.testingParamCov() 
+            this.heuristicTestReport["T2"] = await this.tester.testingParamCov()
         } catch {
             logFormatted(":::::ERROR::::: TestThing: Error during Parameter test phase.")
         }
@@ -359,7 +355,7 @@ export class Testbench {
             logFormatted(":::::ERROR::::: TestThing: Error during Output test phase.")
         }
     }
-    
+
     private async testOutputCovHandler(): Promise<any> {
         await this.testOutputCov()
     }
@@ -377,11 +373,11 @@ export class Testbench {
     }
 
     private async testAllLevelsHandler(inputData: WoT.InteractionOutput) {
-        const td = await inputData.value() as object
-        
+        const td = (await inputData.value()) as object
+
         return await this.testAllLevels(td)
     }
-    
+
     private initializeProperties(testConfig) {
         this.testConfig = testConfig
         this.thing.setPropertyReadHandler("testConfig", this.testConfigReadHandler.bind(this))
@@ -399,39 +395,39 @@ export class Testbench {
     }
 
     private initializeActions() {
-        this.thing.setActionHandler("initiate", async(inputData) => {
+        this.thing.setActionHandler("initiate", async (inputData) => {
             return await this.initiateHandler(inputData)
         })
 
-        this.thing.setActionHandler("testThing", async(inputData) => {
+        this.thing.setActionHandler("testThing", async (inputData) => {
             return await this.testThingHandler(inputData)
         })
 
-        this.thing.setActionHandler("fastTest", async(inputData) => {
+        this.thing.setActionHandler("fastTest", async (inputData) => {
             return await this.fastTestHandler(inputData)
         })
 
-        this.thing.setActionHandler("testVulnerabilities", async(inputData) => {
+        this.thing.setActionHandler("testVulnerabilities", async (inputData) => {
             return await this.testVulnerabilitiesHandler(inputData)
         })
 
-        this.thing.setActionHandler("testOpCov", async() => {
+        this.thing.setActionHandler("testOpCov", async () => {
             return await this.testOpCovHandler()
         })
 
-        this.thing.setActionHandler("testParamCov", async() => {
+        this.thing.setActionHandler("testParamCov", async () => {
             return await this.testParamCovHandler()
         })
 
-        this.thing.setActionHandler("testInputCov", async() => {
+        this.thing.setActionHandler("testInputCov", async () => {
             return await this.testInputCovHandler()
         })
 
-        this.thing.setActionHandler("testOutputCov", async() => {
+        this.thing.setActionHandler("testOutputCov", async () => {
             return await this.testOutputCovHandler()
         })
 
-        this.thing.setActionHandler("testAllLevels", async(inputData) => {
+        this.thing.setActionHandler("testAllLevels", async (inputData) => {
             return await this.testAllLevelsHandler(inputData)
         })
     }
