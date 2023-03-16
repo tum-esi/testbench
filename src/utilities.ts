@@ -100,6 +100,18 @@ export enum SchemaType {
     EventCancellation = "EventCancellation",
 }
 
+/**
+ * An enum defining the type of an protocol.
+ */
+export enum ProtocolType {
+    Http = "http",
+    Https = "https",
+    Coap = "coap",
+    Coaps = "coaps",
+    Mqtt = "mqtt",
+    File = "file",
+}
+
 // -------------------------- FAKE DATA GENERATION ---------------------------------
 export class CodeGenerator {
     private td: wot.ThingDescription

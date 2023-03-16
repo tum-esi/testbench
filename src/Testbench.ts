@@ -2,7 +2,7 @@ import Servient, { ProtocolClientFactory } from "@node-wot/core"
 import { ThingDescription } from "wot-typescript-definitions"
 import { Tester } from "./Tester"
 import { TestReport, TotalReport, VulnerabilityReport } from "./TestReport"
-import { detectProtocolSchemes, ListeningType, logFormatted, testConfig } from "./utilities"
+import { detectProtocolSchemes, ListeningType, logFormatted, ProtocolType, testConfig } from "./utilities"
 import * as fs from "fs"
 import { HttpClientFactory, HttpsClientFactory } from "@node-wot/binding-http"
 import { CoapClientFactory, CoapsClientFactory } from "@node-wot/binding-coap"
@@ -205,34 +205,34 @@ export class Testbench {
     }
 
     private addClientFactories(td: object) {
-        const protocols = detectProtocolSchemes(JSON.stringify(td))
-        const existingProtocols = this.servient.getClientSchemes()
+        const tdProtocols = detectProtocolSchemes(JSON.stringify(td))
+        const servientProtocols = this.servient.getClientSchemes()
         let clientFactory: ProtocolClientFactory
 
-        for (const p of protocols) {
-            if (existingProtocols.includes(p)) {
+        for (const protocol of tdProtocols) {
+            if (servientProtocols.includes(protocol)) {
                 continue
             }
 
             let factoryExists = true
 
-            switch (p) {
-                case "http":
+            switch (protocol) {
+                case ProtocolType.Http:
                     clientFactory = new HttpClientFactory()
                     break
-                case "https":
+                case ProtocolType.Https:
                     clientFactory = new HttpsClientFactory()
                     break
-                case "coap":
+                case ProtocolType.Coap:
                     clientFactory = new CoapClientFactory()
                     break
-                case "coaps":
+                case ProtocolType.Coaps:
                     clientFactory = new CoapsClientFactory()
                     break
-                case "mqtt":
+                case ProtocolType.Mqtt:
                     clientFactory = new MqttClientFactory()
                     break
-                case "file":
+                case ProtocolType.File:
                     clientFactory = new FileClientFactory()
                     break
                 default:
