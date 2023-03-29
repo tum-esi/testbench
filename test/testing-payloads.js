@@ -1,4 +1,4 @@
-export const testConfig = {
+const testConfig = {
     TBname: "wot-test-bench",
     http: {
         port: 8980,
@@ -29,7 +29,7 @@ export const testConfig = {
     credentials: {},
 }
 
-export const faultyThingTD = {
+const faultyThingTD = {
     title: "faulty-thing-servient",
     description: "Test servient that can be used as a servient to be tested with the WoT Test Bench",
     properties: {
@@ -356,7 +356,7 @@ export const faultyThingTD = {
     },
 }
 
-export const perfectThingTD = {
+const perfectThingTD = {
     title: "perfect-thing-servient",
     description: "Test servient that can be used as a servient to be tested with the WoT Test Bench",
     properties: {
@@ -655,4 +655,10 @@ export const perfectThingTD = {
             scheme: "nosec",
         },
     },
+}
+
+module.exports = {
+    testConfig,
+    faultyThingTD,
+    perfectThingTD,
 }
