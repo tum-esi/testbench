@@ -4,10 +4,17 @@ import { Tester } from "./Tester"
 import { TestReport, TotalReport, VulnerabilityReport } from "./TestReport"
 import { detectProtocolSchemes, ListeningType, logFormatted, ProtocolType, testConfig } from "./utilities"
 import * as fs from "fs"
-import { HttpClientFactory, HttpsClientFactory } from "@node-wot/binding-http"
 import { CoapClientFactory, CoapsClientFactory } from "@node-wot/binding-coap"
-import { MqttClientFactory } from "@node-wot/binding-mqtt"
 import { FileClientFactory } from "@node-wot/binding-file"
+import { FirestoreClientFactory } from "@node-wot/binding-firestore"
+import { HttpClientFactory, HttpsClientFactory } from "@node-wot/binding-http"
+import { MBusClientFactory } from "@node-wot/binding-mbus"
+import { ModbusClientFactory } from "@node-wot/binding-modbus"
+import { MqttClientFactory, MqttsClientFactory } from "@node-wot/binding-mqtt"
+import { NetconfClientFactory } from "@node-wot/binding-netconf"
+// FIXME: Getting "Error: Cannot find schema for simple type Variant", might be because of deprecated node-opcua packages
+// import { OPCUAClientFactory } from "@node-wot/binding-opcua"
+import { WebSocketClientFactory } from "@node-wot/binding-websockets"
 
 export class Testbench {
     public thing: WoT.ExposedThing
@@ -207,7 +214,7 @@ export class Testbench {
     private addClientFactories(td: object) {
         const tdProtocols = detectProtocolSchemes(JSON.stringify(td))
         const servientProtocols = this.servient.getClientSchemes()
-        let clientFactory: ProtocolClientFactory
+        let clientFactory: ProtocolClientFactory & { [key: string]: any }
 
         for (const protocol of tdProtocols) {
             if (servientProtocols.includes(protocol)) {
@@ -217,23 +224,48 @@ export class Testbench {
             let factoryExists = true
 
             switch (protocol) {
-                case ProtocolType.Http:
-                    clientFactory = new HttpClientFactory()
-                    break
-                case ProtocolType.Https:
-                    clientFactory = new HttpsClientFactory()
-                    break
                 case ProtocolType.Coap:
                     clientFactory = new CoapClientFactory()
                     break
                 case ProtocolType.Coaps:
                     clientFactory = new CoapsClientFactory()
                     break
+                case ProtocolType.File:
+                    clientFactory = new FileClientFactory()
+                    break
+                case ProtocolType.Firestore:
+                    // FIXME: @node-wot/binding-firestore package is on version 0.8.2 and Content type in firestore
+                    // package does not match with the one in @node-wot/core, therefore we cannot assign
+                    // client factory without an error
+                    // clientFactory = new FirestoreClientFactory()
+                    break
+                case ProtocolType.Http:
+                    clientFactory = new HttpClientFactory()
+                    break
+                case ProtocolType.Https:
+                    clientFactory = new HttpsClientFactory()
+                    break
+                case ProtocolType.Mbus:
+                    clientFactory = new MBusClientFactory()
+                    break
+                case ProtocolType.Modbus:
+                    clientFactory = new ModbusClientFactory()
+                    break
                 case ProtocolType.Mqtt:
                     clientFactory = new MqttClientFactory()
                     break
-                case ProtocolType.File:
-                    clientFactory = new FileClientFactory()
+                case ProtocolType.Mqtts:
+                    // TODO: fill config with given username and password
+                    clientFactory = new MqttsClientFactory(null)
+                    break
+                case ProtocolType.Netconf:
+                    clientFactory = new NetconfClientFactory()
+                    break
+                case ProtocolType.Opcua:
+                    // clientFactory = new OPCUAClientFactory()
+                    break
+                case ProtocolType.Websocket:
+                    clientFactory = new WebSocketClientFactory()
                     break
                 default:
                     factoryExists = false
