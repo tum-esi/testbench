@@ -1,16 +1,23 @@
-import { ListeningType, logFormatted, testConfig } from "./utilities"
+import { detectProtocolSchemes, ListeningType, logFormatted, ProtocolType, testConfig } from "./utilities"
 import { Tester } from "./Tester"
 import * as fs from "fs"
 import { TotalReport, TestReport, VulnerabilityReport } from "./TestReport"
+import Servient, { ProtocolClientFactory } from "@node-wot/core"
+import { CoapClientFactory, CoapsClientFactory } from "@node-wot/binding-coap"
+import { FileClientFactory } from "@node-wot/binding-file"
+import { HttpClientFactory, HttpsClientFactory } from "@node-wot/binding-http"
+import { MqttClientFactory } from "@node-wot/binding-mqtt"
 
 export class Testbench {
+    private servient: Servient
     private tester: Tester
     private testConfig: testConfig
     private testData: object
     private testReport: any
     private heuristicTestReport: any
 
-    constructor() {
+    constructor(servient: Servient) {
+        this.servient = servient
         this.testReport = "[]"
         this.heuristicTestReport = {
             T1: [],
@@ -18,6 +25,10 @@ export class Testbench {
             T3: {},
             T4: [],
         }
+    }
+
+    public getServient() {
+        return this.servient
     }
 
     public getTestConfig() {
@@ -60,6 +71,8 @@ export class Testbench {
         this.tester = new Tester(this.testConfig as testConfig, consumedThing)
         const returnCheck = this.tester.initiate(logMode)
         this.testData = this.tester.codeGen.requests
+        this.addClientFactories(consumedThing.getThingDescription())
+        console.log(this.servient.getClientSchemes())
 
         if (returnCheck === 0) {
             this.heuristicTestReport = {
@@ -91,18 +104,6 @@ export class Testbench {
 
         if (this.testConfig.EventAndObservePOptions.Synchronous.isEnabled) await this.runSecondTestingPhase()
         return
-    }
-
-    private async runSecondTestingPhase() {
-        try {
-            const testReportHasChanged: boolean = await this.tester.secondTestingPhase(this.testConfig.Repetitions)
-            this.testReport.storeReport(this.testConfig.TestReportsLocation, "Testbench Thing")
-            if (testReportHasChanged) {
-                this.testReport.printResults(ListeningType.Synchronous)
-            }
-        } catch {
-            logFormatted(":::::ERROR::::: TestThing: Error during second test phase.")
-        }
     }
 
     public async testVulnerabilities(fastMode: boolean, consumedThing?: WoT.ConsumedThing) {
@@ -188,5 +189,60 @@ export class Testbench {
 
         this.tester.testingResult(this.heuristicTestReport)
         return this.heuristicTestReport
+    }
+
+    private async runSecondTestingPhase() {
+        try {
+            const testReportHasChanged: boolean = await this.tester.secondTestingPhase(this.testConfig.Repetitions)
+            this.testReport.storeReport(this.testConfig.TestReportsLocation, "Testbench Thing")
+            if (testReportHasChanged) {
+                this.testReport.printResults(ListeningType.Synchronous)
+            }
+        } catch {
+            logFormatted(":::::ERROR::::: TestThing: Error during second test phase.")
+        }
+    }
+
+    private addClientFactories(td: object) {
+        const tdProtocols = detectProtocolSchemes(JSON.stringify(td))
+        const servientProtocols = this.getServient().getClientSchemes()
+        let clientFactory: ProtocolClientFactory
+
+        for (const protocol of tdProtocols) {
+            if (servientProtocols.includes(protocol)) {
+                continue
+            }
+
+            let factoryExists = true
+
+            switch (protocol) {
+                case ProtocolType.Http:
+                    clientFactory = new HttpClientFactory()
+                    break
+                case ProtocolType.Https:
+                    clientFactory = new HttpsClientFactory()
+                    break
+                case ProtocolType.Coap:
+                    clientFactory = new CoapClientFactory()
+                    break
+                case ProtocolType.Coaps:
+                    clientFactory = new CoapsClientFactory()
+                    break
+                case ProtocolType.Mqtt:
+                    clientFactory = new MqttClientFactory()
+                    break
+                case ProtocolType.File:
+                    clientFactory = new FileClientFactory()
+                    break
+                default:
+                    factoryExists = false
+                    break
+            }
+
+            if (factoryExists) {
+                clientFactory.init()
+                this.servient.addClientFactory(clientFactory)
+            }
+        }
     }
 }

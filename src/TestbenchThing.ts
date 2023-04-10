@@ -1,10 +1,6 @@
-import Servient, { ProtocolClientFactory } from "@node-wot/core"
+import Servient from "@node-wot/core"
 import { ThingDescription } from "wot-typescript-definitions"
-import { detectProtocolSchemes, ProtocolType, testConfig } from "./utilities"
-import { HttpClientFactory, HttpsClientFactory } from "@node-wot/binding-http"
-import { CoapClientFactory, CoapsClientFactory } from "@node-wot/binding-coap"
-import { MqttClientFactory } from "@node-wot/binding-mqtt"
-import { FileClientFactory } from "@node-wot/binding-file"
+import { testConfig } from "./utilities"
 import { Testbench } from "./Testbench"
 
 export class TestbenchThing extends Testbench {
@@ -130,15 +126,12 @@ export class TestbenchThing extends Testbench {
         },
     }
 
-    private servient: Servient
-
     private thingUnderTestTD: ThingDescription
     private testBenchStatus: string
 
     constructor(deviceWoT: typeof WoT, servient: Servient, tdTitle: string) {
-        super()
+        super(servient)
         this.deviceWoT = deviceWoT
-        this.servient = servient
         if (tdTitle) {
             this.thingModel["title"] = tdTitle
         }
@@ -192,61 +185,17 @@ export class TestbenchThing extends Testbench {
         return this.getHeuristicTestReport()
     }
 
-    private addClientFactories(td: object) {
-        const tdProtocols = detectProtocolSchemes(JSON.stringify(td))
-        const servientProtocols = this.servient.getClientSchemes()
-        let clientFactory: ProtocolClientFactory
-
-        for (const protocol of tdProtocols) {
-            if (servientProtocols.includes(protocol)) {
-                continue
-            }
-
-            let factoryExists = true
-
-            switch (protocol) {
-                case ProtocolType.Http:
-                    clientFactory = new HttpClientFactory()
-                    break
-                case ProtocolType.Https:
-                    clientFactory = new HttpsClientFactory()
-                    break
-                case ProtocolType.Coap:
-                    clientFactory = new CoapClientFactory()
-                    break
-                case ProtocolType.Coaps:
-                    clientFactory = new CoapsClientFactory()
-                    break
-                case ProtocolType.Mqtt:
-                    clientFactory = new MqttClientFactory()
-                    break
-                case ProtocolType.File:
-                    clientFactory = new FileClientFactory()
-                    break
-                default:
-                    factoryExists = false
-                    break
-            }
-
-            if (factoryExists) {
-                clientFactory.init()
-                this.servient.addClientFactory(clientFactory)
-            }
-        }
-    }
-
     private async fastTestHandler(inputData: WoT.InteractionOutput) {
         if (inputData) {
             this.thingUnderTestTD = (await inputData.value()) as ThingDescription
         }
 
-        this.servient.addCredentials((this.getTestConfig() as testConfig).credentials)
+        this.getServient().addCredentials((this.getTestConfig() as testConfig).credentials)
 
         if (JSON.stringify(this.thingUnderTestTD) === "") {
             return "Initiation failed, Thing under Test is an empty string."
         }
 
-        this.addClientFactories(this.thingUnderTestTD)
         const consumedTuT = await this.deviceWoT.consume(this.thingUnderTestTD)
         return await this.fastTest(true, true, consumedTuT)
     }
@@ -254,13 +203,12 @@ export class TestbenchThing extends Testbench {
     private async initiateHandler(inputData: WoT.InteractionOutput) {
         const logMode = (await inputData.value()) as boolean
 
-        this.servient.addCredentials((this.getTestConfig() as testConfig).credentials)
+        this.getServient().addCredentials((this.getTestConfig() as testConfig).credentials)
 
         if (JSON.stringify(this.thingUnderTestTD) === "") {
             return "Initiation failed, Thing under Test is an empty string."
         }
 
-        this.addClientFactories(this.thingUnderTestTD)
         const consumedTuT = await this.deviceWoT.consume(this.thingUnderTestTD as ThingDescription)
 
         return this.initiate(logMode, consumedTuT)
