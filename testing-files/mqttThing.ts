@@ -1,26 +1,30 @@
-import { CoapServer } from "@node-wot/binding-coap"
+import { MqttBrokerServer, MqttBrokerServerConfig } from "@node-wot/binding-mqtt"
 import Servient, { ExposedThing } from "@node-wot/core"
 
-export class CoapThing {
+export class MqttThing {
     public thing: WoT.ExposedThing
     public deviceWoT: typeof WoT
     public td: WoT.ExposedThingInit
 
     private thingModel: WoT.ExposedThingInit = {
-        title: "coap-thing-servient",
+        title: "mqtt-thing-servient",
         description: "Test servient that can be used as a servient to be tested with the WoT Test Bench",
         properties: {
             greetMessage: {
                 type: "string",
-                // FIXME: Can't make it observable because coap-server call handleUnobserveProperty/handleObserveProperty with null WoT.InteractionOptions, therefore error occurs
                 observable: false,
                 readOnly: false,
                 writeOnly: false,
                 forms: [
                     {
-                        href: "coap://localhost:5683/coap-thing-servient/properties/greetMessage",
+                        href: "mqtt://localhost:1883/mqtt-thing-servient/properties/greetMessage",
                         contentType: "application/json",
-                        op: ["readproperty", "writeproperty"],
+                        op: ["readproperty"],
+                    },
+                    {
+                        href: "mqtt://localhost:1883/mqtt-thing-servient/properties/greetMessage/writeProperty",
+                        contentType: "application/json",
+                        op: ["writeproperty"],
                     },
                 ],
             },
@@ -31,7 +35,7 @@ export class CoapThing {
                 writeOnly: false,
                 forms: [
                     {
-                        href: "coap://localhost:5683/coap-thing-servient/properties/constantNumber",
+                        href: "mqtt://localhost:1883/mqtt-thing-servient/properties/constantNumber",
                         contentType: "application/json",
                         op: ["readproperty"],
                     },
@@ -48,7 +52,7 @@ export class CoapThing {
                 },
                 forms: [
                     {
-                        href: "coap://localhost:5683/coap-thing-servient/actions/greet",
+                        href: "mqtt://localhost:1883/mqtt-thing-servient/actions/greet",
                         contentType: "application/json",
                         op: "invokeaction",
                     },
@@ -62,7 +66,7 @@ export class CoapThing {
                 },
                 forms: [
                     {
-                        href: "coap://localhost:5683/coap-thing-servient/events/update",
+                        href: "mqtt://localhost:1883/mqtt-thing-servient/events/update",
                         contentType: "application/json",
                         op: ["subscribeevent", "unsubscribeevent"],
                     },
@@ -129,26 +133,28 @@ export class CoapThing {
     }
 }
 
-const coapServer = new CoapServer()
+const config: MqttBrokerServerConfig = { uri: "localhost:1883", selfHost: true }
+
+const server = new MqttBrokerServer(config)
 const servient = new Servient()
 
 servient
     .start()
     .then(async (WoT) => {
-        coapServer
+        server
             .start(servient)
             .then(async () => {
-                console.log("Started Coap Server...")
-                const thing = new CoapThing(WoT)
+                console.log("Started Mqtt Server...")
+                const thing = new MqttThing(WoT)
                 await thing.initDevice()
 
-                await coapServer.expose(thing.thing as ExposedThing)
+                await server.expose(thing.thing as ExposedThing)
                 console.log("Exposed thing...")
             })
             .catch((error) => {
                 console.log("Some error happpened...")
                 console.log(error)
-                coapServer.stop()
+                server.stop()
             })
     })
     .catch(() => {

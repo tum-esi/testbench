@@ -1736,7 +1736,7 @@ export class Tester {
                         // Create action report with the name of the action.
                         report.createVulnActionReport(Object.keys(td["actions"])[i])
 
-                        const form = getForm("invokeaction", action.forms) // Cannot be null.
+                        const form = getForm("invokeaction", action.forms) // FIXME: Cannot be null. (but it can be)
 
                         // Check if the interaction has a different security scheme.
                         if (form["security"] != undefined) {
