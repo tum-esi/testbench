@@ -168,7 +168,7 @@ export class Tester {
         else eventConfig = this.testConfig.EventAndObservePOptions.Synchronous
         let indexOfEventData = -1
         const earlyListenTimeout = new Utils.DeferredPromise()
-        const subscriptions: {[id: string]: wot.Subscription} = {}
+        const subscriptions: { [id: string]: wot.Subscription } = {}
 
         // Initialize message strings.
         const interactionName = container.name
@@ -456,7 +456,7 @@ export class Tester {
      * @param testScenario The number indicating the testScenario.
      */
     public async testAction(testCycle: number, testScenario: number, actionName: string, interaction: any): Promise<void> {
-        // Used for referencing Tester itself for the functions under this function  
+        // Used for referencing Tester itself for the functions under this function
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this
         const container = new ActionTestReportContainer(testCycle, testScenario, actionName)
@@ -578,7 +578,7 @@ export class Tester {
         interaction: any,
         listeningType: Utils.ListeningType
     ): Promise<void> {
-        // Used for referencing Tester itself for the functions under this function 
+        // Used for referencing Tester itself for the functions under this function
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this
         // Check and log functionalities of the property.
@@ -1733,6 +1733,9 @@ export class Tester {
                     for (let i = 0; i < actions.length; i++) {
                         const action: any = actions[i]
 
+                        // Create action report with the name of the action.
+                        report.createVulnActionReport(Object.keys(td["actions"])[i])
+
                         const form = getForm("invokeaction", action.forms) // Cannot be null.
 
                         // Check if the interaction has a different security scheme.
@@ -1751,9 +1754,6 @@ export class Tester {
 
                         let method: string = form["htv:methodName"]
                         if (method == undefined) method = "POST" // Default value for 'invokeaction'.
-
-                        // Create action report with the name of the action.
-                        report.createVulnActionReport(Object.keys(td["actions"])[i])
 
                         const actionOptions = createRequestOptions(myURL, method)
 
