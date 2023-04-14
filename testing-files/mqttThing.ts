@@ -1,5 +1,5 @@
-import { MqttBrokerServer, MqttBrokerServerConfig } from "@node-wot/binding-mqtt"
-import Servient, { ExposedThing } from "@node-wot/core"
+import { MqttBrokerServer } from "@node-wot/binding-mqtt"
+import Servient from "@node-wot/core"
 
 export class MqttThing {
     public thing: WoT.ExposedThing
@@ -12,34 +12,9 @@ export class MqttThing {
         properties: {
             greetMessage: {
                 type: "string",
-                observable: false,
+                observable: true,
                 readOnly: false,
-                writeOnly: false,
-                forms: [
-                    {
-                        href: "mqtt://localhost:1883/mqtt-thing-servient/properties/greetMessage",
-                        contentType: "application/json",
-                        op: ["readproperty"],
-                    },
-                    {
-                        href: "mqtt://localhost:1883/mqtt-thing-servient/properties/greetMessage/writeProperty",
-                        contentType: "application/json",
-                        op: ["writeproperty"],
-                    },
-                ],
-            },
-            constantNumber: {
-                type: "number",
-                observable: false,
-                readOnly: true,
-                writeOnly: false,
-                forms: [
-                    {
-                        href: "mqtt://localhost:1883/mqtt-thing-servient/properties/constantNumber",
-                        contentType: "application/json",
-                        op: ["readproperty"],
-                    },
-                ],
+                writeOnly: true,
             },
         },
         actions: {
@@ -50,13 +25,6 @@ export class MqttThing {
                 output: {
                     type: "string",
                 },
-                forms: [
-                    {
-                        href: "mqtt://localhost:1883/mqtt-thing-servient/actions/greet",
-                        contentType: "application/json",
-                        op: "invokeaction",
-                    },
-                ],
             },
         },
         events: {
@@ -64,45 +32,32 @@ export class MqttThing {
                 data: {
                     type: "string",
                 },
-                forms: [
-                    {
-                        href: "mqtt://localhost:1883/mqtt-thing-servient/events/update",
-                        contentType: "application/json",
-                        op: ["subscribeevent", "unsubscribeevent"],
-                    },
-                ],
             },
         },
     }
 
     private greetMessage: string
-    private constantNumber: number
 
     constructor(deviceWoT: typeof WoT) {
         this.deviceWoT = deviceWoT
         this.greetMessage = "Hello"
-        this.constantNumber = 42
     }
 
-    public async initDevice() {
+    public async startDevice() {
         this.thing = await this.deviceWoT.produce(this.thingModel)
         this.td = this.thing.getThingDescription()
 
         this.initializeProperties()
         this.initializeActions()
         this.initializeEvents()
-    }
 
-    private async greetMessageReadHandler() {
-        return this.greetMessage
+        console.log(`Exposing Thing: ${this.thingModel.title}`)
+        await this.thing.expose()
+        console.info(this.td.title + " ready")
     }
 
     private async greetMessageWriteHandler(inputData: WoT.InteractionOutput) {
         this.greetMessage = (await inputData.value()) as string
-    }
-
-    private async constantNumberReadHandler() {
-        return this.constantNumber
     }
 
     private async greetHandler(inputData: WoT.InteractionOutput): Promise<string> {
@@ -115,9 +70,7 @@ export class MqttThing {
     }
 
     private initializeProperties() {
-        this.thing.setPropertyReadHandler("greetMessage", this.greetMessageReadHandler.bind(this))
         this.thing.setPropertyWriteHandler("greetMessage", this.greetMessageWriteHandler.bind(this))
-        this.thing.setPropertyReadHandler("constantNumber", this.constantNumberReadHandler.bind(this))
     }
 
     private initializeActions() {
@@ -133,30 +86,16 @@ export class MqttThing {
     }
 }
 
-const config: MqttBrokerServerConfig = { uri: "localhost:1883", selfHost: true }
-
-const server = new MqttBrokerServer(config)
 const servient = new Servient()
+servient.addServer(new MqttBrokerServer({ uri: "mqtt://test.mosquitto.org" }))
 
 servient
     .start()
     .then(async (WoT) => {
-        server
-            .start(servient)
-            .then(async () => {
-                console.log("Started Mqtt Server...")
-                const thing = new MqttThing(WoT)
-                await thing.initDevice()
-
-                await server.expose(thing.thing as ExposedThing)
-                console.log("Exposed thing...")
-            })
-            .catch((error) => {
-                console.log("Some error happpened...")
-                console.log(error)
-                server.stop()
-            })
+        const thing = new MqttThing(WoT)
+        await thing.startDevice()
     })
-    .catch(() => {
+    .catch((error) => {
+        console.log(error)
         servient.shutdown()
     })

@@ -1,5 +1,5 @@
 import { CoapServer } from "@node-wot/binding-coap"
-import Servient, { ExposedThing } from "@node-wot/core"
+import Servient from "@node-wot/core"
 
 export class CoapThing {
     public thing: WoT.ExposedThing
@@ -12,30 +12,15 @@ export class CoapThing {
         properties: {
             greetMessage: {
                 type: "string",
-                // FIXME: Can't make it observable because coap-server call handleUnobserveProperty/handleObserveProperty with null WoT.InteractionOptions, therefore error occurs
-                observable: false,
+                observable: true,
                 readOnly: false,
                 writeOnly: false,
-                forms: [
-                    {
-                        href: "coap://localhost:5683/coap-thing-servient/properties/greetMessage",
-                        contentType: "application/json",
-                        op: ["readproperty", "writeproperty"],
-                    },
-                ],
             },
             constantNumber: {
                 type: "number",
                 observable: false,
                 readOnly: true,
                 writeOnly: false,
-                forms: [
-                    {
-                        href: "coap://localhost:5683/coap-thing-servient/properties/constantNumber",
-                        contentType: "application/json",
-                        op: ["readproperty"],
-                    },
-                ],
             },
         },
         actions: {
@@ -46,13 +31,6 @@ export class CoapThing {
                 output: {
                     type: "string",
                 },
-                forms: [
-                    {
-                        href: "coap://localhost:5683/coap-thing-servient/actions/greet",
-                        contentType: "application/json",
-                        op: "invokeaction",
-                    },
-                ],
             },
         },
         events: {
@@ -60,13 +38,6 @@ export class CoapThing {
                 data: {
                     type: "string",
                 },
-                forms: [
-                    {
-                        href: "coap://localhost:5683/coap-thing-servient/events/update",
-                        contentType: "application/json",
-                        op: ["subscribeevent", "unsubscribeevent"],
-                    },
-                ],
             },
         },
     }
@@ -80,13 +51,17 @@ export class CoapThing {
         this.constantNumber = 42
     }
 
-    public async initDevice() {
+    public async startDevice() {
         this.thing = await this.deviceWoT.produce(this.thingModel)
         this.td = this.thing.getThingDescription()
 
         this.initializeProperties()
         this.initializeActions()
         this.initializeEvents()
+
+        console.log(`Exposing Thing: ${this.thingModel.title}`)
+        await this.thing.expose()
+        console.info(this.td.title + " ready")
     }
 
     private async greetMessageReadHandler() {
@@ -129,28 +104,16 @@ export class CoapThing {
     }
 }
 
-const coapServer = new CoapServer()
 const servient = new Servient()
+servient.addServer(new CoapServer())
 
 servient
     .start()
     .then(async (WoT) => {
-        coapServer
-            .start(servient)
-            .then(async () => {
-                console.log("Started Coap Server...")
-                const thing = new CoapThing(WoT)
-                await thing.initDevice()
-
-                await coapServer.expose(thing.thing as ExposedThing)
-                console.log("Exposed thing...")
-            })
-            .catch((error) => {
-                console.log("Some error happpened...")
-                console.log(error)
-                coapServer.stop()
-            })
+        const thing = new CoapThing(WoT)
+        await thing.startDevice()
     })
-    .catch(() => {
+    .catch((error) => {
+        console.log(error)
         servient.shutdown()
     })
