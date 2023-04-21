@@ -7,6 +7,7 @@ import { CoapClientFactory, CoapsClientFactory } from "@node-wot/binding-coap"
 import { FileClientFactory } from "@node-wot/binding-file"
 import { HttpClientFactory, HttpsClientFactory } from "@node-wot/binding-http"
 import { MqttClientFactory } from "@node-wot/binding-mqtt"
+import defaultConfig from "../default-config.json"
 
 export class Testbench {
     private servient: Servient
@@ -56,12 +57,15 @@ export class Testbench {
     }
 
     public async fastTest(logMode: boolean, fastMode: boolean, consumedThing: WoT.ConsumedThing) {
+        this.testConfig = defaultConfig
         this.initiate(logMode, consumedThing)
         await this.testThing(logMode)
         const conformanceReport = this.testReport
 
-        await this.testVulnerabilities(fastMode)
-        const vulnerabilityReport = this.testReport
+        //await this.testVulnerabilities(fastMode)
+        //const vulnerabilityReport = this.testReport
+
+        const vulnerabilityReport = {}
 
         this.testReport = new TotalReport(conformanceReport as TestReport, vulnerabilityReport as VulnerabilityReport)
         return this.testReport

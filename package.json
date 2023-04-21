@@ -5,13 +5,18 @@
         "type": "git",
         "url": "https://github.com/tum-esi/testbench.git"
     },
+    "files": [
+        "dist/"
+    ],
+    "main": "dist/Testbench.js",
+    "types": "dist/Testbench.d.ts",
     "license": "MIT",
     "dependencies": {
-        "@node-wot/binding-coap": "0.8.5",
-        "@node-wot/binding-file": "0.8.5",
-        "@node-wot/binding-http": "0.8.5",
-        "@node-wot/binding-mqtt": "0.8.5",
-        "@node-wot/core": "0.8.5",
+        "@node-wot/binding-coap": "~0.8.5",
+        "@node-wot/binding-file": "~0.8.5",
+        "@node-wot/binding-http": "~0.8.5",
+        "@node-wot/binding-mqtt": "~0.8.5",
+        "@node-wot/core": "~0.8.5",
         "@types/node": "^18.15.1",
         "ajv": "^6.10.2",
         "chai-http": "^4.3.0",
@@ -47,6 +52,7 @@
         "test": "mocha --require esm --exit",
         "windows_stop": "taskkill /im node.exe /f",
         "lint": "eslint . --ext .ts",
-        "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\""
+        "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
+        "postinstall": "node postinstall.js"
     }
 }

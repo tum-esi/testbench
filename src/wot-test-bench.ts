@@ -25,7 +25,6 @@ srv.addServer(coapServer)
 srv.start()
     .then(async (WoT) => {
         logFormatted("TestBench servient started")
-
         const testbenchThing = new TestbenchThing(WoT, srv, tbName)
         await testbenchThing.startDevice(testConfig)
     })
