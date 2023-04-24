@@ -152,7 +152,6 @@ export class Tester {
      * @param testMode
      * @param listeningType
      */
-
     public async testObserveOrEvent(
         container: EventTestReportContainer,
         interaction: any,
@@ -782,46 +781,6 @@ export class Tester {
     }
 
     /**
-     * The second testing phase. Reruns all tests with a listening phase (observable properties and events). This time the testing is
-     * happening synchronously. Returns when all tests resolved or a fatal error occurred.
-     * @param repetitionNumber The number of repetitions in the whole test. Indicates the index of the second test phase report in the
-     * testReport object.
-     */
-    async secondTestingPhase(repetitionNumber: number): Promise<boolean> {
-        const propertyWithObserveList: Array<string> = []
-        // Check if at least one observable property exists.
-        for (const interactionName of this.getAllInteractionOfType(Utils.InteractionType.Property)) {
-            const interaction: any = Utils.getInteractionByName(this.tutTd, Utils.InteractionType.Property, interactionName)
-            if (interaction.observable) propertyWithObserveList.push(interactionName)
-        }
-        const eventList: Array<string> = this.getAllInteractionOfType(Utils.InteractionType.Event)
-        // Nothing to do if no events and no observable properties exist.
-        if (!propertyWithObserveList.length && !eventList.length) return false
-        this.log("---------------------- Start of Second Test Phase: Synchronous Listening ---------------------------")
-        this.testReport.addTestCycle()
-        this.testReport.addTestScenario()
-        try {
-            // Generating List of testFunctions to run synchronously.
-            const interactionList: Array<Promise<any>> = []
-            for (const propertyName of propertyWithObserveList) {
-                interactionList.push(this.testInteraction(repetitionNumber, 0, propertyName, Utils.InteractionType.Property, Utils.ListeningType.Synchronous))
-            }
-            for (const eventName of eventList) {
-                interactionList.push(this.testInteraction(repetitionNumber, 1, eventName, Utils.InteractionType.Event, Utils.ListeningType.Synchronous))
-            }
-            // Awaiting all of those testFunctions.
-            await Promise.all(interactionList)
-        } catch (error) {
-            console.log(error)
-            this.log("------------------------- Error in second Test Phase -----------------------------------")
-            // FIXME: Why does this return true?
-            return true
-        }
-        this.log("------------------------- Second Test Phase finished without an error. -----------------------------------")
-        return true
-    }
-
-    /**
      * Tests all interactions of a specified type sequentially.
      * @param testCycle The number indicating the testCycle.
      * @param testScenario The number indicating the testScenario.
@@ -904,6 +863,46 @@ export class Tester {
 
         this.log("First Test Phase has finished without an error.")
         return this.testReport
+    }
+
+    /**
+     * The second testing phase. Reruns all tests with a listening phase (observable properties and events). This time the testing is
+     * happening synchronously. Returns when all tests resolved or a fatal error occurred.
+     * @param repetitionNumber The number of repetitions in the whole test. Indicates the index of the second test phase report in the
+     * testReport object.
+     */
+    async secondTestingPhase(repetitionNumber: number): Promise<boolean> {
+        const propertyWithObserveList: Array<string> = []
+        // Check if at least one observable property exists.
+        for (const interactionName of this.getAllInteractionOfType(Utils.InteractionType.Property)) {
+            const interaction: any = Utils.getInteractionByName(this.tutTd, Utils.InteractionType.Property, interactionName)
+            if (interaction.observable) propertyWithObserveList.push(interactionName)
+        }
+        const eventList: Array<string> = this.getAllInteractionOfType(Utils.InteractionType.Event)
+        // Nothing to do if no events and no observable properties exist.
+        if (!propertyWithObserveList.length && !eventList.length) return false
+        this.log("---------------------- Start of Second Test Phase: Synchronous Listening ---------------------------")
+        this.testReport.addTestCycle()
+        this.testReport.addTestScenario()
+        try {
+            // Generating List of testFunctions to run synchronously.
+            const interactionList: Array<Promise<any>> = []
+            for (const propertyName of propertyWithObserveList) {
+                interactionList.push(this.testInteraction(repetitionNumber, 0, propertyName, Utils.InteractionType.Property, Utils.ListeningType.Synchronous))
+            }
+            for (const eventName of eventList) {
+                interactionList.push(this.testInteraction(repetitionNumber, 1, eventName, Utils.InteractionType.Event, Utils.ListeningType.Synchronous))
+            }
+            // Awaiting all of those testFunctions.
+            await Promise.all(interactionList)
+        } catch (error) {
+            console.log(error)
+            this.log("------------------------- Error in second Test Phase -----------------------------------")
+            // FIXME: Why does this return true?
+            return true
+        }
+        this.log("------------------------- Second Test Phase finished without an error. -----------------------------------")
+        return true
     }
 
     public async testVulnerabilities(fastMode: boolean) {
@@ -1958,7 +1957,6 @@ export class Tester {
      * This function starts the testing on the Input Level. It sends the created test data to all Interaction Affordances with an input and records
      * the resopnse of the SuT.
      */
-
     public async testingInputCov(testReport): Promise<any> {
         const full_T3_report = testReport
 
