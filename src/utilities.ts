@@ -104,12 +104,19 @@ export enum SchemaType {
  * An enum defining the type of an protocol.
  */
 export enum ProtocolType {
-    Http = "http",
-    Https = "https",
     Coap = "coap",
     Coaps = "coaps",
-    Mqtt = "mqtt",
     File = "file",
+    Firestore = "firestore",
+    Http = "http",
+    Https = "https",
+    Mbus = "mbus+tcp",
+    Modbus = "modbus+tcp",
+    Mqtt = "mqtt",
+    Mqtts = "mqtts",
+    Netconf = "netconf",
+    Opcua = "opc.tcp",
+    Websocket = "ws",
 }
 
 // -------------------------- FAKE DATA GENERATION ---------------------------------
