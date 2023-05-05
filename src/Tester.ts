@@ -10,7 +10,7 @@ After the test a test report can be generated and analyzed to get more meaning o
  */
 import * as wot from "wot-typescript-definitions"
 import * as Utils from "./utilities"
-import * as fetch from "node-fetch"
+import fetch from "node-fetch"
 import * as fs from "fs"
 import { JSONSchemaFaker as jsf } from "json-schema-faker"
 import {
@@ -24,6 +24,12 @@ import {
     EventData,
     VulnerabilityReport,
 } from "./TestReport"
+import {
+    usernames as defaultUsernames,
+    usernames_short as defaultUsernamesShort,
+    passwords as defaultPasswords,
+    passwords_short as defaultPasswordsShort,
+} from "./defaults"
 
 export class Tester {
     private tutTd: wot.ThingDescription //the TD that belongs to the Thing under Test
@@ -152,7 +158,6 @@ export class Tester {
      * @param testMode
      * @param listeningType
      */
-
     public async testObserveOrEvent(
         container: EventTestReportContainer,
         interaction: any,
@@ -168,7 +173,7 @@ export class Tester {
         else eventConfig = this.testConfig.EventAndObservePOptions.Synchronous
         let indexOfEventData = -1
         const earlyListenTimeout = new Utils.DeferredPromise()
-        const subscriptions: {[id: string]: wot.Subscription} = {}
+        const subscriptions: { [id: string]: wot.Subscription } = {}
 
         // Initialize message strings.
         const interactionName = container.name
@@ -456,7 +461,7 @@ export class Tester {
      * @param testScenario The number indicating the testScenario.
      */
     public async testAction(testCycle: number, testScenario: number, actionName: string, interaction: any): Promise<void> {
-        // Used for referencing Tester itself for the functions under this function  
+        // Used for referencing Tester itself for the functions under this function
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this
         const container = new ActionTestReportContainer(testCycle, testScenario, actionName)
@@ -578,7 +583,7 @@ export class Tester {
         interaction: any,
         listeningType: Utils.ListeningType
     ): Promise<void> {
-        // Used for referencing Tester itself for the functions under this function 
+        // Used for referencing Tester itself for the functions under this function
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this
         // Check and log functionalities of the property.
@@ -637,7 +642,8 @@ export class Tester {
                 container.passed = false
                 container.readPropertyReport.passed = false
                 container.readPropertyReport.result = new Result(30, "Could not fetch property")
-                throw new Error("Problem in the node-wot level.")
+                // throw new Error("Problem in the node-wot level.")
+                return
             }
             container.readPropertyReport.received = new Payload(responseTimeStamp, data)
             self.log("Data after first read property: " + JSON.stringify(data, null, " "))
@@ -703,7 +709,8 @@ export class Tester {
                 container.passed = false
                 container.writePropertyReport.passed = false
                 container.writePropertyReport.result = new Result(31, "Could not fetch property in the second get" + error)
-                throw new Error("Problem in the node-wot level.")
+                // throw new Error("Problem in the node-wot level.")
+                return
             }
 
             const responseTimeStamp = new Date()
@@ -779,46 +786,6 @@ export class Tester {
         }
         this.log("..................... End Testing " + interactionType + ": " + interactionName + ".................")
         return
-    }
-
-    /**
-     * The second testing phase. Reruns all tests with a listening phase (observable properties and events). This time the testing is
-     * happening synchronously. Returns when all tests resolved or a fatal error occurred.
-     * @param repetitionNumber The number of repetitions in the whole test. Indicates the index of the second test phase report in the
-     * testReport object.
-     */
-    async secondTestingPhase(repetitionNumber: number): Promise<boolean> {
-        const propertyWithObserveList: Array<string> = []
-        // Check if at least one observable property exists.
-        for (const interactionName of this.getAllInteractionOfType(Utils.InteractionType.Property)) {
-            const interaction: any = Utils.getInteractionByName(this.tutTd, Utils.InteractionType.Property, interactionName)
-            if (interaction.observable) propertyWithObserveList.push(interactionName)
-        }
-        const eventList: Array<string> = this.getAllInteractionOfType(Utils.InteractionType.Event)
-        // Nothing to do if no events and no observable properties exist.
-        if (!propertyWithObserveList.length && !eventList.length) return false
-        this.log("---------------------- Start of Second Test Phase: Synchronous Listening ---------------------------")
-        this.testReport.addTestCycle()
-        this.testReport.addTestScenario()
-        try {
-            // Generating List of testFunctions to run synchronously.
-            const interactionList: Array<Promise<any>> = []
-            for (const propertyName of propertyWithObserveList) {
-                interactionList.push(this.testInteraction(repetitionNumber, 0, propertyName, Utils.InteractionType.Property, Utils.ListeningType.Synchronous))
-            }
-            for (const eventName of eventList) {
-                interactionList.push(this.testInteraction(repetitionNumber, 1, eventName, Utils.InteractionType.Event, Utils.ListeningType.Synchronous))
-            }
-            // Awaiting all of those testFunctions.
-            await Promise.all(interactionList)
-        } catch (error) {
-            console.log(error)
-            this.log("------------------------- Error in second Test Phase -----------------------------------")
-            // FIXME: Why does this return true?
-            return true
-        }
-        this.log("------------------------- Second Test Phase finished without an error. -----------------------------------")
-        return true
     }
 
     /**
@@ -906,13 +873,61 @@ export class Tester {
         return this.testReport
     }
 
+    /**
+     * The second testing phase. Reruns all tests with a listening phase (observable properties and events). This time the testing is
+     * happening synchronously. Returns when all tests resolved or a fatal error occurred.
+     * @param repetitionNumber The number of repetitions in the whole test. Indicates the index of the second test phase report in the
+     * testReport object.
+     */
+    async secondTestingPhase(repetitionNumber: number): Promise<boolean> {
+        const propertyWithObserveList: Array<string> = []
+        // Check if at least one observable property exists.
+        for (const interactionName of this.getAllInteractionOfType(Utils.InteractionType.Property)) {
+            const interaction: any = Utils.getInteractionByName(this.tutTd, Utils.InteractionType.Property, interactionName)
+            if (interaction.observable) propertyWithObserveList.push(interactionName)
+        }
+        const eventList: Array<string> = this.getAllInteractionOfType(Utils.InteractionType.Event)
+        // Nothing to do if no events and no observable properties exist.
+        if (!propertyWithObserveList.length && !eventList.length) return false
+        this.log("---------------------- Start of Second Test Phase: Synchronous Listening ---------------------------")
+        this.testReport.addTestCycle()
+        this.testReport.addTestScenario()
+        try {
+            // Generating List of testFunctions to run synchronously.
+            const interactionList: Array<Promise<any>> = []
+            for (const propertyName of propertyWithObserveList) {
+                interactionList.push(this.testInteraction(repetitionNumber, 0, propertyName, Utils.InteractionType.Property, Utils.ListeningType.Synchronous))
+            }
+            for (const eventName of eventList) {
+                interactionList.push(this.testInteraction(repetitionNumber, 1, eventName, Utils.InteractionType.Event, Utils.ListeningType.Synchronous))
+            }
+            // Awaiting all of those testFunctions.
+            await Promise.all(interactionList)
+        } catch (error) {
+            console.log(error)
+            this.log("------------------------- Error in second Test Phase -----------------------------------")
+            // FIXME: Why does this return true?
+            return true
+        }
+        this.log("------------------------- Second Test Phase finished without an error. -----------------------------------")
+        return true
+    }
+
     public async testVulnerabilities(fastMode: boolean) {
         // Read TD from the property.
         const td = this.tutTd
 
         // Arrays to store pre-determined set of credentials.
-        const pwArray: Array<string> = []
-        const idArray: Array<string> = []
+        let pwArray: Array<string> = []
+        let idArray: Array<string> = []
+
+        if (fastMode) {
+            pwArray = defaultPasswordsShort
+            idArray = defaultUsernamesShort
+        } else {
+            pwArray = defaultPasswords
+            idArray = defaultUsernames
+        }
 
         let scheme: string // Underlying security scheme.
         let schemeName: string // Covering name for security scheme.
@@ -937,29 +952,29 @@ export class Tester {
             scheme = td["securityDefinitions"][schemeName]["scheme"]
         }
 
-        try {
-            // Reading common passwords & usernames.
-            let passwords: string
-            let ids: string
+        // try {
+        //     // Reading common passwords & usernames.
+        //     let passwords: string
+        //     let ids: string
 
-            if (fastMode) {
-                // This is the case when 'testVulnerabilities' is called from the 'fastTest' action. Uses short lists in order not to take a long time.
-                passwords = fs.readFileSync("assets/passwords-short.txt", "utf-8")
-                ids = fs.readFileSync("assets/usernames-short.txt", "utf-8")
-            } else {
-                passwords = fs.readFileSync("assets/passwords.txt", "utf-8")
-                ids = fs.readFileSync("assets/usernames.txt", "utf-8")
-            }
+        //     if (fastMode) {
+        //         // This is the case when 'testVulnerabilities' is called from the 'fastTest' action. Uses short lists in order not to take a long time.
+        //         passwords = fs.readFileSync(path.join("assets", "passwords-short.txt"), "utf-8")
+        //         ids = fs.readFileSync(path.join("assets", "usernames-short.txt"), "utf-8")
+        //     } else {
+        //         passwords = fs.readFileSync("assets/passwords.txt", "utf-8")
+        //         ids = fs.readFileSync("assets/usernames.txt", "utf-8")
+        //     }
 
-            const pwLines: Array<string> = passwords.split(/\r?\n/)
-            const idLines: Array<string> = ids.split(/\r?\n/)
+        //     const pwLines: Array<string> = passwords.split(/\r?\n/)
+        //     const idLines: Array<string> = ids.split(/\r?\n/)
 
-            pwLines.forEach((line) => pwArray.push(line))
-            idLines.forEach((line) => idArray.push(line))
-        } catch (err) {
-            console.error("Error while trying to read usernames and passwords:", err)
-            process.exit(1)
-        }
+        //     pwLines.forEach((line) => pwArray.push(line))
+        //     idLines.forEach((line) => idArray.push(line))
+        // } catch (err) {
+        //     console.error("Error while trying to read usernames and passwords:", err)
+        //     process.exit(1)
+        // }
         /**
          * The main brute-forcing function.
          * @param myURL URL to be tested.
@@ -1035,6 +1050,7 @@ export class Tester {
                     if (response.ok) accepts.push("boolean")
                 }
             } catch (e) {
+                console.log(e)
                 throw "typeFuzz() resulted in an error:"
             }
             return accepts
@@ -1789,7 +1805,9 @@ export class Tester {
                 const isWritable = !interaction.readOnly
                 const isReadable = !interaction.writeOnly
                 for (let i = 0; i < rep; i++) {
+                    this.log(`* Repetition ${i}`)
                     for (const index in property[prop].forms) {
+                        this.log(`** Testing ${prop}`)
                         const number_index = parseInt(index, 10)
                         if (isWritable) {
                             const value = Utils.createValidInput(property[prop])
@@ -1958,7 +1976,6 @@ export class Tester {
      * This function starts the testing on the Input Level. It sends the created test data to all Interaction Affordances with an input and records
      * the resopnse of the SuT.
      */
-
     public async testingInputCov(testReport): Promise<any> {
         const full_T3_report = testReport
 

@@ -4,7 +4,7 @@ import { CoapServer } from "@node-wot/binding-coap"
 import { parseArgs, configPath } from "./config"
 import { testConfig, logFormatted } from "./utilities"
 import * as fs from "fs"
-import { Testbench } from "./Testbench"
+import { TestbenchThing } from "./TestbenchThing"
 let configFile = "default-config.json"
 if (process.argv.length > 2) {
     parseArgs()
@@ -25,9 +25,8 @@ srv.addServer(coapServer)
 srv.start()
     .then(async (WoT) => {
         logFormatted("TestBench servient started")
-
-        const testbench = new Testbench(WoT, srv, tbName)
-        await testbench.startDevice(testConfig)
+        const testbenchThing = new TestbenchThing(WoT, srv, tbName)
+        await testbenchThing.startDevice(testConfig)
     })
     .catch(() => {
         logFormatted(":::::ERROR::::: Servient startup failed")

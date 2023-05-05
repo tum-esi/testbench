@@ -117,7 +117,7 @@ export class CodeGenerator {
     private td: wot.ThingDescription
     public requests: any
     public input_types: object
-    constructor(tdesc: wot.ThingDescription, testConf: any) {
+    constructor(tdesc: wot.ThingDescription, testConf: testConfig) {
         this.td = tdesc
         //Toggle between the two Generator types to change the generation of testdata
         //this.generateFakeData(testConf, tdesc)
