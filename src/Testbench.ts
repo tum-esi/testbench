@@ -7,7 +7,7 @@ import { CoapClientFactory, CoapsClientFactory } from "@node-wot/binding-coap"
 import { FileClientFactory } from "@node-wot/binding-file"
 import { HttpClientFactory, HttpsClientFactory } from "@node-wot/binding-http"
 import { MqttClientFactory } from "@node-wot/binding-mqtt"
-import defaultConfig from "../default-config.json"
+import { defaultConfig } from "./defaults"
 
 export class Testbench {
     private servient: Servient
@@ -56,27 +56,36 @@ export class Testbench {
         return this.getHeuristicTestReport
     }
 
-    public async fastTest(logMode: boolean, fastMode: boolean, consumedThing: WoT.ConsumedThing) {
+    /**
+     * Tests the given consumed thing with default config
+     * @param logMode Logs all of the operations on the console in case it is true
+     * @param fastMode Uses less asset to test vulnerability in case it is true
+     * @param consumedThing Thing to be tested
+     * @returns
+     */
+    public async fastTest(logMode: boolean, fastMode: boolean, consumedThing: WoT.ConsumedThing): Promise<TotalReport> {
         this.testConfig = defaultConfig
         this.initiate(logMode, consumedThing)
         await this.testThing(logMode)
         const conformanceReport = this.testReport
 
-        //await this.testVulnerabilities(fastMode)
-        //const vulnerabilityReport = this.testReport
-
-        const vulnerabilityReport = {}
+        await this.testVulnerabilities(fastMode)
+        const vulnerabilityReport = this.testReport
 
         this.testReport = new TotalReport(conformanceReport as TestReport, vulnerabilityReport as VulnerabilityReport)
         return this.testReport
     }
 
+    /**
+     * Initiates the Testbench
+     * @param logMode Logs all of the operations on the console in case it is true
+     * @param consumedThing Thing to be tested
+     */
     public initiate(logMode: boolean, consumedThing: WoT.ConsumedThing) {
         this.tester = new Tester(this.testConfig as testConfig, consumedThing)
         const returnCheck = this.tester.initiate(logMode)
         this.testData = this.tester.codeGen.requests
         this.addClientFactories(consumedThing.getThingDescription())
-        console.log(this.servient.getClientSchemes())
 
         if (returnCheck === 0) {
             this.heuristicTestReport = {
@@ -91,6 +100,11 @@ export class Testbench {
         }
     }
 
+    /**
+     * Tests the consumed thing of the Testbench, initiates the Testbench again if a consumed thing is given
+     * @param logMode Logs all of the operations on the console in case it is true
+     * @param consumedThing Thing to be tested
+     */
     public async testThing(logMode: boolean, consumedThing?: WoT.ConsumedThing) {
         if (consumedThing) {
             this.initiate(logMode, consumedThing)
@@ -110,6 +124,11 @@ export class Testbench {
         return
     }
 
+    /**
+     * Tests the vulnerabilities of the consumed thing of the Testbench, initiates the Testbench again if a consumed thing is given
+     * @param fastMode Uses less asset to test vulnerability in case it is true
+     * @param consumedThing Thing to be tested
+     */
     public async testVulnerabilities(fastMode: boolean, consumedThing?: WoT.ConsumedThing) {
         if (consumedThing) {
             this.initiate(false, consumedThing)
@@ -128,16 +147,7 @@ export class Testbench {
             this.heuristicTestReport["T1"] = await this.tester.testingOpCov()
         } catch {
             logFormatted(":::::ERROR::::: TestThing: Error during Operational test phase.")
-            return
         }
-
-        try {
-            await this.tester.secondTestingPhase(this.testConfig.Repetitions)
-        } catch {
-            logFormatted(":::::ERROR::::: TestThing: Error during second test phase.")
-        }
-
-        return
     }
 
     public async testParamCov(logMode?: boolean, consumedThing?: WoT.ConsumedThing) {

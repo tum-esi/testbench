@@ -10,7 +10,7 @@ After the test a test report can be generated and analyzed to get more meaning o
  */
 import * as wot from "wot-typescript-definitions"
 import * as Utils from "./utilities"
-import * as fetch from "node-fetch"
+import fetch from "node-fetch"
 import * as fs from "fs"
 import { JSONSchemaFaker as jsf } from "json-schema-faker"
 import {
@@ -24,6 +24,12 @@ import {
     EventData,
     VulnerabilityReport,
 } from "./TestReport"
+import {
+    usernames as defaultUsernames,
+    usernames_short as defaultUsernamesShort,
+    passwords as defaultPasswords,
+    passwords_short as defaultPasswordsShort,
+} from "./defaults"
 
 export class Tester {
     private tutTd: wot.ThingDescription //the TD that belongs to the Thing under Test
@@ -636,7 +642,8 @@ export class Tester {
                 container.passed = false
                 container.readPropertyReport.passed = false
                 container.readPropertyReport.result = new Result(30, "Could not fetch property")
-                throw new Error("Problem in the node-wot level.")
+                // throw new Error("Problem in the node-wot level.")
+                return
             }
             container.readPropertyReport.received = new Payload(responseTimeStamp, data)
             self.log("Data after first read property: " + JSON.stringify(data, null, " "))
@@ -702,7 +709,8 @@ export class Tester {
                 container.passed = false
                 container.writePropertyReport.passed = false
                 container.writePropertyReport.result = new Result(31, "Could not fetch property in the second get" + error)
-                throw new Error("Problem in the node-wot level.")
+                // throw new Error("Problem in the node-wot level.")
+                return
             }
 
             const responseTimeStamp = new Date()
@@ -910,8 +918,16 @@ export class Tester {
         const td = this.tutTd
 
         // Arrays to store pre-determined set of credentials.
-        const pwArray: Array<string> = []
-        const idArray: Array<string> = []
+        let pwArray: Array<string> = []
+        let idArray: Array<string> = []
+
+        if (fastMode) {
+            pwArray = defaultPasswordsShort
+            idArray = defaultUsernamesShort
+        } else {
+            pwArray = defaultPasswords
+            idArray = defaultUsernames
+        }
 
         let scheme: string // Underlying security scheme.
         let schemeName: string // Covering name for security scheme.
@@ -936,29 +952,29 @@ export class Tester {
             scheme = td["securityDefinitions"][schemeName]["scheme"]
         }
 
-        try {
-            // Reading common passwords & usernames.
-            let passwords: string
-            let ids: string
+        // try {
+        //     // Reading common passwords & usernames.
+        //     let passwords: string
+        //     let ids: string
 
-            if (fastMode) {
-                // This is the case when 'testVulnerabilities' is called from the 'fastTest' action. Uses short lists in order not to take a long time.
-                passwords = fs.readFileSync("assets/passwords-short.txt", "utf-8")
-                ids = fs.readFileSync("assets/usernames-short.txt", "utf-8")
-            } else {
-                passwords = fs.readFileSync("assets/passwords.txt", "utf-8")
-                ids = fs.readFileSync("assets/usernames.txt", "utf-8")
-            }
+        //     if (fastMode) {
+        //         // This is the case when 'testVulnerabilities' is called from the 'fastTest' action. Uses short lists in order not to take a long time.
+        //         passwords = fs.readFileSync(path.join("assets", "passwords-short.txt"), "utf-8")
+        //         ids = fs.readFileSync(path.join("assets", "usernames-short.txt"), "utf-8")
+        //     } else {
+        //         passwords = fs.readFileSync("assets/passwords.txt", "utf-8")
+        //         ids = fs.readFileSync("assets/usernames.txt", "utf-8")
+        //     }
 
-            const pwLines: Array<string> = passwords.split(/\r?\n/)
-            const idLines: Array<string> = ids.split(/\r?\n/)
+        //     const pwLines: Array<string> = passwords.split(/\r?\n/)
+        //     const idLines: Array<string> = ids.split(/\r?\n/)
 
-            pwLines.forEach((line) => pwArray.push(line))
-            idLines.forEach((line) => idArray.push(line))
-        } catch (err) {
-            console.error("Error while trying to read usernames and passwords:", err)
-            process.exit(1)
-        }
+        //     pwLines.forEach((line) => pwArray.push(line))
+        //     idLines.forEach((line) => idArray.push(line))
+        // } catch (err) {
+        //     console.error("Error while trying to read usernames and passwords:", err)
+        //     process.exit(1)
+        // }
         /**
          * The main brute-forcing function.
          * @param myURL URL to be tested.
@@ -1034,6 +1050,7 @@ export class Tester {
                     if (response.ok) accepts.push("boolean")
                 }
             } catch (e) {
+                console.log(e)
                 throw "typeFuzz() resulted in an error:"
             }
             return accepts
@@ -1788,7 +1805,9 @@ export class Tester {
                 const isWritable = !interaction.readOnly
                 const isReadable = !interaction.writeOnly
                 for (let i = 0; i < rep; i++) {
+                    this.log(`* Repetition ${i}`)
                     for (const index in property[prop].forms) {
+                        this.log(`** Testing ${prop}`)
                         const number_index = parseInt(index, 10)
                         if (isWritable) {
                             const value = Utils.createValidInput(property[prop])

@@ -5,7 +5,7 @@
         "module": "commonjs",
         "lib": ["DOM", "ES2015"],
         "outDir": "dist",
-        // "moduleResolution": "node",
+        "moduleResolution": "node",
         "baseUrl": "src",
         "sourceMap": true,
         "resolveJsonModule": true,

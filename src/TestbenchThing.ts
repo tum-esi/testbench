@@ -243,9 +243,9 @@ export class TestbenchThing extends Testbench {
     }
 
     private async testAllLevelsHandler(inputData: WoT.InteractionOutput) {
-        if (inputData) {
-            this.thingUnderTestTD = (await inputData.value()) as ThingDescription
-        }
+        // if (inputData) {
+        //     this.thingUnderTestTD = (await inputData.value()) as ThingDescription
+        // }
 
         const consumedTuT = await this.deviceWoT.consume(this.thingUnderTestTD)
         return await this.testAllLevels(true, consumedTuT)
