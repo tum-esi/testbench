@@ -1749,7 +1749,10 @@ export class Tester {
                     for (let i = 0; i < actions.length; i++) {
                         const action: any = actions[i]
 
-                        const form = getForm("invokeaction", action.forms) // Cannot be null.
+                        // Create action report with the name of the action.
+                        report.createVulnActionReport(Object.keys(td["actions"])[i])
+
+                        const form = getForm("invokeaction", action.forms) // FIXME: Cannot be null. (but it can be)
 
                         // Check if the interaction has a different security scheme.
                         if (form["security"] != undefined) {
@@ -1767,9 +1770,6 @@ export class Tester {
 
                         let method: string = form["htv:methodName"]
                         if (method == undefined) method = "POST" // Default value for 'invokeaction'.
-
-                        // Create action report with the name of the action.
-                        report.createVulnActionReport(Object.keys(td["actions"])[i])
 
                         const actionOptions = createRequestOptions(myURL, method)
 
