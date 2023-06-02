@@ -21,7 +21,7 @@
         "@node-wot/binding-netconf": "~0.8.6",
         "@node-wot/binding-opcua": "~0.8.6",
         "@node-wot/binding-websockets": "~0.8.6",
-        "@node-wot/core": "~^0.8.6",
+        "@node-wot/core": "~0.8.6",
         "@types/node": "^18.15.1",
         "ajv": "^6.10.2",
         "chai-http": "^4.3.0",
