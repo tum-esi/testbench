@@ -1795,7 +1795,7 @@ export class Tester {
      * This function starts the testing on the Operation Level. This means it tests all Interaction Affordances and every defined form of each Interaction Affordance.
      */
     public async testingOpCov(): Promise<any> {
-        const Full_Report: any = []
+        const fullReport: any = []
         const rep = 1
 
         try {
@@ -1814,21 +1814,22 @@ export class Tester {
                             try {
                                 await this.tut.writeProperty(prop, value, { formIndex: number_index })
                                 const result = "OP level writeProperty Success"
-                                Full_Report.push(Utils.createMiniReport(result, Utils.InteractionType.WriteProperty, prop, true, value))
+                                fullReport.push(Utils.createMiniReport(result, Utils.InteractionType.WriteProperty, prop, true, value))
                                 await Utils.sleepInMs(this.testConfig.TimeBetweenRequests)
                             } catch (error) {
-                                Full_Report.push(Utils.createMiniReport(error, Utils.InteractionType.WriteProperty, prop, false, value))
+                                fullReport.push(Utils.createMiniReport(error, Utils.InteractionType.WriteProperty, prop, false, value))
                                 console.log(error)
                             }
                         }
                         if (isReadable) {
                             try {
                                 const data = await this.tut.readProperty(prop, { formIndex: number_index })
+                                const returnValue = await data.value()
                                 const result = "OP level readProperty Success"
-                                Full_Report.push(Utils.createMiniReport(result, Utils.InteractionType.ReadProperty, prop, true, undefined, data))
+                                fullReport.push(Utils.createMiniReport(result, Utils.InteractionType.ReadProperty, prop, true, undefined, returnValue))
                                 await Utils.sleepInMs(this.testConfig.TimeBetweenRequests)
                             } catch (error) {
-                                Full_Report.push(Utils.createMiniReport(error, Utils.InteractionType.ReadProperty, prop, false, undefined))
+                                fullReport.push(Utils.createMiniReport(error, Utils.InteractionType.ReadProperty, prop, false, undefined))
                                 console.log(error)
                             }
                         }
@@ -1846,23 +1847,25 @@ export class Tester {
                     if (hasInput) {
                         const requests = Utils.createValidInput(actions[act].input)
                         try {
-                            const return_value: any = await this.tut.invokeAction(act, requests)
+                            const data = await this.tut.invokeAction(act, requests)
+                            const returnValue = await data.value()
                             const result = "OP level invokeAction with payload Success"
-                            Full_Report.push(Utils.createMiniReport(result, Utils.InteractionType.Action, act, true, requests, return_value))
+                            fullReport.push(Utils.createMiniReport(result, Utils.InteractionType.Action, act, true, requests, returnValue))
                             await Utils.sleepInMs(this.testConfig.TimeBetweenRequests)
                         } catch (error) {
                             console.log(error)
-                            Full_Report.push(Utils.createMiniReport(error, Utils.InteractionType.Action, act, false, requests, undefined))
+                            fullReport.push(Utils.createMiniReport(error, Utils.InteractionType.Action, act, false, requests, undefined))
                         }
                     } else {
                         try {
-                            const return_value: any = await this.tut.invokeAction(act)
+                            const data = await this.tut.invokeAction(act)
+                            const returnValue = await data.value()
                             const result = "OP level invokeAction without payload Success"
-                            Full_Report.push(Utils.createMiniReport(result, Utils.InteractionType.Action, act, true, undefined, return_value))
+                            fullReport.push(Utils.createMiniReport(result, Utils.InteractionType.Action, act, true, undefined, returnValue))
                             await Utils.sleepInMs(this.testConfig.TimeBetweenRequests)
                         } catch (error) {
                             console.log(error)
-                            Full_Report.push(Utils.createMiniReport(error, Utils.InteractionType.Action, act, false, undefined))
+                            fullReport.push(Utils.createMiniReport(error, Utils.InteractionType.Action, act, false, undefined))
                         }
                     }
                 }
@@ -1882,15 +1885,15 @@ export class Tester {
 
                     if (status == 0) {
                         const result = "OP level Event reached timeout"
-                        Full_Report.push(Utils.createMiniReport(result, Utils.InteractionType.Event, eve, true, undefined))
+                        fullReport.push(Utils.createMiniReport(result, Utils.InteractionType.Event, eve, true, undefined))
                     }
                     if (status == 1) {
                         const result = "OP level Event error"
-                        Full_Report.push(Utils.createMiniReport(result, Utils.InteractionType.Event, eve, true, undefined))
+                        fullReport.push(Utils.createMiniReport(result, Utils.InteractionType.Event, eve, true, undefined))
                     }
                     if (status == 2) {
                         const result = "OP level Event was successful"
-                        Full_Report.push(Utils.createMiniReport(result, Utils.InteractionType.Event, eve, true, undefined))
+                        fullReport.push(Utils.createMiniReport(result, Utils.InteractionType.Event, eve, true, undefined))
                     }
                 }
             } else {
@@ -1916,7 +1919,7 @@ export class Tester {
         }
 
         this.log("Operation Test Phase has finished without an error.")
-        return Full_Report
+        return fullReport
     }
 
     /**
@@ -1924,7 +1927,7 @@ export class Tester {
      * including all necessary parameters.
      */
     public async testingParamCov(): Promise<any> {
-        const Full_Report: any = []
+        const fullReport: any = []
 
         try {
             const properties = this.tutTd.properties
@@ -1936,10 +1939,10 @@ export class Tester {
                     try {
                         await this.tut.writeProperty(prop, value)
                         const result = "Parameter level writeProperty Success"
-                        Full_Report.push(Utils.createMiniReport(result, Utils.InteractionType.WriteProperty, prop, true, value))
+                        fullReport.push(Utils.createMiniReport(result, Utils.InteractionType.WriteProperty, prop, true, value))
                         await Utils.sleepInMs(this.testConfig.TimeBetweenRequests)
                     } catch (error) {
-                        Full_Report.push(Utils.createMiniReport(error, Utils.InteractionType.WriteProperty, prop, false, value))
+                        fullReport.push(Utils.createMiniReport(error, Utils.InteractionType.WriteProperty, prop, false, value))
                         console.log(error)
                     }
                 }
@@ -1954,12 +1957,13 @@ export class Tester {
                 if (hasInput) {
                     const requests = Utils.createValidInput(actions[act].input)
                     try {
-                        const return_value: any = await this.tut.invokeAction(act, requests)
+                        const data: any = await this.tut.invokeAction(act, requests)
+                        const returnValue = await data.value()
                         const result = "Parameter level invokeAction Success"
-                        Full_Report.push(Utils.createMiniReport(result, Utils.InteractionType.Action, act, true, requests, return_value))
+                        fullReport.push(Utils.createMiniReport(result, Utils.InteractionType.Action, act, true, requests, returnValue))
                         await Utils.sleepInMs(this.testConfig.TimeBetweenRequests)
                     } catch (error) {
-                        Full_Report.push(Utils.createMiniReport(error, Utils.InteractionType.Action, act, false, requests))
+                        fullReport.push(Utils.createMiniReport(error, Utils.InteractionType.Action, act, false, requests))
                         console.log(error)
                     }
                 }
@@ -1969,7 +1973,7 @@ export class Tester {
             throw Error
         }
         this.log("Parameter Test Phase has finished without an error.")
-        return Full_Report
+        return fullReport
     }
 
     /**
@@ -1977,7 +1981,7 @@ export class Tester {
      * the resopnse of the SuT.
      */
     public async testingInputCov(testReport): Promise<any> {
-        const full_T3_report = testReport
+        const fullReport = testReport
 
         try {
             const properties = this.tutTd.properties
@@ -1987,34 +1991,34 @@ export class Tester {
                 const isWritable = !interaction.readOnly
                 const isReadable = !interaction.writeOnly
                 if (isWritable) {
-                    for (const [key, value] of Object.entries(full_T3_report[prop])) {
+                    for (const [key, value] of Object.entries(fullReport[prop])) {
                         for (const [key1, value1] of Object.entries(value)) {
                             // send data to SUT and evaluate response
                             try {
                                 await this.tut.writeProperty(prop, value1.payload)
                                 let result = "Input level writeProperty Success"
-                                full_T3_report[prop][key][key1].time = Utils.getCurrentTime()
+                                fullReport[prop][key][key1].time = Utils.getCurrentTime()
                                 await Utils.sleepInMs(this.testConfig.TimeBetweenRequests)
                                 if (isReadable) {
                                     //read property and check if it is the same as the writen value before
                                     const readValue: any = await this.tut.readProperty(prop)
                                     if (JSON.stringify(readValue) == JSON.stringify(value1.payload)) {
                                         result = "Input level read/writeProperty Success : Read value the same as Write value"
-                                        full_T3_report[prop][key][key1].passed = true
-                                        full_T3_report[prop][key][key1].result = result
+                                        fullReport[prop][key][key1].passed = true
+                                        fullReport[prop][key][key1].result = result
                                     } else {
                                         result = "Input level read/writeProperty Fail : Read value not the same as Write value"
-                                        full_T3_report[prop][key][key1].passed = false
-                                        full_T3_report[prop][key][key1].result = result
+                                        fullReport[prop][key][key1].passed = false
+                                        fullReport[prop][key][key1].result = result
                                     }
                                     await Utils.sleepInMs(this.testConfig.TimeBetweenRequests)
                                 } else {
-                                    full_T3_report[prop][key][key1].passed = true
-                                    full_T3_report[prop][key][key1].result = result
+                                    fullReport[prop][key][key1].passed = true
+                                    fullReport[prop][key][key1].result = result
                                 }
                             } catch (error) {
-                                full_T3_report[prop][key][key1].passed = false
-                                full_T3_report[prop][key][key1].result = error
+                                fullReport[prop][key][key1].passed = false
+                                fullReport[prop][key][key1].result = error
                                 console.log(error)
                             }
                         }
@@ -2028,18 +2032,19 @@ export class Tester {
                 const interaction: any = Utils.getInteractionByName(this.tutTd, Utils.InteractionType.Action, act)
                 const hasInput = interaction.input
                 if (hasInput) {
-                    for (const [key, value] of Object.entries(full_T3_report[act])) {
+                    for (const [key, value] of Object.entries(fullReport[act])) {
                         for (const [key1, value1] of Object.entries(value)) {
                             try {
-                                const return_value: any = await this.tut.invokeAction(act, value1.payload)
+                                const data = await this.tut.invokeAction(act, value1.payload)
+                                const returnValue = await data.value()
                                 const result = "Input level invokeAction Success"
-                                full_T3_report[act][key][key1].passed = true
-                                full_T3_report[act][key][key1].result = result
-                                full_T3_report[act][key][key1].response = return_value
+                                fullReport[act][key][key1].passed = true
+                                fullReport[act][key][key1].result = result
+                                fullReport[act][key][key1].response = returnValue
                                 await Utils.sleepInMs(this.testConfig.TimeBetweenRequests)
                             } catch (error) {
-                                full_T3_report[act][key][key1].passed = false
-                                full_T3_report[act][key][key1].result = error
+                                fullReport[act][key][key1].passed = false
+                                fullReport[act][key][key1].result = error
                                 console.log(error)
                             }
                         }
@@ -2051,7 +2056,7 @@ export class Tester {
             throw Error
         }
         this.log("Input Test Phase has finished without an error.")
-        return full_T3_report
+        return fullReport
     }
 
     /**
@@ -2060,7 +2065,7 @@ export class Tester {
      */
 
     public async testingOutputCov(): Promise<any> {
-        const Full_Report: any = []
+        const fullReport: any = []
 
         try {
             //test all Properties and Actions
@@ -2075,31 +2080,32 @@ export class Tester {
                         const return_value: any = await this.tut.writeProperty(prop, value)
                         let result = "Output level writeProperty Success : No Output detected"
                         if (return_value == undefined) {
-                            Full_Report.push(Utils.createMiniReport(result, Utils.InteractionType.WriteProperty, prop, true, value))
+                            fullReport.push(Utils.createMiniReport(result, Utils.InteractionType.WriteProperty, prop, true, value))
                         } else {
                             // TODO: Solve this -> IMPORTANT ---> This does not wotk right now bc writeproperty does not return anything ever (node-wot problem ?)
                             result = "Output level writeProperty Fail : Request returns a payload"
                         }
                         await Utils.sleepInMs(this.testConfig.TimeBetweenRequests)
                     } catch (error) {
-                        Full_Report.push(Utils.createMiniReport(error, Utils.InteractionType.WriteProperty, prop, false, value))
+                        fullReport.push(Utils.createMiniReport(error, Utils.InteractionType.WriteProperty, prop, false, value))
                         console.log(error)
                     }
                 }
                 if (isReadable) {
                     try {
-                        const return_value: any = await this.tut.readProperty(prop)
-                        const validation = Utils.validateResponse(prop, return_value, this.testConfig.SchemaLocation, Utils.SchemaType.Property)
+                        const data: any = await this.tut.readProperty(prop)
+                        const returnValue = await data.value()
+                        const validation = Utils.validateResponse(prop, data, this.testConfig.SchemaLocation, Utils.SchemaType.Property)
                         let result = "Output level readProperty Fail : Output received and invalid"
                         if (validation) {
-                            Full_Report.push(Utils.createMiniReport(result, Utils.InteractionType.ReadProperty, prop, false, undefined, return_value))
+                            fullReport.push(Utils.createMiniReport(result, Utils.InteractionType.ReadProperty, prop, false, undefined, returnValue))
                         } else {
                             result = "Output level readProperty Success : Output received and valid"
-                            Full_Report.push(Utils.createMiniReport(result, Utils.InteractionType.ReadProperty, prop, true, undefined, return_value))
+                            fullReport.push(Utils.createMiniReport(result, Utils.InteractionType.ReadProperty, prop, true, undefined, returnValue))
                         }
                         await Utils.sleepInMs(this.testConfig.TimeBetweenRequests)
                     } catch (error) {
-                        Full_Report.push(Utils.createMiniReport(error, Utils.InteractionType.ReadProperty, prop, false, undefined))
+                        fullReport.push(Utils.createMiniReport(error, Utils.InteractionType.ReadProperty, prop, false, undefined))
                         console.log(error)
                     }
                 }
@@ -2114,56 +2120,58 @@ export class Tester {
                 if (hasInput) {
                     const requests = Utils.createValidInput(actions[act].input)
                     try {
-                        const return_value: any = await this.tut.invokeAction(act, requests)
+                        const data: any = await this.tut.invokeAction(act, requests)
+                        const returnValue = await data.value()
                         if (!Object.prototype.hasOwnProperty.call(interaction, "output")) {
                             let result = "Output level invokeAction with payload Success : No Output defined and no Output received"
-                            if (return_value == undefined) {
-                                Full_Report.push(Utils.createMiniReport(result, Utils.InteractionType.Action, act, true, requests))
+                            if (data == undefined) {
+                                fullReport.push(Utils.createMiniReport(result, Utils.InteractionType.Action, act, true, requests))
                             } else {
                                 result = "Output level invokeAction with payload Fail : No Output defined but Output received"
-                                Full_Report.push(Utils.createMiniReport(result, Utils.InteractionType.Action, act, false, requests, return_value))
+                                fullReport.push(Utils.createMiniReport(result, Utils.InteractionType.Action, act, false, requests, returnValue))
                             }
                         } else {
                             // requests with output defined -> check if output is valid
-                            const validation = Utils.validateResponse(act, return_value, this.testConfig.SchemaLocation, Utils.SchemaType.Action)
+                            const validation = Utils.validateResponse(act, data, this.testConfig.SchemaLocation, Utils.SchemaType.Action)
                             let result = "Output level invokeAction with payload Fail : Output received and invalid"
                             if (validation) {
-                                Full_Report.push(Utils.createMiniReport(result, Utils.InteractionType.Action, act, false, requests, return_value))
+                                fullReport.push(Utils.createMiniReport(result, Utils.InteractionType.Action, act, false, requests, returnValue))
                             } else {
                                 result = "Output level invokeAction with payload Success : Output received and valid"
-                                Full_Report.push(Utils.createMiniReport(result, Utils.InteractionType.Action, act, true, requests, return_value))
+                                fullReport.push(Utils.createMiniReport(result, Utils.InteractionType.Action, act, true, requests, returnValue))
                             }
                         }
                         await Utils.sleepInMs(this.testConfig.TimeBetweenRequests)
                     } catch (error) {
                         console.log(error)
-                        Full_Report.push(Utils.createMiniReport(error, Utils.InteractionType.Action, act, false, requests, undefined))
+                        fullReport.push(Utils.createMiniReport(error, Utils.InteractionType.Action, act, false, requests, undefined))
                     }
                 } else {
                     try {
-                        const return_value: any = await this.tut.invokeAction(act)
+                        const data: any = await this.tut.invokeAction(act)
+                        const returnValue = await data.value()
                         if (!Object.prototype.hasOwnProperty.call(interaction, "output")) {
                             let result = "Output level invokeAction without payload Success : No Output defined and no Output received"
-                            if (return_value == undefined) {
-                                Full_Report.push(Utils.createMiniReport(result, Utils.InteractionType.Action, act, true, undefined))
+                            if (data == undefined) {
+                                fullReport.push(Utils.createMiniReport(result, Utils.InteractionType.Action, act, true, undefined))
                             } else {
                                 result = "Output level invokeAction without payload Fail : No Output defined but Output received"
-                                Full_Report.push(Utils.createMiniReport(result, Utils.InteractionType.Action, act, false, undefined, return_value))
+                                fullReport.push(Utils.createMiniReport(result, Utils.InteractionType.Action, act, false, undefined, returnValue))
                             }
                         } else {
-                            const validation = Utils.validateResponse(act, return_value, this.testConfig.SchemaLocation, Utils.SchemaType.Action)
+                            const validation = Utils.validateResponse(act, data, this.testConfig.SchemaLocation, Utils.SchemaType.Action)
                             let result = "Output level invokeAction without payload Fail : Output received and invalid"
                             if (validation) {
-                                Full_Report.push(Utils.createMiniReport(result, Utils.InteractionType.Action, act, true, undefined, return_value))
+                                fullReport.push(Utils.createMiniReport(result, Utils.InteractionType.Action, act, true, undefined, returnValue))
                             } else {
                                 result = "Output level invokeAction without payload Success : Output received and valid"
-                                Full_Report.push(Utils.createMiniReport(result, Utils.InteractionType.Action, act, true, undefined, return_value))
+                                fullReport.push(Utils.createMiniReport(result, Utils.InteractionType.Action, act, true, undefined, returnValue))
                             }
                         }
                         await Utils.sleepInMs(this.testConfig.TimeBetweenRequests)
                     } catch (error) {
                         console.log(error)
-                        Full_Report.push(Utils.createMiniReport(error, Utils.InteractionType.Action, act, false, undefined))
+                        fullReport.push(Utils.createMiniReport(error, Utils.InteractionType.Action, act, false, undefined))
                     }
                 }
             }
@@ -2172,15 +2180,15 @@ export class Tester {
             throw Error
         }
         this.log("Output Test Phase has finished without an error.")
-        return Full_Report
+        return fullReport
     }
 
     public async testingResult(testReport: any) {
         try {
-            console.log("T1 : " + Utils.countResults(testReport.T1))
-            console.log("T2 : " + Utils.countResults(testReport.T2))
-            console.log("T3 : " + Utils.countResultsT3(testReport.T3))
-            console.log("T4 : " + Utils.countResults(testReport.T4))
+            console.log("OpCov : " + Utils.countResults(testReport.OpCov))
+            console.log("ParamCov : " + Utils.countResults(testReport.ParamCov))
+            console.log("InputCov : " + Utils.countResultsT3(testReport.InputCov))
+            console.log("OutputCov : " + Utils.countResults(testReport.OutputCov))
         } catch (error) {
             console.log(error)
         }

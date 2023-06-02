@@ -116,10 +116,10 @@ export class TestbenchThing extends Testbench {
             },
             testAllLevels: {
                 input: {
-                    type: "boolean",
+                    type: "object",
                 },
                 output: {
-                    type: "boolean",
+                    type: "object",
                 },
                 description: "By invoking this action, the testing starts on all Level",
             },
@@ -243,9 +243,9 @@ export class TestbenchThing extends Testbench {
     }
 
     private async testAllLevelsHandler(inputData: WoT.InteractionOutput) {
-        // if (inputData) {
-        //     this.thingUnderTestTD = (await inputData.value()) as ThingDescription
-        // }
+        if (inputData) {
+            this.thingUnderTestTD = (await inputData.value()) as ThingDescription
+        }
 
         const consumedTuT = await this.deviceWoT.consume(this.thingUnderTestTD)
         return await this.testAllLevels(true, consumedTuT)

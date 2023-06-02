@@ -21,10 +21,10 @@ export class Testbench {
         this.servient = servient
         this.testReport = "[]"
         this.heuristicTestReport = {
-            T1: [],
-            T2: [],
-            T3: {},
-            T4: [],
+            OpCov: [],
+            ParamCov: [],
+            InputCov: {},
+            OutputCov: [],
         }
     }
 
@@ -89,10 +89,10 @@ export class Testbench {
 
         if (returnCheck === 0) {
             this.heuristicTestReport = {
-                T1: [],
-                T2: [],
-                T3: this.tester.inputTestReport,
-                T4: [],
+                OpCov: [],
+                ParamCov: [],
+                InputCov: this.tester.inputTestReport,
+                OutputCov: [],
             }
             return "Initiation was successful."
         } else {
@@ -144,7 +144,7 @@ export class Testbench {
 
         logFormatted("------ START OF Operational Testing ------")
         try {
-            this.heuristicTestReport["T1"] = await this.tester.testingOpCov()
+            this.heuristicTestReport["OpCov"] = await this.tester.testingOpCov()
         } catch {
             logFormatted(":::::ERROR::::: TestThing: Error during Operational test phase.")
         }
@@ -158,7 +158,7 @@ export class Testbench {
         logFormatted("------ START OF Parameter Testing ------")
 
         try {
-            this.heuristicTestReport["T2"] = await this.tester.testingParamCov()
+            this.heuristicTestReport["ParamCov"] = await this.tester.testingParamCov()
         } catch {
             logFormatted(":::::ERROR::::: TestThing: Error during Parameter test phase.")
         }
@@ -172,7 +172,7 @@ export class Testbench {
         fs.writeFileSync(this.testConfig.TestDataLocation, JSON.stringify(this.testData, null, " "))
         logFormatted("------ START OF Input Testing ------")
         try {
-            this.heuristicTestReport["T3"] = await this.tester.testingInputCov(this.heuristicTestReport["T3"])
+            this.heuristicTestReport["InputCov"] = await this.tester.testingInputCov(this.heuristicTestReport["InputCov"])
         } catch {
             logFormatted(":::::ERROR::::: TestThing: Error during Input test phase.")
         }
@@ -185,7 +185,7 @@ export class Testbench {
 
         logFormatted("------ START OF Output Testing ------")
         try {
-            this.heuristicTestReport["T4"] = await this.tester.testingOutputCov()
+            this.heuristicTestReport["OutputCov"] = await this.tester.testingOutputCov()
         } catch {
             logFormatted(":::::ERROR::::: TestThing: Error during Output test phase.")
         }
