@@ -952,29 +952,6 @@ export class Tester {
             scheme = td["securityDefinitions"][schemeName]["scheme"]
         }
 
-        // try {
-        //     // Reading common passwords & usernames.
-        //     let passwords: string
-        //     let ids: string
-
-        //     if (fastMode) {
-        //         // This is the case when 'testVulnerabilities' is called from the 'fastTest' action. Uses short lists in order not to take a long time.
-        //         passwords = fs.readFileSync(path.join("assets", "passwords-short.txt"), "utf-8")
-        //         ids = fs.readFileSync(path.join("assets", "usernames-short.txt"), "utf-8")
-        //     } else {
-        //         passwords = fs.readFileSync("assets/passwords.txt", "utf-8")
-        //         ids = fs.readFileSync("assets/usernames.txt", "utf-8")
-        //     }
-
-        //     const pwLines: Array<string> = passwords.split(/\r?\n/)
-        //     const idLines: Array<string> = ids.split(/\r?\n/)
-
-        //     pwLines.forEach((line) => pwArray.push(line))
-        //     idLines.forEach((line) => idArray.push(line))
-        // } catch (err) {
-        //     console.error("Error while trying to read usernames and passwords:", err)
-        //     process.exit(1)
-        // }
         /**
          * The main brute-forcing function.
          * @param myURL URL to be tested.

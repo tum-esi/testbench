@@ -2,16 +2,20 @@ import { Servient } from "@node-wot/core"
 import { HttpServer } from "@node-wot/binding-http"
 import { CoapServer } from "@node-wot/binding-coap"
 import { parseArgs, configPath } from "./config"
-import { testConfig, logFormatted } from "./utilities"
+import { logFormatted, testConfig } from "./utilities"
 import * as fs from "fs"
 import { TestbenchThing } from "./TestbenchThing"
-let configFile = "default-config.json"
+import { defaultConfig } from "./defaults";
+
+let testConfig: testConfig;
+
 if (process.argv.length > 2) {
     parseArgs()
-    configFile = configPath
+    testConfig = JSON.parse(fs.readFileSync(configPath, "utf8"))
+} else {
+    testConfig = defaultConfig
 }
-//getting the test config and extraction anything possible
-const testConfig: testConfig = JSON.parse(fs.readFileSync(configFile, "utf8"))
+
 const tbName: string = testConfig["TBname"]
 
 //creating the Test Bench as a servient.
