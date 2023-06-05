@@ -11,7 +11,6 @@ A Thing Description should represent capabilities of a device. This implies that
 -   Writable properties are indeed writable
 -   Each interaction returns the described data type (DataSchema of TD Spec)
 
-TD Version Used: Princeton Testfest 2019
 
 ---
 
@@ -306,16 +305,4 @@ Each one of these reports consists of:
         - If dictionary attack finds suitable credentials OR credentials are given via config file, then safety tests are performed.
 
         - During safety testing, action are tested if they accept types that should not be optimally allowed.
-
-## To-Do
-
-In the order of priority, the following need to be implemented
-
-1. Simple Report Creation
-2. Event Testing (in order of priority)
-    1. Testing whether you can subscribe to events
-    2. Testing whether you can unsubscribe from events
-    3. Testing whether the JSON delivered by event match the JSON Schema
-3. Observable Property Testing: Need to define the objectives
-4. Coap and MQTT server
 
