@@ -116,10 +116,10 @@ export class TestbenchThing extends Testbench {
             },
             testAllLevels: {
                 input: {
-                    type: "boolean",
+                    type: "object",
                 },
                 output: {
-                    type: "boolean",
+                    type: "object",
                 },
                 description: "By invoking this action, the testing starts on all Level",
             },
