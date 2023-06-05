@@ -60,6 +60,6 @@
         "test": "mocha --require esm --exit",
         "windows_stop": "taskkill /im node.exe /f",
         "lint": "eslint . --ext .ts",
-        "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
+        "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\""
     }
 }
