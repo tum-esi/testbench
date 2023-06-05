@@ -18,10 +18,8 @@ A Thing Description should represent capabilities of a device. This implies that
 
 ### Prerequisites:
 
--   git: `sudo apt install -y git`
--   node.js: `sudo apt-get install -y nodejs`
--   npm: `sudo apt install -y npm`
--   ts: `npm install -g typescript`
+-   Node.js: `sudo apt-get install -y nodejs` (currently version 20 is not supported)
+-   Typescript: `npm install -g typescript`
 -   ts-node: `npm install -g ts-node`
 
 ### Steps
