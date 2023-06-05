@@ -19,8 +19,10 @@ A Thing Description should represent capabilities of a device. This implies that
 ### Prerequisites:
 
 -   git: `sudo apt install -y git`
--   node.js: `sudo apt-get install -y nodejs` (node --version v8.10.0)
--   npm: `sudo apt install -y npm` (npm --version 3.5.2)
+-   node.js: `sudo apt-get install -y nodejs`
+-   npm: `sudo apt install -y npm`
+-   ts: `npm install -g typescript`
+-   ts-node: `npm install -g ts-node`
 
 ### Steps
 
@@ -35,8 +37,8 @@ A Thing Description should represent capabilities of a device. This implies that
 
 0. Start a servient that has a TD so that TestBench can interact with it.
 
-    1. `testing-files/faultyThing.js` shows an example test servient with ONLY BAD implementations. Run `faultyThing.js` by executing `node testing-files/faultyThing.js` inside `testbench` directory.
-    2. `testing-files/perfectThing.js` shows an example test servient with ONLY GOOD implementations. Run `perfectThing.js` by executing `node testing-files/perfectThing.js` inside `testbench` directory.
+    1. `testing-files/faultyThing.ts` shows an example test servient with ONLY BAD implementations. Run `faultyThing.ts` by executing `ts-node testing-files/faultyThing.ts` inside `testbench` directory.
+    2. `testing-files/perfectThing.ts` shows an example test servient with ONLY GOOD implementations. Run `perfectThing.ts` by executing `ts-node testing-files/perfectThing.ts` inside `testbench` directory.
 
 1. Run with: `npm start`
 2. Interact with the testbench using REST clients such as `cURL`, `Postman` etc.
@@ -64,7 +66,7 @@ A Thing Description should represent capabilities of a device. This implies that
 
 **cURL**:
 
-`curl -X POST -H "Content-Type: application/json" -d '{configuration-data}' http://your-address:8080/wot-test-bench/properties/testConfig`
+`curl -X POST -H "Content-Type: application/json" -d '{configuration-data}' http://your-address:8980/wot-test-bench/properties/testConfig`
 
 **IMPORTANT: fastTest does two things:**  
 1. calls `testThing` and sets result of this action to the value of `conformance` key in the `testReport`.
@@ -78,17 +80,17 @@ In conformance test, the TestBench sends valid requests to the Thing, and valida
 
 1. Start a servient that has a TD so that TestBench can interact with it.
 
-    1. `testing-files/faultyThing.js` shows an example test servient with ONLY BAD implementations. Run `faultyThing.js` by executing `node testing-files/faultyThing.js` inside `testbench` directory.
-    2. `testing-files/perfectThing.js` shows an example test servient with ONLY GOOD implementations. Run `perfectThing.js` by executing `node testing-files/perfectThing.js` inside `testbench` directory.
+    1. `testing-files/faultyThing.ts` shows an example test servient with ONLY BAD implementations. Run `faultyThing.ts` by executing `ts-node testing-files/faultyThing.ts` inside `testbench` directory.
+    2. `testing-files/perfectThing.ts` shows an example test servient with ONLY GOOD implementations. Run `perfectThing.ts` by executing `ts-node testing-files/perfectThing.ts` inside `testbench` directory.
 
 2. Run the TestBench by executing `npm start`.
 
-    1. Before doing so, you can configure the test bench by changing the `default-config.json` file.
+    1. Before doing so, you can configure the test bench by changing the `defaultConfig` inside `defaults.ts` file.
 
 3. Start `Postman` software: [Postman](https://www.getpostman.com/)
 
 4. Send the TD of the Thing you want to test by writing into the `thingUnderTestTD` property
-    1. `faultyThing.js` has a TD named `faultThingTD.jsonld` in the testing-files directory. Warning!: This TD will change based on your network so make sure to update it.
+    1. `faultyThing.ts` creates a TD for itself after it has run. Run `curl http://localhost:8083/faulty-thing-servient` to get TD. Warning!: Ports might cause an error, so either make sure port numbers inside the `faultyThing.ts` file are available or change them.
 
 | **PUT**       |                     TestBench update TuT Property                     |
 | ------------- | :-------------------------------------------------------------------: |
@@ -144,6 +146,21 @@ In conformance test, the TestBench sends valid requests to the Thing, and valida
 | return value: |                    boolean if successful                    |
 
 9. Read the test report by reading the testReport property.
+
+---
+### Testing for Coverage
+
+The action, `testAllLevels`, tests for different levels of coverage. Levels include Operation, Parameter, Input and Output.
+
+1. Test a servient for all coverage levels by sending its TD
+
+| **POST**     |                  Test Thing with given TD                          |
+| ------------ | :----------------------------------------------------------------: |
+| content-type |                      application/json                              |
+| body         |                     Thing Description                              |
+| data-type    |                            raw                                     |
+| url          | `http://your-address:8980/wot-test-bench/actions/testAllLevels`    |
+| return value |                  JSON Array with results                           |
 
 ---
 
@@ -270,6 +287,7 @@ Each one of these reports consists of:
 
 <img src="readme-images/testingProcess.svg" align="center" height="400" width="400">
 
+## How does the coverage testing work?
 
 ## How does the vulnerability testing work?
 
