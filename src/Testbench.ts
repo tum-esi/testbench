@@ -92,6 +92,7 @@ export class Testbench {
         this.tester = new Tester(this.testConfig as testConfig, consumedThing)
         const returnCheck = this.tester.initiate(logMode)
         this.testData = this.tester.codeGen.requests
+        this.cleanClientFactories(consumedThing.getThingDescription())
         this.addClientFactories(consumedThing.getThingDescription())
 
         if (returnCheck === 0) {
@@ -224,6 +225,10 @@ export class Testbench {
         }
     }
 
+    /**
+     * Checks the Thing Description to add needed client factories to the servient
+     * @param td Thing Description to be checked for protocols
+     */
     private addClientFactories(td: object) {
         const tdProtocols = detectProtocolSchemes(JSON.stringify(td))
         const servientProtocols = this.servient.getClientSchemes()
@@ -288,6 +293,21 @@ export class Testbench {
             if (factoryExists) {
                 clientFactory.init()
                 this.servient.addClientFactory(clientFactory)
+            }
+        }
+    }
+
+    /**
+     * Checks the Thing Description to remove client factories that are not in use from the servient
+     * @param td Thing Description to be checked for protocols
+     */
+    private cleanClientFactories(td: object) {
+        const tdProtocols = detectProtocolSchemes(JSON.stringify(td))
+        const servientProtocols = this.servient.getClientSchemes()
+
+        for (const protocol of servientProtocols) {
+            if (!tdProtocols.includes(protocol)) {
+                this.servient.removeClientFactory(protocol);
             }
         }
     }
