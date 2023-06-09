@@ -1,6 +1,6 @@
 {
     "name": "wot-testbench",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "repository": {
         "type": "git",
         "url": "https://github.com/tum-esi/testbench.git"
@@ -15,7 +15,6 @@
         "@node-wot/binding-coap": "~0.8.6",
         "@node-wot/binding-file": "~0.8.6",
         "@node-wot/binding-http": "~0.8.6",
-        "@node-wot/binding-mbus": "~0.8.6",
         "@node-wot/binding-modbus": "~0.8.6",
         "@node-wot/binding-mqtt": "~0.8.6",
         "@node-wot/binding-netconf": "~0.8.6",

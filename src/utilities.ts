@@ -110,7 +110,6 @@ export enum ProtocolType {
     Firestore = "firestore",
     Http = "http",
     Https = "https",
-    Mbus = "mbus+tcp",
     Modbus = "modbus+tcp",
     Mqtt = "mqtt",
     Mqtts = "mqtts",

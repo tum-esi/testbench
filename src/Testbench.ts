@@ -7,7 +7,6 @@ import { CoapClientFactory, CoapsClientFactory } from "@node-wot/binding-coap"
 import { FileClientFactory } from "@node-wot/binding-file"
 // import { FirestoreClientFactory } from "@node-wot/binding-firestore"
 import { HttpClientFactory, HttpsClientFactory } from "@node-wot/binding-http"
-import { MBusClientFactory } from "@node-wot/binding-mbus"
 import { ModbusClientFactory } from "@node-wot/binding-modbus"
 import { MqttClientFactory, MqttsClientFactory } from "@node-wot/binding-mqtt"
 import { NetconfClientFactory } from "@node-wot/binding-netconf"
@@ -257,9 +256,6 @@ export class Testbench {
                     break
                 case ProtocolType.Https:
                     clientFactory = new HttpsClientFactory()
-                    break
-                case ProtocolType.Mbus:
-                    clientFactory = new MBusClientFactory()
                     break
                 case ProtocolType.Modbus:
                     clientFactory = new ModbusClientFactory()
