@@ -1,7 +1,8 @@
 # Web of Things Test Bench
 
 [![CI & CD Pipeline](https://github.com/tum-esi/testbench/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/tum-esi/testbench/actions/workflows/ci-cd.yml)
-[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
+![npm](https://img.shields.io/npm/v/wot-testbench)
 
 Tests a WoT Thing by executing interactions automatically, based on its Thing Description.
 
