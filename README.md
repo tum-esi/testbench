@@ -6,12 +6,29 @@
 
 Tests a WoT Thing by executing interactions automatically, based on its Thing Description.
 
-A Thing Description should represent capabilities of a device. This implies that if a device support the interactions that a client can execute based on the device's TD, it doesn't comply to its own TD. Test bench tests whether:
+A Thing Description should represent capabilities of a device. This implies that if a device support the interactions that a client can execute based on the device's TD, it doesn't comply to its own TD. Test bench tests aspects such as:
 
 -   Every interaction written in the TD can be executed
 -   Writable properties are indeed writable
 -   Each interaction returns the described data type (DataSchema of TD Spec)
+-   Is the Thing vulnerable to attacks such as dictionnary attacks or inputs outside the allowed range
 
+See the related paper **Streamlining IoT System Development with Open Standards**.
+```
+@article{kks:2020,
+  url          = { https://tum-esi.github.io/publications-list/PDF/2020-deGruyter_IT-Streamlining%20IoT%20System%20Development%20with%20Open%20Standards.pdf },
+  month        = { 12 },
+  issn         = { 1611-2776 },
+  doi          = { 10.1515/itit-2020-0016 },
+  pages        = { 215 - 226 },
+  number       = { 5-6 },
+  volume       = { 62 },
+  year         = { 2020 },
+  title        = { Streamlining IoT System Development with Open Standards },
+  journal      = { it - Information Technology },
+  author       = { Ege Korkan and Sebastian Kaebisch and Sebastian Steinhorst },
+}
+```
 
 ---
 
